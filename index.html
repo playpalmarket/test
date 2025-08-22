@@ -1,0 +1,153 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>PlayPal.ID — Katalog & Pre-Order</title>
+  <meta name="description" content="Destinasi utama top-up game & layanan digital. Katalog harga realtime dan status pre-order yang jelas." />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="PlayPal.ID — Katalog & Pre-Order" />
+  <meta property="og:description" content="Katalog harga realtime dan status pre-order yang jelas." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="logo.jpeg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="logo.jpeg" />
+  <link rel="preconnect" href="https://docs.google.com" />
+  <link rel="dns-prefetch" href="https://docs.google.com" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ==== HEADER ==== -->
+  <header class="appbar">
+    <div class="appbar-left">
+      <img src="logo.jpeg" alt="PlayPal.ID" class="logo">
+      <div class="brand">
+        <strong>PlayPal.ID</strong>
+        <span>Katalog & Pre-Order</span>
+      </div>
+    </div>
+    <div class="appbar-right">
+      <!-- burger untuk Katalog -->
+      <button id="burgerCat" class="icon-btn burger" aria-label="Menu Katalog" aria-expanded="false" aria-controls="menuCat">
+        <span></span><span></span><span></span>
+      </button>
+      <!-- burger untuk Pre-Order -->
+      <button id="burgerPO" class="icon-btn burger" aria-label="Menu Pre-Order" aria-expanded="false" aria-controls="menuPO">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==== MENU PANEL KATALOG ==== -->
+  <aside id="menuCat" class="menu-panel" aria-hidden="true">
+    <div class="menu-head">
+      <h3>Katalog</h3>
+      <button id="closeMenuCat" class="icon-btn plain" aria-label="Tutup">✕</button>
+    </div>
+    <div class="menu-body">
+      <button class="menu-btn" data-mode="katalog">Tampilkan Katalog</button>
+      <button class="menu-btn" data-mode="preorder">Buka Pre-Order</button>
+      <div class="menu-note">Gunakan pencarian & kategori untuk menyaring item.</div>
+    </div>
+  </aside>
+
+  <!-- ==== MENU PANEL PRE-ORDER ==== -->
+  <aside id="menuPO" class="menu-panel" aria-hidden="true">
+    <div class="menu-head">
+      <h3>Pre-Order</h3>
+      <button id="closeMenuPO" class="icon-btn plain" aria-label="Tutup">✕</button>
+    </div>
+    <div class="menu-body">
+      <button class="menu-btn" data-mode="preorder">Tampilkan Pre-Order</button>
+      <button class="menu-btn" data-mode="katalog">Kembali ke Katalog</button>
+      <div class="menu-note">Pantau status dan filter data sesuai kebutuhan.</div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ===================== KATALOG ===================== -->
+    <section id="viewCatalog" class="view active">
+      <div class="toolbar">
+        <div id="custom-select-wrapper" class="custom-select" role="listbox" aria-expanded="false">
+          <button id="custom-select-btn" class="select-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span id="custom-select-value">Memuat…</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+          <div id="custom-select-options" class="select-options" role="listbox"></div>
+        </div>
+
+        <div class="searchbox">
+          <input id="search" type="search" placeholder="Cari item…">
+        </div>
+
+        <div id="countInfo" class="count-info"></div>
+      </div>
+
+      <div id="error" class="error" hidden></div>
+
+      <div id="list-container" class="list"></div>
+
+      <!-- Template item katalog -->
+      <template id="itemTmpl">
+        <a class="list-item" target="_blank" rel="noopener">
+          <div class="meta">
+            <div class="title"></div>
+            <div class="subtitle">Klik untuk order via WhatsApp</div>
+          </div>
+          <div class="price"></div>
+        </a>
+      </template>
+    </section>
+
+    <!-- ===================== PRE-ORDER ===================== -->
+    <section id="viewPreorder" class="view">
+      <div class="po-toolbar">
+        <label class="po-field">
+          <span>Sheet</span>
+          <select id="poSheet">
+            <option value="0">Sheet1</option>
+            <option value="1">Sheet2 (skip baris judul)</option>
+          </select>
+        </label>
+
+        <label class="po-field">
+          <span>Status</span>
+          <select id="poStatus">
+            <option value="all">Semua</option>
+            <option value="progress">Proses</option>
+            <option value="pending">Pending</option>
+            <option value="success">Sukses</option>
+            <option value="failed">Gagal</option>
+          </select>
+        </label>
+
+        <label class="po-field grow">
+          <span>Cari</span>
+          <input id="poSearch" type="search" placeholder="ID / Item / Status">
+        </label>
+      </div>
+
+      <div id="poList" class="po-list"></div>
+
+      <div class="po-pager">
+        <button id="poPrev" class="btn">‹ Prev</button>
+        <div id="poTotal" class="po-total">—</div>
+        <button id="poNext" class="btn">Next ›</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> PlayPal.ID</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent=new Date().getFullYear();
+  </script>
+  <script src="script.js" defer></script>
+</body>
+</html>
