@@ -6,24 +6,22 @@
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="wrap">
     <header data-rail>
-      <img src="logo.png" alt="PlayPal.ID Logo" class="logo">
+      <img src="logo.png" alt="PlayPal.ID" class="logo" />
       <h1>PlayPal.ID</h1>
       <p>Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
     </header>
 
-    <!-- ============ KATALOG ============ -->
+    <!-- ================= KATALOG ================= -->
     <section id="viewCatalog" aria-label="Katalog">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
-            <!-- Custom select kategori game -->
+            <!-- Custom Select -->
             <div class="custom-select-wrapper" id="custom-select-wrapper">
               <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
@@ -64,7 +62,7 @@
       </template>
     </section>
 
-    <!-- ============ PRE‑ORDER ============ -->
+    <!-- ================= PRE‑ORDER ================= -->
     <section id="viewPreorder" aria-label="Pre-Order" style="display:none">
       <div class="head-block po-head" data-rail>
         <div class="topbar" data-rail>
@@ -112,12 +110,11 @@
       </div>
     </section>
 
-    <!-- ============ FILM (Gratis, dengan modal player premium) ============ -->
+    <!-- ================= FILM (gratis) ================= -->
     <section id="viewFilm" aria-label="Film" style="display:none">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
-            <!-- Dropdown film -->
             <div class="custom-select-wrapper" id="filmSelectWrap">
               <button class="custom-select-btn" id="filmSelectBtn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="filmSelectValue">Pilih Film</span>
@@ -148,57 +145,28 @@
     </section>
   </main>
 
-  <!-- ===== Modal Player Premium ===== -->
-  <div id="filmModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" id="filmModalBackdrop"></div>
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="filmModalTitle">
-      <button class="modal-close" id="filmModalClose" aria-label="Tutup">×</button>
-      <h3 id="filmModalTitle" class="modal-title">Memuat…</h3>
-
-      <div class="pp-player" id="ppPlayer">
-        <video id="ppVideo" playsinline></video>
-
-        <div class="pp-controls">
-          <div class="pp-row">
-            <button class="pp-btn" id="ppPlay" title="Play/Pause (Space)">▶</button>
-            <button class="pp-btn" id="ppBack" title="Mundur 10s (←)">⟲10s</button>
-            <button class="pp-btn" id="ppFwd"  title="Maju 10s (→)">10s⟳</button>
-
-            <div class="pp-time">
-              <span id="ppCur">00:00</span> /
-              <span id="ppDur">00:00</span>
-            </div>
-
-            <input type="range" id="ppSeek" min="0" max="100" value="0" step="0.1" class="pp-seek" aria-label="Seek">
-
-            <div class="pp-vol">
-              <button class="pp-btn" id="ppMute" title="Mute (M)">🔊</button>
-              <input type="range" id="ppVol" min="0" max="1" step="0.01" value="1" aria-label="Volume">
-            </div>
-
-            <label class="pp-bright">
-              ☀︎
-              <input type="range" id="ppBright" min="0.5" max="1.5" step="0.01" value="1" aria-label="Brightness">
-            </label>
-
-            <select id="ppSpeed" class="pp-speed" title="Kecepatan (</> )" aria-label="Kecepatan">
-              <option value="0.5">0.5×</option>
-              <option value="0.75">0.75×</option>
-              <option value="1" selected>1×</option>
-              <option value="1.25">1.25×</option>
-              <option value="1.5">1.5×</option>
-              <option value="2">2×</option>
-            </select>
-
-            <button class="pp-btn" id="ppPip" title="Picture‑in‑Picture (P)">🗔</button>
-            <button class="pp-btn" id="ppFs"  title="Fullscreen (F)">⛶</button>
-          </div>
-        </div>
+  <!-- ========= Overlay Player (Google Drive Preview) ========= -->
+  <div id="gdPlayer" class="gd-overlay" aria-hidden="true">
+    <div class="gd-backdrop" id="gdPlayerBackdrop"></div>
+    <div class="gd-stage" id="gdStage">
+      <button class="gd-close" id="gdClose" aria-label="Tutup">×</button>
+      <h3 id="gdTitle" class="gd-title">Memuat…</h3>
+      <div class="gd-iframe-wrap">
+        <iframe id="gdIframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" src=""></iframe>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- ========= Overlay Folder (list episode dari folder Drive) ========= -->
+  <div id="gdFolder" class="gd-overlay" aria-hidden="true">
+    <div class="gd-backdrop" id="gdFolderBackdrop"></div>
+    <div class="gd-stage" id="gdFolderStage">
+      <button class="gd-close" id="gdFolderClose" aria-label="Tutup">×</button>
+      <h3 id="gdFolderTitle" class="gd-title">Pilih Episode</h3>
+      <ul id="gdFolderList" class="gd-list"></ul>
+    </div>
+  </div>
+
   <script src="menu.js"></script>
   <script src="script.js"></script>
 </body>
