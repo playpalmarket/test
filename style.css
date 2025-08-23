@@ -1,192 +1,289 @@
-/* style.css — iOS-like, clean & subtle */
-:root{
-  /* iOS system look */
-  --bg:#F2F2F7;                  /* System grouped background */
-  --surface:#FFFFFF;             /* Card surface */
-  --text:#111111;                /* Primary label */
-  --muted:#6E6E73;               /* Secondary label */
-  --tint:#007AFF;                /* System Blue */
-  --separator:rgba(60,60,67,.18);/* iOS hairline */
-  --radius:12px;
-  --shadow:0 1px 2px rgba(0,0,0,.06); /* very subtle */
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
-}
+(function(){
+  // ========= CONFIG =========
+  const SHEET_ID='1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw';
+  const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'}};
+  const WA_NUMBER='6285877001999';
+  const WA_GREETING='*Detail pesanan:*';
 
-*{box-sizing:border-box}
-[hidden]{display:none !important}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family:var(--font);
-  color:var(--text);
-  background:var(--bg);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  -webkit-text-size-adjust:100%;
-}
-a{color:inherit;text-decoration:none}
+  let DATA=[],CATS=[],activeCat='',query='';
 
-/* ===== App Bar (Large Title style, minimal) ===== */
-.appbar{
-  position:sticky; top:0; z-index:40;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 14px; gap:12px;
-  background:rgba(249,249,250,.88);
-  backdrop-filter:saturate(1.1) blur(12px);
-  border-bottom:1px solid var(--separator);
-}
-.appbar-left{display:flex; align-items:center; gap:10px}
-.logo{width:28px; height:28px; border-radius:7px; object-fit:cover}
-.brand{display:flex; flex-direction:column; line-height:1.15}
-.brand strong{font-weight:700}
-.brand span{font-size:.78rem;color:var(--muted)}
+  // ========= ELEMENTS =========
+  const viewCatalog=document.getElementById('viewCatalog');
+  const viewPreorder=document.getElementById('viewPreorder');
 
-.appbar-right{display:flex; align-items:center; gap:8px}
-.icon-btn{
-  display:inline-grid; place-items:center;
-  min-width:36px; height:36px; padding:0;
-  border-radius:10px; border:1px solid var(--separator);
-  background:#fff; box-shadow:var(--shadow); transition:transform .15s ease;
-}
-.icon-btn:hover{transform:translateY(-1px)}
-.icon-btn:focus-visible{outline:2px solid color-mix(in oklab,var(--tint) 45%, transparent); outline-offset:2px}
+  const listEl=document.getElementById('list-container');
+  const searchEl=document.getElementById('search');
+  const countInfoEl=document.getElementById('countInfo');
+  const itemTmpl=document.getElementById('itemTmpl');
+  const errBox=document.getElementById('error');
 
-/* Burger — super simple */
-.icon-btn.burger span{
-  display:block; width:18px; height:2px; margin:3px 0;
-  background:#3A3A3C; border-radius:1px; transition:.18s ease;
-}
-.icon-btn.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(5px) rotate(45deg)}
-.icon-btn.burger[aria-expanded="true"] span:nth-child(2){opacity:0; transform:scaleX(0)}
-.icon-btn.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-5px) rotate(-45deg)}
+  const customSelectWrapper=document.getElementById('custom-select-wrapper');
+  const customSelectBtn=document.getElementById('custom-select-btn');
+  const customSelectValue=document.getElementById('custom-select-value');
+  const customSelectOptions=document.getElementById('custom-select-options');
 
-/* ===== Slide-in Menus (cards) ===== */
-.menu-panel{
-  position:fixed; top:12px; right:12px; width:min(92vw,340px);
-  background:var(--surface); border:1px solid var(--separator);
-  border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,.08);
-  transform:translateY(-8px); opacity:0; pointer-events:none;
-  transition:.18s ease; padding:12px; z-index:50;
-}
-.menu-panel.open{transform:none; opacity:1; pointer-events:auto}
-.menu-head{display:flex; align-items:center; justify-content:space-between; padding:4px 6px 10px; border-bottom:1px dashed var(--separator)}
-.menu-head h3{margin:0; font-size:1rem}
-.menu-body{display:grid; gap:8px; padding:10px 4px 6px}
-.menu-btn{
-  padding:10px 12px; border-radius:12px; border:1px solid var(--separator);
-  background:#fff; cursor:pointer; text-align:left; font-weight:600;
-}
-.menu-btn:hover{border-color:rgba(60,60,67,.28)}
-.menu-note{font-size:.82rem; color:var(--muted)}
+  const burgerCat=document.getElementById('burgerCat');
+  const burgerPO =document.getElementById('burgerPO');
+  const menuCat  =document.getElementById('menuCat');
+  const menuPO   =document.getElementById('menuPO');
 
-/* ===== Layout ===== */
-main{max-width:920px; margin:20px auto; padding:0 14px}
-.view{display:none}
-.view.active{display:block}
+  // ========= MENU =========
+  function closeAllMenus(){
+    [burgerCat,burgerPO].forEach(b=>b && b.classList.remove('active'));
+    [menuCat,menuPO].forEach(m=>m && m.classList.remove('open'));
+  }
+  function toggleMenu(which){
+    const btn = which==='cat'?burgerCat:burgerPO;
+    const menu= which==='cat'?menuCat:menuPO;
+    const open= menu.classList.contains('open');
+    closeAllMenus();
+    if(!open){ btn?.classList.add('active'); menu?.classList.add('open'); }
+  }
+  burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
+  burgerPO ?.addEventListener('click',()=>toggleMenu('po'));
+  document.getElementById('closeMenuCat')?.addEventListener('click',closeAllMenus);
+  document.getElementById('closeMenuPO') ?.addEventListener('click',closeAllMenus);
+  document.addEventListener('click',(e)=>{
+    const inside = (menuCat?.contains(e.target)||burgerCat?.contains(e.target)||menuPO?.contains(e.target)||burgerPO?.contains(e.target));
+    if(!inside) closeAllMenus();
+  });
 
-/* ===== Katalog Toolbar ===== */
-.toolbar{
-  display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:center;
-  margin-bottom:12px;
-}
-@media (max-width:720px){ .toolbar{grid-template-columns:1fr} }
+  function setMode(next){
+    viewCatalog.style.display = next==='katalog' ? 'block' : 'none';
+    viewPreorder.style.display= next==='preorder' ? 'block' : 'none';
+    closeAllMenus();
+    if(next==='preorder' && !poState.initialized) poInit();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  [...(menuCat?.querySelectorAll('.menu-btn[data-mode]')||[]),
+   ...(menuPO ?.querySelectorAll('.menu-btn[data-mode]')||[])]
+    .forEach(btn=>btn.addEventListener('click',()=>setMode(btn.getAttribute('data-mode'))));
 
-.custom-select{position:relative}
-.select-btn{
-  width:100%; height:44px; display:flex; align-items:center; justify-content:space-between; gap:8px;
-  padding:0 12px; border-radius:12px; border:1px solid var(--separator); background:#fff; font-weight:600;
-}
-.select-btn svg{opacity:.7}
-.select-options{
-  position:absolute; top:100%; left:0; right:0; margin-top:6px; z-index:10;
-  background:#fff; border:1px solid var(--separator); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.08);
-  max-height:280px; overflow:auto; display:none;
-}
-.custom-select.open .select-options{display:block}
-.custom-select .custom-select-option{padding:10px 12px; cursor:pointer}
-.custom-select .custom-select-option:hover{background:#F7F7F9}
-.custom-select .custom-select-option.selected{background:rgba(0,122,255,.08)}
+  // ========= UTILS =========
+  const prettyLabel=(raw)=>String(raw||'').trim().replace(/\s+/g,' ');
+  const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
+  const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+  const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
 
-.searchbox input{
-  width:100%; height:44px; padding:0 12px; border-radius:12px; border:1px solid var(--separator); background:#fff;
-}
-.searchbox input:focus-visible{outline:2px solid rgba(0,122,255,.35); outline-offset:2px}
-.count-info{justify-self:end; color:var(--muted); font-weight:600}
+  // ========= KATALOG =========
+  function parseGVizPairs(txt){
+    const m=txt.match(/\{.*\}/s); if(!m) throw new Error('Invalid GViz response.');
+    const obj=JSON.parse(m[0]); const table=obj.table||{}, rows=table.rows||[], cols=table.cols||[];
+    const pairs=Array.from({length:Math.floor(cols.length/2)},(_,i)=>({iTitle:i*2,iPrice:i*2+1,label:cols[i*2]?.label||''}))
+      .filter(p=>p.label&&cols[p.iPrice]);
+    const out=[];
+    for(const r of rows){ const c=r.c||[];
+      for(const p of pairs){
+        const title=String(c[p.iTitle]?.v||'').trim();
+        const priceRaw=c[p.iPrice]?.v; const price=(priceRaw!=null&&priceRaw!=='')?Number(priceRaw):NaN;
+        if(title&&!isNaN(price)) out.push({catKey:p.label,catLabel:prettyLabel(p.label),title,price});
+      }
+    }
+    return out;
+  }
 
-/* ===== Katalog List (cards like iOS lists) ===== */
-.list{
-  display:grid; gap:10px; grid-template-columns:1fr;
-}
-@media (min-width:768px){ .list{grid-template-columns:1fr 1fr} }
-@media (min-width:1024px){ .list{grid-template-columns:1fr 1fr 1fr} }
+  function toggleCustomSelect(open){
+    const isOpen=typeof open==='boolean'?open:!customSelectWrapper.classList.contains('open');
+    customSelectWrapper.classList.toggle('open',isOpen);
+    customSelectBtn.setAttribute('aria-expanded',isOpen);
+  }
+  customSelectBtn.addEventListener('click',()=>toggleCustomSelect());
+  document.addEventListener('click',(e)=>{
+    if(!customSelectWrapper.contains(e.target) && !customSelectBtn.contains(e.target)) toggleCustomSelect(false);
+  });
 
-.list-item{
-  display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px;
-  padding:12px 14px; border-radius:14px;
-  background:var(--surface); border:1px solid var(--separator); box-shadow:var(--shadow);
-}
-.list-item:hover{transform:translateY(-1px)}
-.list-item:focus-visible{outline:2px solid rgba(0,122,255,.35); outline-offset:3px}
-.list-item .title{font-weight:700}
-.list-item .subtitle{font-size:.85rem; color:var(--muted)}
-.list-item .price{font-weight:800; color:var(--tint)} /* no gradient */
+  function buildGameSelect(){
+    const map=new Map(); DATA.forEach(it=>{ if(!map.has(it.catKey)) map.set(it.catKey,it.catLabel); });
+    CATS=[...map].map(([key,label])=>({key,label}));
 
-/* ===== Empty / Loading / Error ===== */
-#error{margin:8px 0; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,59,48,.35); color:#D70015; background:#FFF9F9}
-.empty{padding:22px; text-align:center; color:var(--muted)}
-.loading{display:grid; place-items:center; gap:8px; padding:28px}
-.spinner{width:20px; height:20px; border-radius:50%; border:3px solid rgba(0,0,0,.06); border-top-color:var(--tint); animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(1turn)}}
+    customSelectOptions.innerHTML='';
+    CATS.forEach((c,idx)=>{
+      const el=document.createElement('div');
+      el.className='custom-select-option'; el.textContent=c.label; el.dataset.value=c.key; el.setAttribute('role','option');
+      if(idx===0) el.classList.add('selected');
+      el.addEventListener('click',()=>{
+        activeCat=c.key; customSelectValue.textContent=c.label;
+        document.querySelector('.custom-select-option.selected')?.classList.remove('selected');
+        el.classList.add('selected'); toggleCustomSelect(false); renderList();
+      });
+      customSelectOptions.appendChild(el);
+    });
 
-/* ===== Pre-Order ===== */
-.po-toolbar{
-  display:grid; grid-template-columns:180px 180px 1fr; gap:10px; margin-bottom:10px;
-}
-@media (max-width:720px){ .po-toolbar{grid-template-columns:1fr 1fr} .po-toolbar .grow{grid-column:1/-1} }
+    if(CATS.length>0){ activeCat=CATS[0].key; customSelectValue.textContent=CATS[0].label; }
+    else{ customSelectValue.textContent="Data tidak tersedia"; }
+  }
 
-.po-field{display:grid; gap:6px}
-.po-field span{font-size:.84rem;color:var(--muted)}
-.po-field select,.po-field input{
-  height:42px; border-radius:12px; border:1px solid var(--separator); background:#fff; padding:0 10px;
-}
-.po-field select:focus-visible,.po-field input:focus-visible{outline:2px solid rgba(0,122,255,.35); outline-offset:2px}
+  function renderList(){
+    const items=DATA.filter(x=>x.catKey===activeCat&&(query===''||x.title.toLowerCase().includes(query)||String(x.price).includes(query)));
+    listEl.innerHTML='';
+    if(items.length===0){ listEl.innerHTML=`<div class="empty">Tidak ada hasil ditemukan.</div>`; countInfoEl.textContent=''; return; }
+    const frag=document.createDocumentFragment();
+    for(const it of items){
+      const clone=itemTmpl.content.cloneNode(true);
+      const link=clone.querySelector('.list-item');
+      link.querySelector('.title').textContent=it.title;
+      link.querySelector('.price').textContent=toIDR(it.price);
+      const text=`${WA_GREETING}\n› Tipe: Katalog\n› Game: ${it.catLabel}\n› Item: ${it.title}\n› Harga: ${toIDR(it.price)}`;
+      link.href=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+      frag.appendChild(clone);
+    }
+    listEl.appendChild(frag);
+    countInfoEl.textContent=`${items.length} item ditemukan`;
+  }
 
-.po-list{display:grid; gap:10px}
-.card{
-  background:#fff; border:1px solid var(--separator); border-radius:14px; box-shadow:var(--shadow); padding:12px;
-  transition:transform .12s ease;
-}
-.card.clickable{cursor:pointer}
-.card-header{display:flex; align-items:center; justify-content:space-between; gap:10px}
-.card-name{font-weight:800}
-.card-product{font-size:.9rem; color:var(--muted)}
-.card-est{font-size:.86rem; color:var(--muted); margin-top:6px}
+  let debounceTimer;
+  searchEl.addEventListener('input',e=>{
+    clearTimeout(debounceTimer);
+    debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); },200);
+  });
 
-.status-badge{
-  font-weight:800; font-size:.78rem; padding:6px 10px; border-radius:999px; border:1px solid var(--separator);
-}
-.status-badge.success{background:rgba(52,199,89,.12); color:#1C6E2C}
-.status-badge.progress{background:rgba(255,204,0,.14); color:#6E5200}
-.status-badge.pending{background:rgba(142,142,147,.14); color:#3A3A3C}
-.status-badge.failed{background:rgba(255,59,48,.12); color:#7A0C0C}
+  async function loadCatalog(){
+    try{
+      errBox.style.display='none';
+      listEl.innerHTML=`<div class="empty">Memuat katalog...</div>`;
+      const res=await fetch(sheetUrlJSON(SHEETS.katalog.name),{cache:'no-store'});
+      if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
+      const txt=await res.text();
+      DATA=parseGVizPairs(txt);
+      if(DATA.length===0) throw new Error('Data kosong atau format kolom tidak sesuai.');
+      buildGameSelect(); renderList();
+    }catch(err){
+      console.error("Fetch Katalog failed:",err);
+      errBox.style.display='block'; errBox.textContent=`Gagal memuat data: ${err.message}`;
+    }
+  }
 
-.card-details{display:none; margin-top:10px}
-.card.expanded{transform:scale(1.01)}
-.card.expanded .card-details{display:block}
-.details-grid{display:grid; grid-template-columns:1fr 2fr; gap:8px}
-.detail-item{display:contents}
-.detail-label{color:var(--muted)}
-.detail-value{font-weight:600}
+  // ========= PRE-ORDER =========
+  const poSearch=document.getElementById('poSearch');
+  const poStatus=document.getElementById('poStatus');
+  const poSheet =document.getElementById('poSheet');
+  const poList  =document.getElementById('poList');
+  const poPrev  =document.getElementById('poPrev');
+  const poNext  =document.getElementById('poNext');
+  const poTotal =document.getElementById('poTotal');
 
-.po-pager{display:flex; align-items:center; justify-content:center; gap:12px; margin:10px 0}
-.btn{
-  padding:8px 12px; border-radius:12px; border:1px solid var(--separator);
-  background:#fff; cursor:pointer; font-weight:600;
-}
-.btn:hover{transform:translateY(-1px)}
-.btn:focus-visible{outline:2px solid rgba(0,122,255,.35); outline-offset:2px}
-.btn:disabled{opacity:.5; cursor:not-allowed}
-.po-total{font-weight:700; color:var(--muted)}
+  const poState={initialized:false,allData:[],currentPage:1,perPage:15};
 
-/* ===== Footer ===== */
-.footer{max-width:920px;margin:32px auto 22px; padding:0 14px; color:var(--muted); text-align:center}
+  // Kosongkan kolom sensitif (ID Gift & nomor telp/WA/HP)
+  const PRIVACY_KEYS=['id gift','gift id','gift','nomor','no','telepon','no telepon','no. telepon','nomor telepon','phone','hp','whatsapp','wa','no wa','no. wa'];
+  const isPrivacyKey=(k)=>{ const s=String(k||'').trim().toLowerCase(); return PRIVACY_KEYS.some(key=>s===key||s.includes(key)); };
+  const scrubRecord=(rec)=>{ const out={...rec}; for(const k of Object.keys(out)) if(isPrivacyKey(k)) out[k]=''; return out; };
+
+  const normalizeStatus=(raw)=>{ const s=String(raw||'').trim().toLowerCase();
+    if(['success','selesai','berhasil','done'].includes(s)) return 'success';
+    if(['progress','proses','diproses','processing'].includes(s)) return 'progress';
+    if(['failed','gagal','dibatalkan','cancel','error'].includes(s)) return 'failed';
+    return 'pending';
+  };
+
+  const poFilterData=()=>{ const q=poSearch.value.trim().toLowerCase(); const status=poStatus.value;
+    return poState.allData.filter(item=>{
+      const name=(item['Nickname']||'').toLowerCase();
+      const idServer=(item['ID Server']||'').toLowerCase();
+      const product=(item['Produk / Item']||item['Item']||'').toLowerCase();
+      const match=name.includes(q)||idServer.includes(q)||product.includes(q);
+      const s=normalizeStatus(item['Status']);
+      return match&&(status==='all'||s===status);
+    });
+  };
+
+  const poUpdatePagination=(cur,total)=>{ poPrev.disabled=cur<=1; poNext.disabled=cur>=total; };
+
+  const poRender=()=>{
+    const filtered=poFilterData();
+    const totalItems=poState.allData.length;
+    poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;
+
+    const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));
+    poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);
+    const start=(poState.currentPage-1)*poState.perPage;
+    const pageData=filtered.slice(start, start+poState.perPage);
+
+    poList.innerHTML='';
+    if(pageData.length===0){ poList.innerHTML=`<div class="empty-state"><p>Tidak Ada Hasil Ditemukan</p></div>`; poUpdatePagination(0,0); return; }
+
+    const frag=document.createDocumentFragment();
+    pageData.forEach(item=>{
+      const clean=scrubRecord(item);
+      const statusClass=normalizeStatus(clean['Status']);
+      const name=clean['Nickname']||clean['ID Server']||'Tanpa Nama';
+      const product=clean['Produk / Item']||clean['Item']||'N/A';
+      const estDelivery=clean['Est. Pengiriman']?`${clean['Est. Pengiriman']} 20:00 WIB`:''; // placeholder jam
+
+      const HIDE=new Set(['Nickname','ID Server','Produk / Item','Item','Status','Est. Pengiriman',...Object.keys(clean).filter(isPrivacyKey)]);
+      const detailsHtml=Object.entries(clean).filter(([k,v])=>v&&!HIDE.has(k)).map(([k,v])=>`
+        <div class="detail-item">
+          <div class="detail-label">${k}</div>
+          <div class="detail-value">${v}</div>
+        </div>`).join('');
+
+      const card=document.createElement('article');
+      card.className=`card ${detailsHtml?'clickable':''}`;
+      card.innerHTML=`
+        <div class="card-header">
+          <div>
+            <div class="card-name">${name}</div>
+            <div class="card-product">${product}</div>
+          </div>
+          <div class="status-badge ${statusClass}">${(clean['Status']||'Pending').toUpperCase()}</div>
+        </div>
+        ${estDelivery?`<div class="card-date">Estimasi Pengiriman: ${estDelivery}</div>`:''}
+        ${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}
+      `;
+      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
+      frag.appendChild(card);
+    });
+    poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
+  };
+
+  const poSortByStatus=(data)=>{ const order={'progress':1,'pending':2,'success':3,'failed':4};
+    return data.sort((a,b)=>order[normalizeStatus(a.Status)]-order[normalizeStatus(b.Status)]);
+  };
+
+  async function poFetch(sheetIndex0){
+    poTotal.textContent='Memuat data...';
+    poList.innerHTML=`<div class="loading"><div class="spinner"></div><p>Memuat data...</p></div>`;
+    try{
+      const res=await fetch(sheetUrlCSV(sheetIndex0),{cache:'no-store'});
+      if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
+      const text=await res.text();
+      const rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
+      if(rows.length<1){ poState.allData=[]; return; }
+
+      if(sheetIndex0===0){
+        const headers=rows.shift();
+        const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
+        poState.allData=poSortByStatus(mapped.map(scrubRecord));
+      }else{
+        const body=rows[0]?.length===3&&['id server','item','status'].includes(rows[0][0].toLowerCase())?rows.slice(1):rows;
+        const mapped=body.map(r=>({'ID Server':r[0]||'','Item':r[1]||'','Status':r[2]||''})).filter(item=>item['ID Server']);
+        poState.allData=poSortByStatus(mapped.map(scrubRecord));
+      }
+    }catch(e){
+      poState.allData=[]; poTotal.textContent='Gagal memuat data.'; console.error('Fetch Pre-Order failed:',e);
+    }finally{ poState.currentPage=1; poRender(); }
+  }
+
+  function poInit(){
+    const rebound=()=>{ poState.currentPage=1; poRender(); };
+    poSearch.addEventListener('input',rebound);
+    poStatus.addEventListener('change',rebound);
+    poSheet.addEventListener('change',e=>poFetch(parseInt(e.target.value,10)));
+    document.getElementById('poPrev').addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
+    document.getElementById('poNext').addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
+    poFetch(parseInt(poSheet.value,10) || 0);
+    poState.initialized=true;
+  }
+
+  // ========= START =========
+  loadCatalog();
+
+  // ========= ANTI‑ZOOM =========
+  window.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+  window.addEventListener('wheel', function (e) { if (e.ctrlKey || e.metaKey) e.preventDefault(); }, { passive:false });
+  window.addEventListener('keydown', function (e) {
+    const isZoomKey=['Equal','NumpadAdd','Minus','NumpadSubtract','Digit0','Numpad0'].includes(e.code);
+    if ((e.ctrlKey || e.metaKey) && isZoomKey) e.preventDefault();
+  });
+  (function(){ let last=0; document.addEventListener('touchend', function(e){ const now=Date.now(); if(now-last<=300){ e.preventDefault(); } last=now; }, {passive:false}); })();
+})();
