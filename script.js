@@ -4,7 +4,7 @@
   const SHEETS={
     katalog:{name:'Sheet3'},
     preorder:{name1:'Sheet1',name2:'Sheet2'},
-    film:{name:'Sheet4'} // kolom: Judul Film | Harga | Link | (opsional Poster)
+    film:{name:'Sheet4'} // Judul Film | Harga | Link | (optional Poster)
   };
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
@@ -16,7 +16,7 @@
   const viewPreorder=document.getElementById('viewPreorder');
   const viewFilm   =document.getElementById('viewFilm');
 
-  // katalog
+  // Katalog
   const listEl=document.getElementById('list-container');
   const searchEl=document.getElementById('search');
   const countInfoEl=document.getElementById('countInfo');
@@ -60,29 +60,7 @@
   const filmSelectOpts = document.getElementById('filmSelectOptions');
   const filmState = { initialized:false, data:[], selectedIndex:0 };
 
-  // ========= Modal Player Premium =========
-  const filmModal   = document.getElementById('filmModal');
-  const filmModalClose = document.getElementById('filmModalClose');
-  const filmModalBackdrop = document.getElementById('filmModalBackdrop');
-  const filmModalTitle = document.getElementById('filmModalTitle');
-  const pp = {
-    wrap: document.getElementById('ppPlayer'),
-    video: document.getElementById('ppVideo'),
-    play:  document.getElementById('ppPlay'),
-    back:  document.getElementById('ppBack'),
-    fwd:   document.getElementById('ppFwd'),
-    cur:   document.getElementById('ppCur'),
-    dur:   document.getElementById('ppDur'),
-    seek:  document.getElementById('ppSeek'),
-    vol:   document.getElementById('ppVol'),
-    mute:  document.getElementById('ppMute'),
-    fs:    document.getElementById('ppFs'),
-    pip:   document.getElementById('ppPip'),
-    bright:document.getElementById('ppBright'),
-    speed: document.getElementById('ppSpeed')
-  };
-
-  // ========= MENU (modul terpisah) =========
+  // ========= MENU =========
   function setMode(next){
     const show = (el, on) => { if(el) el.style.display = on ? 'block':'none'; };
     [viewCatalog,viewPreorder,viewFilm].forEach(v=>{ if(v){ v.style.transition='opacity 200ms var(--curve)'; v.style.opacity=0; }});
@@ -237,7 +215,7 @@
       const statusClass=normalizeStatus(clean['Status']);
       const name=clean['Nickname']||clean['ID Server']||'Tanpa Nama';
       const product=clean['Produk / Item']||clean['Item']||'N/A';
-      const estDelivery=clean['Est. Pengiriman']?`${clean['Est. Pengiriman']} 20:00 WIB`:''; // placeholder jam
+      const estDelivery=clean['Est. Pengiriman']?`${clean['Est. Pengiriman']} 20:00 WIB`:''; // placeholder
 
       const HIDE=new Set(['Nickname','ID Server','Produk / Item','Item','Status','Est. Pengiriman',...Object.keys(clean).filter(isPrivacyKey)]);
       const detailsHtml=Object.entries(clean).filter(([k,v])=>v&&!HIDE.has(k)).map(([k,v])=>`
@@ -277,7 +255,7 @@
         const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
         poState.allData=poSortByStatus(mapped.map(scrubRecord));
       }else{
-        // Sheet2 – skip 1 record pertama (mulai nomor 2)
+        // Sheet2 – skip baris data nomor 1 (mulai nomor 2)
         const body = rows[0]?.length===3 && ['id server','item','status'].includes(rows[0][0].toLowerCase())
           ? rows.slice(1) : rows;
         const trimmed = body.slice(1);
@@ -302,7 +280,7 @@
     poState.initialized=true;
   }
 
-  // ========= FILM (Sheet4, GRATIS) =========
+  // ========= FILM (Sheet4) =========
   function filmHeaderMap(headers){
     const map = {};
     headers.forEach((h,i)=>{
@@ -329,9 +307,8 @@
       a.href = '#';
       a.addEventListener('click', (e)=>{
         e.preventDefault();
-        openFilmModalPremium(it.title, it.link);
+        handleFilmClick(it); // ← Integrasi Google Drive Player/Folder
       });
-      // Hover/klik juga sinkronkan dropdown
       a.addEventListener('mouseover', ()=>filmSelectSet(idx), {passive:true});
       frag.appendChild(clone);
     });
@@ -404,154 +381,113 @@
     filmState.initialized = true;
   }
 
-  // ========= Premium Player Logic =========
-  function fmtTime(t){ if(!isFinite(t)) return '00:00';
-    const s=Math.floor(t%60), m=Math.floor(t/60)%60, h=Math.floor(t/3600);
-    return (h?`${h}:`:'')+`${m}`.padStart(2,'0')+':'+`${s}`.padStart(2,'0');
-  }
-  function extractDriveId(url){
-    if(!url) return null;
+  // ========= GOOGLE DRIVE PLAYER / FOLDER =========
+  // 1) ISI API KEY kamu di sini (Google Cloud → enable Drive API v3, buat API key Browser):
+  const DRIVE_API_KEY = 'PASTE_API_KEY_KAMU_DI_SINI';
+
+  // Ambil elemen overlay
+  const gdPlayer = document.getElementById('gdPlayer');
+  const gdStage = document.getElementById('gdStage');
+  const gdIframe = document.getElementById('gdIframe');
+  const gdTitle = document.getElementById('gdTitle');
+  const gdClose = document.getElementById('gdClose');
+  const gdPlayerBackdrop = document.getElementById('gdPlayerBackdrop');
+
+  const gdFolder = document.getElementById('gdFolder');
+  const gdFolderStage = document.getElementById('gdFolderStage');
+  const gdFolderTitle = document.getElementById('gdFolderTitle');
+  const gdFolderList = document.getElementById('gdFolderList');
+  const gdFolderClose = document.getElementById('gdFolderClose');
+  const gdFolderBackdrop = document.getElementById('gdFolderBackdrop');
+
+  function driveIdFromFile(url){
     const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
     const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     return (m1 && m1[1]) || (m2 && m2[1]) || null;
   }
-  function toDirectFile(url){
-    if (/\.(mp4|webm|m4v|mov)(\?|$)/i.test(url)) return url;
-    if (/\.m3u8(\?|$)/i.test(url)) return url;
-    const id = extractDriveId(url);
-    if (id) return `https://drive.google.com/uc?export=download&id=${id}`;
-    return url;
+  function driveIdFromFolder(url){
+    const m = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+    return m ? m[1] : null;
   }
-  function loadScript(src){
-    return new Promise((resolve,reject)=>{
-      const s=document.createElement('script'); s.src=src; s.async=true; s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
-    });
+  const isFolderLink = (url)=>/\/folders\//.test(url);
+
+  function openDriveFile(title, fileId){
+    gdTitle.textContent = title || 'Memuat…';
+    gdIframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
+    gdPlayer.classList.add('open');
+
+    const fsEl = gdStage;
+    if (fsEl.requestFullscreen) fsEl.requestFullscreen().catch(()=>{});
+    else if (fsEl.webkitRequestFullscreen) fsEl.webkitRequestFullscreen();
   }
-
-  async function openFilmModalPremium(title, url){
-    filmModalTitle.textContent = title || 'Menyiapkan pemutar…';
-    const direct = toDirectFile(url);
-    const isHls = /\.m3u8(\?|$)/i.test(direct);
-
-    // Bersihkan dulu
-    pp.video.pause();
-    pp.video.removeAttribute('src');
-    if (pp.video.hlsInstance){ try{ pp.video.hlsInstance.destroy(); }catch{} pp.video.hlsInstance=null; }
-
-    if(isHls){
-      // Native HLS (Safari/iOS) atau Hls.js
-      if (pp.video.canPlayType('application/vnd.apple.mpegurl')) {
-        pp.video.src = direct;
-      } else {
-        try{
-          if (typeof Hls === 'undefined') await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest');
-          if (typeof Hls !== 'undefined' && Hls.isSupported()){
-            const hls = new Hls({maxBufferLength:30});
-            hls.loadSource(direct);
-            hls.attachMedia(pp.video);
-            pp.video.hlsInstance = hls;
-          } else {
-            // fallback: coba langsung (beberapa Chrome bisa memainkan HLS langsung)
-            pp.video.src = direct;
-          }
-        }catch{
-          pp.video.src = direct;
-        }
-      }
-    }else{
-      pp.video.src = direct;
-    }
-
-    filmModal.classList.add('open');
-    document.body.style.overflow='hidden';
-
-    pp.video.playbackRate = Number(pp.speed.value) || 1;
-    pp.video.play().catch(()=>{ /* autoplay block → user bisa klik Play */ });
+  function closeDriveFile(){
+    gdPlayer.classList.remove('open');
+    gdIframe.src = '';
+    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   }
 
-  function closeFilmModal(){
-    filmModal.classList.remove('open');
-    document.body.style.overflow='';
-    try{ pp.video.pause(); }catch{}
-    if (pp.video.hlsInstance){ try{ pp.video.hlsInstance.destroy(); }catch{} pp.video.hlsInstance=null; }
-    pp.video.removeAttribute('src'); pp.video.load();
-  }
+  async function openDriveFolder(title, folderId){
+    gdFolderTitle.textContent = title || 'Pilih Episode';
+    gdFolderList.innerHTML = '<li><span class="name">Memuat episode…</span></li>';
+    gdFolder.classList.add('open');
 
-  // Modal events
-  filmModalClose?.addEventListener('click', closeFilmModal);
-  filmModalBackdrop?.addEventListener('click', closeFilmModal);
-  document.addEventListener('keydown',(e)=>{
-    if(!filmModal.classList.contains('open')) return;
-    const k=e.key.toLowerCase();
-    if(k==='escape'){ closeFilmModal(); }
-    if(k===' '){ e.preventDefault(); pp.video.paused?pp.video.play():pp.video.pause(); }
-    if(k==='arrowleft'){ pp.video.currentTime=Math.max(0,pp.video.currentTime-10); }
-    if(k==='arrowright'){ pp.video.currentTime=Math.min(pp.video.duration||1,pp.video.currentTime+10); }
-    if(k==='f'){ toggleFs(); }
-    if(k==='p'){ togglePip(); }
-    if(k==='m'){ pp.video.muted=!pp.video.muted; syncMuteIcon(); }
-    if(k==='>'||k==='.'){ changeSpeed(0.25); }
-    if(k==='<'||k===','){ changeSpeed(-0.25); }
-  });
-
-  // Player controls
-  pp.play.addEventListener('click', ()=> pp.video.paused?pp.video.play():pp.video.pause());
-  pp.back.addEventListener('click', ()=> pp.video.currentTime=Math.max(0,pp.video.currentTime-10));
-  pp.fwd .addEventListener('click', ()=> pp.video.currentTime=Math.min(pp.video.duration||1,pp.video.currentTime+10));
-  pp.video.addEventListener('play', ()=> pp.play.textContent='⏸');
-  pp.video.addEventListener('pause',()=> pp.play.textContent='▶');
-
-  pp.video.addEventListener('timeupdate',()=>{
-    pp.cur.textContent = fmtTime(pp.video.currentTime);
-    pp.dur.textContent = fmtTime(pp.video.duration);
-    if(pp.video.duration) pp.seek.value = (pp.video.currentTime/pp.video.duration)*100;
-  });
-  pp.seek.addEventListener('input', ()=>{
-    if(pp.video.duration) pp.video.currentTime = (pp.seek.value/100)*pp.video.duration;
-  });
-
-  pp.vol.addEventListener('input', ()=>{ pp.video.volume=Number(pp.vol.value); pp.video.muted = pp.video.volume===0; syncMuteIcon(); });
-  pp.mute.addEventListener('click', ()=>{ pp.video.muted=!pp.video.muted; syncMuteIcon(); });
-  function syncMuteIcon(){ pp.mute.textContent = (pp.video.muted||pp.video.volume===0)?'🔇':'🔊'; }
-
-  pp.speed.addEventListener('change', ()=>{ pp.video.playbackRate=Number(pp.speed.value)||1; });
-  function changeSpeed(delta){
-    const rates=[0.5,0.75,1,1.25,1.5,2];
-    const cur=Number(pp.speed.value)||1;
-    const idx = Math.max(0, Math.min(rates.length-1, rates.findIndex(r=>r===cur)+Math.sign(delta)));
-    pp.speed.value=String(rates[idx]); pp.video.playbackRate=rates[idx];
-  }
-
-  pp.bright.addEventListener('input', ()=>{
-    pp.wrap.style.filter = `brightness(${pp.bright.value})`;
-  });
-
-  async function togglePip(){
     try{
-      if(document.pictureInPictureElement){ await document.exitPictureInPicture(); }
-      else if(pp.video.requestPictureInPicture){ await pp.video.requestPictureInPicture(); }
-    }catch{}
+      const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+      const fields = encodeURIComponent('files(id,name,mimeType,modifiedTime,size)');
+      const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&orderBy=name&key=${DRIVE_API_KEY}`;
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error(`Gagal memuat folder: ${res.statusText}`);
+      const data = await res.json();
+
+      const files = (data.files || []).filter(f => f.mimeType.startsWith('video/') || f.mimeType === 'application/vnd.google-apps.file');
+
+      if(files.length === 0){
+        gdFolderList.innerHTML = '<li><span class="name">Folder kosong / tidak ada video.</span></li>';
+        return;
+      }
+
+      const fmt = (bytes)=> bytes ? `${(Number(bytes)/1e6).toFixed(1)} MB` : '';
+      gdFolderList.innerHTML = '';
+      files.forEach((f)=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="name">${f.name}</span><span class="meta">${(f.modifiedTime||'').slice(0,10)} ${fmt(f.size)}</span>`;
+        li.addEventListener('click', ()=>{
+          gdFolder.classList.remove('open');
+          openDriveFile(f.name, f.id);
+        }, {passive:true});
+        gdFolderList.appendChild(li);
+      });
+    }catch(e){
+      gdFolderList.innerHTML = `<li><span class="name">Gagal memuat folder. ${e.message}</span></li>`;
+    }
   }
-  function toggleFs(){
-    const el = document.fullscreenElement;
-    if(el) document.exitFullscreen(); else pp.wrap.requestFullscreen?.();
+  function closeDriveFolder(){ gdFolder.classList.remove('open'); }
+
+  gdClose?.addEventListener('click', closeDriveFile);
+  gdPlayerBackdrop?.addEventListener('click', closeDriveFile);
+  gdFolderClose?.addEventListener('click', closeDriveFolder);
+  gdFolderBackdrop?.addEventListener('click', closeDriveFolder);
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='Escape'){
+      if(gdPlayer.classList.contains('open')) closeDriveFile();
+      if(gdFolder.classList.contains('open')) closeDriveFolder();
+    }
+  });
+
+  function handleFilmClick(item){
+    const link = item.link || '';
+    const title = item.title || 'Film';
+    if (isFolderLink(link)){
+      const folderId = driveIdFromFolder(link);
+      if (folderId) openDriveFolder(title, folderId);
+    } else {
+      const fileId = driveIdFromFile(link);
+      if (fileId) openDriveFile(title, fileId);
+      else window.open(link, '_blank', 'noopener');
+    }
   }
-  pp.fs .addEventListener('click', toggleFs);
-  pp.pip.addEventListener('click', togglePip);
 
   // ========= START =========
-  setMode('katalog'); // ubah ke 'film' bila ingin default Film
+  setMode('katalog');
   loadCatalog();
-
-  // ========= ANTI‑ZOOM =========
-  window.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-  window.addEventListener('wheel', function (e) { if (e.ctrlKey || e.metaKey) e.preventDefault(); }, { passive:false });
-  window.addEventListener('keydown', function (e) {
-    const isZoomKey=['Equal','NumpadAdd','Minus','NumpadSubtract','Digit0','Numpad0'].includes(e.code);
-    if ((e.ctrlKey || e.metaKey) && isZoomKey) e.preventDefault();
-  });
-  (function(){ let last=0; document.addEventListener('touchend', function(e){ const now=Date.now(); if(now-last<=300){ e.preventDefault(); } last=now; }, {passive:false}); })();
-
-  // Init film setelah mode diubah ke 'film'
-  // (dipanggil otomatis oleh setMode ketika user memilih menu Film)
 })();
