@@ -24,28 +24,32 @@
       </div>
     </div>
 
-    <!-- Burger -->
-    <button id="burgerBtn" class="icon-btn" aria-label="Menu">
-      <span class="i-burger"></span>
-    </button>
+    <div class="header-actions">
+      <button id="refreshBtn" class="icon-btn" aria-label="Segarkan data"><span class="i-refresh"></span></button>
+      <button id="burgerBtn" class="icon-btn" aria-label="Menu"><span class="i-burger"></span></button>
+    </div>
 
-    <!-- Dropdown menu -->
-    <nav id="dropdown" class="dropdown hidden" aria-label="Navigasi utama">
-      <button class="dropdown-item" data-section="katalog">
-        <span class="i-grid"></span> Katalog
-      </button>
-      <button class="dropdown-item" data-section="preorder">
-        <span class="i-notes"></span> Pre-Order
-      </button>
+    <!-- Dropdown -->
+    <nav id="dropdown" class="dropdown hidden" aria-label="Navigasi">
+      <button class="dropdown-item" data-target="#katalog"><span class="dot"></span> Katalog</button>
+      <button class="dropdown-item" data-target="#preorder"><span class="dot"></span> Pre-Order</button>
+      <button class="dropdown-item" data-target="#film"><span class="dot"></span> Film</button>
+      <hr/>
+      <button class="dropdown-item" data-action="refresh"><span class="dot"></span> Segarkan Data</button>
     </nav>
   </header>
 
+  <!-- Tabs -->
+  <nav class="tabbar container" role="tablist" aria-label="Tampilan">
+    <button class="tab active" data-section="katalog" role="tab" aria-selected="true">Katalog</button>
+    <button class="tab" data-section="preorder" role="tab" aria-selected="false">Pre-Order</button>
+    <button class="tab" data-section="film" role="tab" aria-selected="false">Film</button>
+  </nav>
+
   <!-- Toolbar -->
-  <section class="toolbar">
+  <section class="toolbar container">
     <div class="select-wrap">
-      <select id="sheetSelect" aria-label="Pilih sheet">
-        <!-- otomatis terisi dari script -->
-      </select>
+      <select id="sheetSelect" aria-label="Pilih sheet"></select>
       <span class="i-caret"></span>
     </div>
 
@@ -55,23 +59,35 @@
     </div>
 
     <div class="filter-wrap">
-      <label for="statusFilter" class="filter-label">Semua Status</label>
+      <label for="statusFilter" class="filter-label">Status</label>
       <select id="statusFilter" aria-label="Filter status">
-        <option value="">Semua Status</option>
-        <option value="PROGRESS">PROGRESS</option>
+        <option value="">Semua</option>
         <option value="SUCCESS">SUCCESS</option>
+        <option value="PROGRESS">PROGRESS</option>
         <option value="PENDING">PENDING</option>
         <option value="FAILED">FAILED</option>
       </select>
     </div>
+
+    <div class="select-wrap">
+      <select id="sortSelect" aria-label="Urutkan">
+        <option value="name-asc">Nama A–Z</option>
+        <option value="name-desc">Nama Z–A</option>
+        <option value="status">Status</option>
+      </select>
+      <span class="i-caret"></span>
+    </div>
   </section>
 
-  <!-- Info total -->
-  <div class="total-pesanan" id="totalInfo">0 total pesanan</div>
+  <!-- Meta -->
+  <div class="container meta-row">
+    <div class="total-pesanan" id="totalInfo">0 total pesanan</div>
+    <button id="loadMoreBtn" class="ghost-btn hidden">Muat lebih banyak</button>
+  </div>
 
-  <!-- Sections (di-toggle, tidak pernah dihancurkan) -->
-  <main>
-    <section id="katalog" class="section active" aria-labelledby="katalogTitle">
+  <!-- Main -->
+  <main class="container">
+    <section id="katalog" class="section is-active" aria-labelledby="katalogTitle">
       <h2 id="katalogTitle" class="sr-only">Katalog</h2>
       <div id="listKatalog" class="card-list" role="list"></div>
     </section>
@@ -80,9 +96,20 @@
       <h2 id="preorderTitle" class="sr-only">Pre-Order</h2>
       <div id="listPreorder" class="card-list" role="list"></div>
     </section>
+
+    <section id="film" class="section" aria-labelledby="filmTitle">
+      <h2 id="filmTitle" class="sr-only">Film</h2>
+      <div id="listFilm" class="card-list" role="list"></div>
+    </section>
   </main>
 
-  <!-- Toast -->
+  <!-- Overlays -->
+  <div id="loader" class="loader hidden" aria-hidden="true">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </div>
+
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="./script.js"></script>
