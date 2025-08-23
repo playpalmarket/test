@@ -23,7 +23,6 @@
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
-            <!-- Custom select kategori game -->
             <div class="custom-select-wrapper" id="custom-select-wrapper">
               <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
@@ -34,7 +33,6 @@
               <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
             </div>
 
-            <!-- Burger (diisi dinamis oleh menu.js) -->
             <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
               <span class="line"></span><span class="line"></span><span class="line"></span>
             </button>
@@ -74,7 +72,6 @@
               <option value="1">Pesanan Umum</option>
             </select>
 
-            <!-- Burger (diisi dinamis oleh menu.js) -->
             <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
               <span class="line"></span><span class="line"></span><span class="line"></span>
             </button>
@@ -113,12 +110,22 @@
       </div>
     </section>
 
-    <!-- ============ FILM (bayar seikhlasnya via Saweria) ============ -->
-    <section id="viewFilm" aria-label="Film Berbayar" style="display:none">
+    <!-- ============ FILM (Gratis) ============ -->
+    <section id="viewFilm" aria-label="Film" style="display:none">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
-            <div></div><!-- spacer -->
+            <!-- Dropdown film -->
+            <div class="custom-select-wrapper" id="filmSelectWrap">
+              <button class="custom-select-btn" id="filmSelectBtn" aria-haspopup="listbox" aria-expanded="false">
+                <span id="filmSelectValue">Pilih Film</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <div class="custom-select-options" id="filmSelectOptions" role="listbox"></div>
+            </div>
+
             <button class="icon-btn burger" id="burgerFilm" aria-label="Menu" aria-expanded="false" type="button">
               <span class="line"></span><span class="line"></span><span class="line"></span>
             </button>
@@ -127,26 +134,9 @@
         </div>
       </div>
 
-      <!-- GATE PEMBAYARAN -->
-      <section id="filmGate" class="list-container" data-rail>
-        <article class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-name">Tonton Film (Bayar Seikhlasnya*)</div>
-              <div class="card-product">Minimal sesuai ketentuan di Saweria</div>
-            </div>
-          </div>
-          <div class="card-date">Setelah bayar &amp; scan QR, kamu akan diarahkan kembali dan link film otomatis tampil.</div>
-          <div style="display:flex; gap:10px; margin-top:12px;">
-            <a id="btnSaweria" class="pagination-btn" href="#" target="_blank" rel="noopener">Bayar via Saweria</a>
-            <button id="btnSudahBayar" class="pagination-btn">Saya sudah bayar</button>
-          </div>
-        </article>
-      </section>
-
-      <!-- LIST FILM -->
       <div id="filmMeta" class="meta" data-rail></div>
       <section id="filmList" class="list-container" aria-live="polite" data-rail style="display:none"></section>
+
       <template id="filmTmpl">
         <a class="list-item" target="_blank" rel="noopener">
           <span class="title"></span>
@@ -156,7 +146,6 @@
     </section>
   </main>
 
-  <!-- Modul menu harus lebih dulu agar dipakai oleh script.js -->
   <script src="menu.js"></script>
   <script src="script.js"></script>
 </body>
