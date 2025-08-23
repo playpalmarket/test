@@ -260,10 +260,14 @@
       if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
       const text=await res.text();
       const rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
-      if(rows.length<1){ poState.allData=[]; return; }
+      if(rows.length < 2){ // Butuh setidaknya 1 baris header dan 1 baris data
+        poState.allData=[];
+        return;
+      }
 
-      const headers=rows.shift();
-      const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
+      const headers=rows.shift(); // Ambil baris pertama sebagai header
+      const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val])))
+        .filter(item=>(item[headers[0]] || '').trim() !== ''); // Filter baris kosong
       poState.allData=poSortByStatus(mapped.map(scrubRecord));
 
     }catch(e){
