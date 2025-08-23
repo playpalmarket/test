@@ -1,17 +1,14 @@
 // menu.js
-// Modul mandiri untuk mekanisme burger + daftar menu (modular & reusable)
 (function (global) {
-  // ====== Konfigurasi awal menu ======
+  // Menu sekarang: Film gratis, + Donasi (Saweria)
   const MENU_ITEMS = [
     { id:'toKatalog',  label:'Katalog',         type:'route', value:'katalog' },
     { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
     { divider:true },
-    // Route baru: Tonton Film
-    { id:'film', label:'Tonton Film (Bayar Seikhlasnya*)', type:'route', value:'film' },
-    // Placeholder lain
+    { id:'film',    label:'Tonton Film (Gratis)',  type:'route', value:'film' },
+    { id:'donasi',  label:'Donasi (Saweria)',      type:'link',  href:'https://saweria.co/playpal' },
     { id:'ebook',   label:'E‑book',        type:'link', href:'#' },
-    { id:'assets',  label:'Asset Editing', type:'link', href:'#' },
-    { id:'lainnya', label:'Menu Lainnya',  type:'link', href:'#' }
+    { id:'assets',  label:'Asset Editing', type:'link', href:'#' }
   ];
 
   function renderMenu(container, items, onRoute, closeAll) {
@@ -28,7 +25,6 @@
       btn.className = 'menu-btn';
       btn.type = 'button';
       btn.textContent = item.label;
-
       if (item.type === 'route') {
         btn.addEventListener('click', () => { onRoute?.(item.value); closeAll(); });
       } else {
@@ -50,9 +46,8 @@
     };
 
     [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
-
-    burgerCat?.addEventListener('click', () => toggle(burgerCat, menuCat), { passive:true });
-    burgerPO ?.addEventListener('click', () => toggle(burgerPO , menuPO ), { passive:true });
+    burgerCat ?.addEventListener('click', () => toggle(burgerCat, menuCat),  { passive:true });
+    burgerPO  ?.addEventListener('click', () => toggle(burgerPO , menuPO ),  { passive:true });
     burgerFilm?.addEventListener('click', () => toggle(burgerFilm, menuFilm), { passive:true });
 
     document.addEventListener('click', (e) => {
@@ -63,7 +58,6 @@
       if (!inside) closeAll();
     }, { passive:true });
 
-    // API publik
     return {
       closeAll,
       get items(){ return [...MENU_ITEMS]; },
