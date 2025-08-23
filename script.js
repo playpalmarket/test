@@ -1,7 +1,11 @@
 (function(){
   // ========= CONFIG =========
   const SHEET_ID='1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw';
-  const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'}, film:{name:'Sheet4'}};
+  const SHEETS={
+    katalog:{name:'Sheet3'},
+    preorder:{name1:'Sheet1',name2:'Sheet2'},
+    film:{name:'Sheet4'} // kolom: Judul Film | Harga | Link | (opsional Poster)
+  };
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
 
@@ -32,16 +36,51 @@
   const menuPO   =document.getElementById('menuPO');
   const menuFilm =document.getElementById('menuFilm');
 
-  // FILM elements
+  // ========= PRE‑ORDER =========
+  const poSearch=document.getElementById('poSearch');
+  const poStatus=document.getElementById('poStatus');
+  const poSheet =document.getElementById('poSheet');
+  const poList  =document.getElementById('poList');
+  const poPrev  =document.getElementById('poPrev');
+  const poNext  =document.getElementById('poNext');
+  const poTotal =document.getElementById('poTotal');
+  const poState={initialized:false,allData:[],currentPage:1,perPage:15};
+
+  const PRIVACY_KEYS=['id gift','gift id','gift','nomor','no','telepon','no telepon','no. telepon','nomor telepon','phone','hp','whatsapp','wa','no wa','no. wa'];
+  const isPrivacyKey=(k)=>{ const s=String(k||'').trim().toLowerCase(); return PRIVACY_KEYS.some(key=>s===key||s.includes(key)); };
+  const scrubRecord=(rec)=>{ const out={...rec}; for(const k of Object.keys(out)) if(isPrivacyKey(k)) out[k]=''; return out; };
+
+  // ========= FILM =========
   const filmMeta   = document.getElementById('filmMeta');
   const filmList   = document.getElementById('filmList');
   const filmTmpl   = document.getElementById('filmTmpl');
-
-  // Dropdown film
   const filmSelectWrap = document.getElementById('filmSelectWrap');
   const filmSelectBtn  = document.getElementById('filmSelectBtn');
   const filmSelectVal  = document.getElementById('filmSelectValue');
   const filmSelectOpts = document.getElementById('filmSelectOptions');
+  const filmState = { initialized:false, data:[], selectedIndex:0 };
+
+  // ========= Modal Player Premium =========
+  const filmModal   = document.getElementById('filmModal');
+  const filmModalClose = document.getElementById('filmModalClose');
+  const filmModalBackdrop = document.getElementById('filmModalBackdrop');
+  const filmModalTitle = document.getElementById('filmModalTitle');
+  const pp = {
+    wrap: document.getElementById('ppPlayer'),
+    video: document.getElementById('ppVideo'),
+    play:  document.getElementById('ppPlay'),
+    back:  document.getElementById('ppBack'),
+    fwd:   document.getElementById('ppFwd'),
+    cur:   document.getElementById('ppCur'),
+    dur:   document.getElementById('ppDur'),
+    seek:  document.getElementById('ppSeek'),
+    vol:   document.getElementById('ppVol'),
+    mute:  document.getElementById('ppMute'),
+    fs:    document.getElementById('ppFs'),
+    pip:   document.getElementById('ppPip'),
+    bright:document.getElementById('ppBright'),
+    speed: document.getElementById('ppSpeed')
+  };
 
   // ========= MENU (modul terpisah) =========
   function setMode(next){
@@ -68,6 +107,14 @@
   const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
   const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
   const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
+
+  function normalizeStatus(raw){
+    const s=String(raw||'').trim().toLowerCase();
+    if(['success','selesai','berhasil','done'].includes(s)) return 'success';
+    if(['progress','proses','diproses','processing'].includes(s)) return 'progress';
+    if(['failed','gagal','dibatalkan','cancel','error'].includes(s)) return 'failed';
+    return 'pending';
+  }
 
   // ========= KATALOG =========
   function parseGVizPairs(txt){
@@ -158,27 +205,6 @@
   }
 
   // ========= PRE‑ORDER =========
-  const poSearch=document.getElementById('poSearch');
-  const poStatus=document.getElementById('poStatus');
-  const poSheet =document.getElementById('poSheet');
-  const poList  =document.getElementById('poList');
-  const poPrev  =document.getElementById('poPrev');
-  const poNext  =document.getElementById('poNext');
-  const poTotal =document.getElementById('poTotal');
-
-  const poState={initialized:false,allData:[],currentPage:1,perPage:15};
-
-  const PRIVACY_KEYS=['id gift','gift id','gift','nomor','no','telepon','no telepon','no. telepon','nomor telepon','phone','hp','whatsapp','wa','no wa','no. wa'];
-  const isPrivacyKey=(k)=>{ const s=String(k||'').trim().toLowerCase(); return PRIVACY_KEYS.some(key=>s===key||s.includes(key)); };
-  const scrubRecord=(rec)=>{ const out={...rec}; for(const k of Object.keys(out)) if(isPrivacyKey(k)) out[k]=''; return out; };
-
-  const normalizeStatus=(raw)=>{ const s=String(raw||'').trim().toLowerCase();
-    if(['success','selesai','berhasil','done'].includes(s)) return 'success';
-    if(['progress','proses','diproses','processing'].includes(s)) return 'progress';
-    if(['failed','gagal','dibatalkan','cancel','error'].includes(s)) return 'failed';
-    return 'pending';
-  };
-
   const poFilterData=()=>{ const q=poSearch.value.trim().toLowerCase(); const status=poStatus.value;
     return poState.allData.filter(item=>{
       const name=(item['Nickname']||'').toLowerCase();
@@ -189,8 +215,8 @@
       return match&&(status==='all'||s===status);
     });
   };
-
   const poUpdatePagination=(cur,total)=>{ poPrev.disabled=cur<=1; poNext.disabled=cur>=total; };
+  const poSortByStatus=(data)=>{ const order={'progress':1,'pending':2,'success':3,'failed':4}; return data.sort((a,b)=>order[normalizeStatus(a.Status)]-order[normalizeStatus(b.Status)]); };
 
   const poRender=()=>{
     const filtered=poFilterData();
@@ -215,10 +241,7 @@
 
       const HIDE=new Set(['Nickname','ID Server','Produk / Item','Item','Status','Est. Pengiriman',...Object.keys(clean).filter(isPrivacyKey)]);
       const detailsHtml=Object.entries(clean).filter(([k,v])=>v&&!HIDE.has(k)).map(([k,v])=>`
-        <div class="detail-item">
-          <div class="detail-label">${k}</div>
-          <div class="detail-value">${v}</div>
-        </div>`).join('');
+        <div class="detail-item"><div class="detail-label">${k}</div><div class="detail-value">${v}</div></div>`).join('');
 
       const card=document.createElement('article');
       card.className=`card ${detailsHtml?'clickable':''}`;
@@ -239,10 +262,6 @@
     poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
   };
 
-  const poSortByStatus=(data)=>{ const order={'progress':1,'pending':2,'success':3,'failed':4};
-    return data.sort((a,b)=>order[normalizeStatus(a.Status)]-order[normalizeStatus(b.Status)]);
-  };
-
   async function poFetch(sheetIndex0){
     poTotal.textContent='Memuat data...';
     poList.innerHTML=`<div class="empty">Memuat data...</div>`;
@@ -258,10 +277,10 @@
         const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
         poState.allData=poSortByStatus(mapped.map(scrubRecord));
       }else{
+        // Sheet2 – skip 1 record pertama (mulai nomor 2)
         const body = rows[0]?.length===3 && ['id server','item','status'].includes(rows[0][0].toLowerCase())
-          ? rows.slice(1)
-          : rows;
-        const trimmed = body.slice(1); // skip nomor 1
+          ? rows.slice(1) : rows;
+        const trimmed = body.slice(1);
         const mapped = trimmed
           .map(r=>({'ID Server':r[0]||'','Item':r[1]||'','Status':r[2]||''}))
           .filter(item=>item['ID Server']);
@@ -284,17 +303,36 @@
   }
 
   // ========= FILM (Sheet4, GRATIS) =========
-  const filmState = { initialized:false, data:[], selectedIndex:0 };
+  function filmHeaderMap(headers){
+    const map = {};
+    headers.forEach((h,i)=>{
+      const k = String(h||'').trim().toLowerCase();
+      map[k]=i;
+    });
+    const idx = {
+      title: map['judul film'] ?? map['judul'] ?? map['title'] ?? 0,
+      price: map['harga'] ?? 1,
+      link : map['link'] ?? 2,
+      poster: map['poster'] ?? map['thumbnail'] ?? undefined
+    };
+    return idx;
+  }
 
   function filmRenderList(){
     filmList.innerHTML = '';
     const frag = document.createDocumentFragment();
-    filmState.data.forEach((it)=>{
+    filmState.data.forEach((it, idx)=>{
       const clone = filmTmpl.content.cloneNode(true);
       const a = clone.querySelector('.list-item');
       a.querySelector('.title').textContent = it.title;
       a.querySelector('.price').textContent = it.price || '';
-      a.href = it.link; // langsung aktif (gratis)
+      a.href = '#';
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        openFilmModalPremium(it.title, it.link);
+      });
+      // Hover/klik juga sinkronkan dropdown
+      a.addEventListener('mouseover', ()=>filmSelectSet(idx), {passive:true});
       frag.appendChild(clone);
     });
     filmList.appendChild(frag);
@@ -344,10 +382,16 @@
       if(!res.ok) throw new Error(res.statusText);
       const text = await res.text();
       const rows = text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
+      if(rows.length<2){ filmState.data=[]; filmRenderList(); return; }
+      const headers = rows[0];
+      const idx = filmHeaderMap(headers);
       const body = rows.slice(1);
-      filmState.data = body
-        .map(r => ({ title:r[0]||'', price:r[1]||'', link:r[2]||'' }))
-        .filter(x => x.title && x.link);
+      filmState.data = body.map(r => ({
+        title : r[idx.title] || '',
+        price : r[idx.price] || '',
+        link  : r[idx.link]  || '',
+        poster: idx.poster!=null ? (r[idx.poster] || '') : ''
+      })).filter(x => x.title && x.link);
       filmSelectBuild();
       filmRenderList();
     }catch(e){
@@ -360,8 +404,143 @@
     filmState.initialized = true;
   }
 
+  // ========= Premium Player Logic =========
+  function fmtTime(t){ if(!isFinite(t)) return '00:00';
+    const s=Math.floor(t%60), m=Math.floor(t/60)%60, h=Math.floor(t/3600);
+    return (h?`${h}:`:'')+`${m}`.padStart(2,'0')+':'+`${s}`.padStart(2,'0');
+  }
+  function extractDriveId(url){
+    if(!url) return null;
+    const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    return (m1 && m1[1]) || (m2 && m2[1]) || null;
+  }
+  function toDirectFile(url){
+    if (/\.(mp4|webm|m4v|mov)(\?|$)/i.test(url)) return url;
+    if (/\.m3u8(\?|$)/i.test(url)) return url;
+    const id = extractDriveId(url);
+    if (id) return `https://drive.google.com/uc?export=download&id=${id}`;
+    return url;
+  }
+  function loadScript(src){
+    return new Promise((resolve,reject)=>{
+      const s=document.createElement('script'); s.src=src; s.async=true; s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
+    });
+  }
+
+  async function openFilmModalPremium(title, url){
+    filmModalTitle.textContent = title || 'Menyiapkan pemutar…';
+    const direct = toDirectFile(url);
+    const isHls = /\.m3u8(\?|$)/i.test(direct);
+
+    // Bersihkan dulu
+    pp.video.pause();
+    pp.video.removeAttribute('src');
+    if (pp.video.hlsInstance){ try{ pp.video.hlsInstance.destroy(); }catch{} pp.video.hlsInstance=null; }
+
+    if(isHls){
+      // Native HLS (Safari/iOS) atau Hls.js
+      if (pp.video.canPlayType('application/vnd.apple.mpegurl')) {
+        pp.video.src = direct;
+      } else {
+        try{
+          if (typeof Hls === 'undefined') await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest');
+          if (typeof Hls !== 'undefined' && Hls.isSupported()){
+            const hls = new Hls({maxBufferLength:30});
+            hls.loadSource(direct);
+            hls.attachMedia(pp.video);
+            pp.video.hlsInstance = hls;
+          } else {
+            // fallback: coba langsung (beberapa Chrome bisa memainkan HLS langsung)
+            pp.video.src = direct;
+          }
+        }catch{
+          pp.video.src = direct;
+        }
+      }
+    }else{
+      pp.video.src = direct;
+    }
+
+    filmModal.classList.add('open');
+    document.body.style.overflow='hidden';
+
+    pp.video.playbackRate = Number(pp.speed.value) || 1;
+    pp.video.play().catch(()=>{ /* autoplay block → user bisa klik Play */ });
+  }
+
+  function closeFilmModal(){
+    filmModal.classList.remove('open');
+    document.body.style.overflow='';
+    try{ pp.video.pause(); }catch{}
+    if (pp.video.hlsInstance){ try{ pp.video.hlsInstance.destroy(); }catch{} pp.video.hlsInstance=null; }
+    pp.video.removeAttribute('src'); pp.video.load();
+  }
+
+  // Modal events
+  filmModalClose?.addEventListener('click', closeFilmModal);
+  filmModalBackdrop?.addEventListener('click', closeFilmModal);
+  document.addEventListener('keydown',(e)=>{
+    if(!filmModal.classList.contains('open')) return;
+    const k=e.key.toLowerCase();
+    if(k==='escape'){ closeFilmModal(); }
+    if(k===' '){ e.preventDefault(); pp.video.paused?pp.video.play():pp.video.pause(); }
+    if(k==='arrowleft'){ pp.video.currentTime=Math.max(0,pp.video.currentTime-10); }
+    if(k==='arrowright'){ pp.video.currentTime=Math.min(pp.video.duration||1,pp.video.currentTime+10); }
+    if(k==='f'){ toggleFs(); }
+    if(k==='p'){ togglePip(); }
+    if(k==='m'){ pp.video.muted=!pp.video.muted; syncMuteIcon(); }
+    if(k==='>'||k==='.'){ changeSpeed(0.25); }
+    if(k==='<'||k===','){ changeSpeed(-0.25); }
+  });
+
+  // Player controls
+  pp.play.addEventListener('click', ()=> pp.video.paused?pp.video.play():pp.video.pause());
+  pp.back.addEventListener('click', ()=> pp.video.currentTime=Math.max(0,pp.video.currentTime-10));
+  pp.fwd .addEventListener('click', ()=> pp.video.currentTime=Math.min(pp.video.duration||1,pp.video.currentTime+10));
+  pp.video.addEventListener('play', ()=> pp.play.textContent='⏸');
+  pp.video.addEventListener('pause',()=> pp.play.textContent='▶');
+
+  pp.video.addEventListener('timeupdate',()=>{
+    pp.cur.textContent = fmtTime(pp.video.currentTime);
+    pp.dur.textContent = fmtTime(pp.video.duration);
+    if(pp.video.duration) pp.seek.value = (pp.video.currentTime/pp.video.duration)*100;
+  });
+  pp.seek.addEventListener('input', ()=>{
+    if(pp.video.duration) pp.video.currentTime = (pp.seek.value/100)*pp.video.duration;
+  });
+
+  pp.vol.addEventListener('input', ()=>{ pp.video.volume=Number(pp.vol.value); pp.video.muted = pp.video.volume===0; syncMuteIcon(); });
+  pp.mute.addEventListener('click', ()=>{ pp.video.muted=!pp.video.muted; syncMuteIcon(); });
+  function syncMuteIcon(){ pp.mute.textContent = (pp.video.muted||pp.video.volume===0)?'🔇':'🔊'; }
+
+  pp.speed.addEventListener('change', ()=>{ pp.video.playbackRate=Number(pp.speed.value)||1; });
+  function changeSpeed(delta){
+    const rates=[0.5,0.75,1,1.25,1.5,2];
+    const cur=Number(pp.speed.value)||1;
+    const idx = Math.max(0, Math.min(rates.length-1, rates.findIndex(r=>r===cur)+Math.sign(delta)));
+    pp.speed.value=String(rates[idx]); pp.video.playbackRate=rates[idx];
+  }
+
+  pp.bright.addEventListener('input', ()=>{
+    pp.wrap.style.filter = `brightness(${pp.bright.value})`;
+  });
+
+  async function togglePip(){
+    try{
+      if(document.pictureInPictureElement){ await document.exitPictureInPicture(); }
+      else if(pp.video.requestPictureInPicture){ await pp.video.requestPictureInPicture(); }
+    }catch{}
+  }
+  function toggleFs(){
+    const el = document.fullscreenElement;
+    if(el) document.exitFullscreen(); else pp.wrap.requestFullscreen?.();
+  }
+  pp.fs .addEventListener('click', toggleFs);
+  pp.pip.addEventListener('click', togglePip);
+
   // ========= START =========
-  setMode('film');   // ubah ke 'katalog' bila ingin default ke katalog
+  setMode('katalog'); // ubah ke 'film' bila ingin default Film
   loadCatalog();
 
   // ========= ANTI‑ZOOM =========
@@ -372,4 +551,7 @@
     if ((e.ctrlKey || e.metaKey) && isZoomKey) e.preventDefault();
   });
   (function(){ let last=0; document.addEventListener('touchend', function(e){ const now=Date.now(); if(now-last<=300){ e.preventDefault(); } last=now; }, {passive:false}); })();
+
+  // Init film setelah mode diubah ke 'film'
+  // (dipanggil otomatis oleh setMode ketika user memilih menu Film)
 })();
