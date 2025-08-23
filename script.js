@@ -77,7 +77,7 @@
     container.appendChild(frag);
   }
 
-  // ========= KATALOG =========
+  // ========= KATALOG (TETAP PAKAI NAMA KOLOM UNTUK FLEKSIBILITAS KATEGORI) =========
   function parseGVizPairs(txt){
     const m=txt.match(/\{.*\}/s); if(!m) throw new Error('Invalid GViz response.');
     const obj=JSON.parse(m[0]); const table=obj.table||{}, rows=table.rows||[], cols=table.cols||[];
@@ -136,7 +136,7 @@
       link.querySelector('.title').textContent=it.title;
       link.querySelector('.price').textContent=toIDR(it.price);
       const text=`${WA_GREETING}\n› Tipe: Katalog\n› Game: ${it.catLabel}\n› Item: ${it.title}\n› Harga: ${toIDR(it.price)}`;
-      link.href=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+      link.href=`https.wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
       frag.appendChild(clone);
     }
     listEl.appendChild(frag);
@@ -166,7 +166,7 @@
     }
   }
 
-  // ========= PRE-ORDER =========
+  // ========= PRE-ORDER (MODIFIKASI: BACA BERDASARKAN URUTAN KOLOM A, B, C) =========
   const poSearch=document.getElementById('poSearch');
   const poStatus=document.getElementById('poStatus');
   const poSheet =document.getElementById('poSheet');
@@ -177,10 +177,6 @@
 
   const poState={initialized:false,allData:[],currentPage:1,perPage:15};
 
-  const PRIVACY_KEYS=['id gift','gift id','gift','nomor','no','telepon','no telepon','no. telepon','nomor telepon','phone','hp','whatsapp','wa','no wa','no. wa'];
-  const isPrivacyKey=(k)=>{ const s=String(k||'').trim().toLowerCase(); return PRIVACY_KEYS.some(key=>s===key||s.includes(key)); };
-  const scrubRecord=(rec)=>{ const out={...rec}; for(const k of Object.keys(out)) if(isPrivacyKey(k)) out[k]=''; return out; };
-
   const normalizeStatus=(raw)=>{ const s=String(raw||'').trim().toLowerCase();
     if(['success','selesai','berhasil','done'].includes(s)) return 'success';
     if(['progress','proses','diproses','processing'].includes(s)) return 'progress';
@@ -188,14 +184,15 @@
     return 'pending';
   };
 
-  const poFilterData=()=>{ const q=poSearch.value.trim().toLowerCase(); const status=poStatus.value;
+  const poFilterData=()=>{
+    const q=poSearch.value.trim().toLowerCase();
+    const status=poStatus.value;
     return poState.allData.filter(item=>{
-      const name=(item['Nickname']||'').toLowerCase();
-      const idServer=(item['ID Server']||'').toLowerCase();
-      const product=(item['Produk / Item']||item['Item']||'').toLowerCase();
-      const match=name.includes(q)||idServer.includes(q)||product.includes(q);
-      const s=normalizeStatus(item['Status']);
-      return match&&(status==='all'||s===status);
+      const idOrName = (item[0] || '').toLowerCase(); // Kolom A
+      const product  = (item[1] || '').toLowerCase(); // Kolom B
+      const match = idOrName.includes(q) || product.includes(q);
+      const s = normalizeStatus(item[2]); // Kolom C
+      return match && (status === 'all' || s === status);
     });
   };
 
@@ -216,40 +213,33 @@
 
     const frag=document.createDocumentFragment();
     pageData.forEach(item=>{
-      const clean=scrubRecord(item);
-      const statusClass=normalizeStatus(clean['Status']);
-      const name=clean['Nickname']||clean['ID Server']||'Tanpa Nama';
-      const product=clean['Produk / Item']||clean['Item']||'N/A';
-      const estDelivery=clean['Est. Pengiriman']?`${clean['Est. Pengiriman']} 20:00 WIB`:'';
+      const name    = item[0] || 'Tanpa Nama'; // Kolom A
+      const product = item[1] || 'N/A';        // Kolom B
+      const status  = item[2] || 'Pending';    // Kolom C
 
-      const HIDE=new Set(['Nickname','ID Server','Produk / Item','Item','Status','Est. Pengiriman',...Object.keys(clean).filter(isPrivacyKey)]);
-      const detailsHtml=Object.entries(clean).filter(([k,v])=>v&&!HIDE.has(k)).map(([k,v])=>`
-        <div class="detail-item">
-          <div class="detail-label">${k}</div>
-          <div class="detail-value">${v}</div>
-        </div>`).join('');
+      const statusClass = normalizeStatus(status);
+      const statusText  = status.toUpperCase();
 
       const card=document.createElement('article');
-      card.className=`card ${detailsHtml?'clickable':''}`;
+      card.className='card'; // Detail view dinonaktifkan di mode ini
       card.innerHTML=`
         <div class="card-header">
           <div>
             <div class="card-name">${name}</div>
             <div class="card-product">${product}</div>
           </div>
-          <div class="status-badge ${statusClass}">${(clean['Status']||'Pending').toUpperCase()}</div>
+          <div class="status-badge ${statusClass}">${statusText}</div>
         </div>
-        ${estDelivery?`<div class="card-date">Estimasi Pengiriman: ${estDelivery}</div>`:''}
-        ${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}
       `;
-      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
       frag.appendChild(card);
     });
     poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
   };
 
-  const poSortByStatus=(data)=>{ const order={'progress':1,'pending':2,'success':3,'failed':4};
-    return data.sort((a,b)=>order[normalizeStatus(a.Status)]-order[normalizeStatus(b.Status)]);
+  const poSortByStatus=(data)=>{
+    const order={'progress':1,'pending':2,'success':3,'failed':4};
+    // Urutkan berdasarkan status di kolom ketiga (indeks 2)
+    return data.sort((a,b)=>order[normalizeStatus(a[2])]-order[normalizeStatus(b[2])]);
   };
 
   async function poFetch(sheetName){
@@ -259,16 +249,17 @@
       const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});
       if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
       const text=await res.text();
-      const rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
+      let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
+      
       if(rows.length < 2){ // Butuh setidaknya 1 baris header dan 1 baris data
         poState.allData=[];
         return;
       }
 
-      const headers=rows.shift(); // Ambil baris pertama sebagai header
-      const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val])))
-        .filter(item=>(item[headers[0]] || '').trim() !== ''); // Filter baris kosong
-      poState.allData=poSortByStatus(mapped.map(scrubRecord));
+      rows.shift(); // Hapus baris pertama (header)
+      
+      const dataRows = rows.filter(row => row && (row[0] || '').trim() !== ''); // Filter baris kosong berdasarkan kolom A
+      poState.allData = poSortByStatus(dataRows);
 
     }catch(e){
       poState.allData=[]; poTotal.textContent='Gagal memuat data.'; console.error('Fetch Pre-Order failed:',e);
