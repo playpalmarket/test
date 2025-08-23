@@ -2,146 +2,89 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
-
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..800&family=Material+Symbols+Rounded:wght,FILL,GRAD@500,0,0" />
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <main class="wrap">
-    <!-- HEADER -->
-    <header class="site-header">
-      <img src="logo.png" alt="PlayPal.ID" class="logo" />
-      <h1 class="app-title">PlayPal.ID</h1>
-      <p class="app-subtitle">Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
-    </header>
-
-    <!-- ================== KATALOG ================== -->
-    <section id="viewCatalog" style="display:block">
-      <div class="topbar-grid">
-        <!-- Dropdown -->
-        <div id="custom-select-wrapper" class="custom-select-wrapper">
-          <button id="custom-select-btn" class="custom-select-btn" aria-haspopup="listbox" aria-expanded="false" type="button">
-            <span id="custom-select-value">Pilih Kategori</span>
-            <span class="material-symbols-rounded">expand_more</span>
-          </button>
-          <div id="custom-select-options" class="custom-select-options" role="listbox"></div>
-        </div>
-
-        <!-- Burger -->
-        <button id="burgerCat" class="icon-btn burger" aria-label="Menu" type="button">
-          <span class="material-symbols-rounded">menu</span>
-        </button>
-        <nav id="menuCat" class="menu" aria-label="Menu Katalog">
-          <button class="menu-btn" data-mode="katalog">
-            <span class="material-symbols-rounded">apps</span><span>Katalog</span>
-          </button>
-          <button class="menu-btn" data-mode="preorder">
-            <span class="material-symbols-rounded">receipt_long</span><span>Pre-Order</span>
-          </button>
-          <button class="menu-btn" data-mode="film">
-            <span class="material-symbols-rounded">movie</span><span>Film</span>
-          </button>
-        </nav>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">
+        <span class="logo-tile"></span>
+        <span class="logo-tile second"></span>
       </div>
-
-      <!-- Search -->
-      <div class="search-row">
-        <div class="search-wrap">
-          <span class="material-symbols-rounded search-icon">search</span>
-          <input id="search" class="search-input" type="search" placeholder="Cari item..." />
-        </div>
+      <div class="brand-text">
+        <h1>PlayPal.ID</h1>
+        <p>Destinasi Utama Para Pecinta Game, Film & Musik</p>
       </div>
+    </div>
 
-      <!-- Info jumlah -->
-      <div id="countInfo" class="meta-right"></div>
+    <!-- Burger -->
+    <button id="burgerBtn" class="icon-btn" aria-label="Menu">
+      <span class="i-burger"></span>
+    </button>
 
-      <!-- Tempat list -->
-      <section id="list-container" class="list-container"></section>
+    <!-- Dropdown menu -->
+    <nav id="dropdown" class="dropdown hidden" aria-label="Navigasi utama">
+      <button class="dropdown-item" data-section="katalog">
+        <span class="i-grid"></span> Katalog
+      </button>
+      <button class="dropdown-item" data-section="preorder">
+        <span class="i-notes"></span> Pre-Order
+      </button>
+    </nav>
+  </header>
 
-      <!-- Error -->
-      <section id="error" class="err" style="display:none"></section>
+  <!-- Toolbar -->
+  <section class="toolbar">
+    <div class="select-wrap">
+      <select id="sheetSelect" aria-label="Pilih sheet">
+        <!-- otomatis terisi dari script -->
+      </select>
+      <span class="i-caret"></span>
+    </div>
 
-      <!-- Template item -->
-      <template id="itemTmpl">
-        <a class="list-item" target="_blank" rel="noopener">
-          <div class="li-left">
-            <span class="title"></span>
-            <span class="subtitle"></span>
-          </div>
-          <div class="li-right">
-            <span class="price"></span>
-            <span class="material-symbols-rounded chevron">chevron_right</span>
-          </div>
-        </a>
-      </template>
+    <div class="search-wrap">
+      <span class="i-search"></span>
+      <input id="searchInput" type="search" placeholder="Cari nama / ID Server / item" aria-label="Cari" />
+    </div>
+
+    <div class="filter-wrap">
+      <label for="statusFilter" class="filter-label">Semua Status</label>
+      <select id="statusFilter" aria-label="Filter status">
+        <option value="">Semua Status</option>
+        <option value="PROGRESS">PROGRESS</option>
+        <option value="SUCCESS">SUCCESS</option>
+        <option value="PENDING">PENDING</option>
+        <option value="FAILED">FAILED</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Info total -->
+  <div class="total-pesanan" id="totalInfo">0 total pesanan</div>
+
+  <!-- Sections (di-toggle, tidak pernah dihancurkan) -->
+  <main>
+    <section id="katalog" class="section active" aria-labelledby="katalogTitle">
+      <h2 id="katalogTitle" class="sr-only">Katalog</h2>
+      <div id="listKatalog" class="card-list" role="list"></div>
     </section>
 
-    <!-- ================== PRE-ORDER ================== -->
-    <section id="viewPreorder" style="display:none">
-      <div class="topbar-grid">
-        <!-- Pilih sheet -->
-        <select id="poSheet" class="select-native">
-          <option value="0">Sheet1</option>
-          <option value="1">Sheet2</option>
-        </select>
-
-        <!-- Burger -->
-        <button id="burgerPO" class="icon-btn burger" aria-label="Menu" type="button">
-          <span class="material-symbols-rounded">menu</span>
-        </button>
-        <nav id="menuPO" class="menu" aria-label="Menu Pre-Order">
-          <button class="menu-btn" data-mode="katalog">
-            <span class="material-symbols-rounded">apps</span><span>Katalog</span>
-          </button>
-          <button class="menu-btn" data-mode="preorder">
-            <span class="material-symbols-rounded">receipt_long</span><span>Pre-Order</span>
-          </button>
-        </nav>
-      </div>
-
-      <!-- Search + Filter -->
-      <div class="search-row">
-        <div class="search-wrap">
-          <span class="material-symbols-rounded search-icon">search</span>
-          <input id="poSearch" class="search-input" type="search" placeholder="Cari nama / ID Server / item..." />
-        </div>
-      </div>
-      <div class="status-row">
-        <select id="poStatus" class="status-select">
-          <option value="all">Semua Status</option>
-          <option value="success">Success</option>
-          <option value="progress">Progress</option>
-          <option value="pending">Pending</option>
-          <option value="failed">Gagal</option>
-        </select>
-      </div>
-
-      <!-- Info + list -->
-      <div id="poTotal" class="meta"></div>
-      <main id="poList" class="card-grid"></main>
-
-      <!-- Pagination -->
-      <nav class="pagination">
-        <button id="poPrev" class="pagination-btn" disabled>
-          <span class="material-symbols-rounded">chevron_left</span> Sebelumnya
-        </button>
-        <button id="poNext" class="pagination-btn" disabled>
-          Selanjutnya <span class="material-symbols-rounded">chevron_right</span>
-        </button>
-      </nav>
+    <section id="preorder" class="section" aria-labelledby="preorderTitle">
+      <h2 id="preorderTitle" class="sr-only">Pre-Order</h2>
+      <div id="listPreorder" class="card-list" role="list"></div>
     </section>
   </main>
 
-  <!-- JS -->
-  <script src="script.js"></script>
+  <!-- Toast -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="./script.js"></script>
 </body>
 </html>
