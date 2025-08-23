@@ -6,7 +6,7 @@
     { id:'toKatalog',  label:'Katalog',         type:'route', value:'katalog' },
     { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
     { divider:true },
-    // Route baru: Film berbayar seikhlasnya (minimal) via Saweria
+    // Route baru: Tonton Film
     { id:'film', label:'Tonton Film (Bayar Seikhlasnya*)', type:'route', value:'film' },
     // Placeholder lain
     { id:'ebook',   label:'E‑book',        type:'link', href:'#' },
