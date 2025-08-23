@@ -6,14 +6,17 @@
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
-  <meta name="theme-color" content="#FDFBF5" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <noscript>
+    <div class="noscript-warning">
+      Website ini membutuhkan JavaScript untuk berfungsi sepenuhnya. Silakan aktifkan JavaScript di browser Anda.
+    </div>
+  </noscript>
+
   <main class="wrap">
     <header data-rail>
       <img src="logo.png" alt="PlayPal.ID Logo" class="logo">
@@ -26,14 +29,14 @@
         <div class="topbar" data-rail>
           <div class="topbar-grid">
             <div class="custom-select-wrapper" id="custom-select-wrapper">
-              <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="custom-select-options">
+              <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
               </button>
               <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
             </div>
 
-            <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button" aria-controls="menuCat">
+            <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
               <span></span><span></span><span></span>
             </button>
             <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
@@ -56,13 +59,6 @@
       <div id="countInfo" data-rail></div>
       <section id="list-container" class="list-container" aria-live="polite" data-rail></section>
       <section id="error" class="err" style="display:none" data-rail></section>
-
-      <template id="itemTmpl">
-        <a class="list-item" target="_blank" rel="noopener">
-          <span class="title"></span>
-          <span class="price"></span>
-        </a>
-      </template>
     </section>
 
     <section id="viewPreorder" aria-label="Pre-Order">
@@ -74,7 +70,7 @@
               <option value="1">Pesanan Umum</option>
             </select>
 
-            <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button" aria-controls="menuPO">
+            <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
               <span></span><span></span><span></span>
             </button>
             <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
@@ -116,6 +112,33 @@
     </section>
   </main>
 
-  <script src="script.js" defer></script>
+  <template id="itemTmpl">
+    <a class="list-item" target="_blank" rel="noopener">
+      <span class="title"></span>
+      <span class="price"></span>
+    </a>
+  </template>
+
+  <template id="skeletonItemTmpl">
+    <div class="list-item skeleton">
+      <span class="skeleton-text" style="width: 60%;"></span>
+      <span class="skeleton-text" style="width: 25%;"></span>
+    </div>
+  </template>
+
+  <template id="skeletonCardTmpl">
+    <div class="card skeleton">
+      <div class="card-header">
+        <div>
+          <div class="skeleton-text" style="width: 50%; height: 18px; margin-bottom: 8px;"></div>
+          <div class="skeleton-text" style="width: 75%; height: 14px;"></div>
+        </div>
+        <div class="skeleton-badge"></div>
+      </div>
+      <div class="skeleton-text" style="width: 65%; height: 12px; margin-top: 10px;"></div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
 </body>
 </html>
