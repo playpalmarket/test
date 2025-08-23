@@ -275,11 +275,20 @@
     const rebound=()=>{ poState.currentPage=1; poRender(); };
     poSearch.addEventListener('input',rebound);
     poStatus.addEventListener('change',rebound);
-    poSheet.addEventListener('change',e=>poFetch(e.target.options[e.target.selectedIndex].text));
+    
+    poSheet.addEventListener('change', e => {
+      const selectedValue = e.target.value;
+      const sheetToFetch = selectedValue === '0' ? SHEETS.preorder.name1 : SHEETS.preorder.name2;
+      poFetch(sheetToFetch);
+    });
+
     document.getElementById('poPrev').addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
     document.getElementById('poNext').addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
     
-    poFetch(poSheet.options[poSheet.selectedIndex].text);
+    // Initial fetch for the default selected sheet
+    const initialSheet = poSheet.value === '0' ? SHEETS.preorder.name1 : SHEETS.preorder.name2;
+    poFetch(initialSheet);
+    
     poState.initialized=true;
   }
 
