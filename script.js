@@ -215,15 +215,15 @@
 
     const frag=document.createDocumentFragment();
     pageData.forEach(item=>{
-      // Ambil data berdasarkan urutan kolom BARU
+      // Ambil data berdasarkan urutan kolom yang BENAR
       const tglOrder      = item[0]; // Kolom A
       const estPengiriman = item[1]; // Kolom B
-      // Kolom C (Nomor Telepon) sengaja dilewati
+      // Kolom C (Nomor Telepon) tidak ditampilkan
       const product       = item[3]; // Kolom D
       const bulan         = item[4]; // Kolom E
       const name          = item[5]; // Kolom F
       const status        = item[6]; // Kolom G
-      // Kolom H (ID Gift) sengaja dilewati
+      // Kolom H (ID Gift) tidak ditampilkan
 
       const statusClass = normalizeStatus(status);
       const estDeliveryText = estPengiriman ? `Estimasi Pengiriman: ${estPengiriman} 20:00 WIB` : '';
@@ -243,7 +243,7 @@
         <div class="card-header">
           <div>
             <div class="card-name">${name || 'Tanpa Nama'}</div>
-            <div class.card-product">${product || 'N/A'}</div>
+            <div class="card-product">${product || 'N/A'}</div>
           </div>
           <div class="status-badge ${statusClass}">${(status || 'Pending').toUpperCase()}</div>
         </div>
