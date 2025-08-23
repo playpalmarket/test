@@ -77,7 +77,7 @@
     container.appendChild(frag);
   }
 
-  // ========= KATALOG (TETAP PAKAI NAMA KOLOM UNTUK FLEKSIBILITAS KATEGORI) =========
+  // ========= KATALOG =========
   function parseGVizPairs(txt){
     const m=txt.match(/\{.*\}/s); if(!m) throw new Error('Invalid GViz response.');
     const obj=JSON.parse(m[0]); const table=obj.table||{}, rows=table.rows||[], cols=table.cols||[];
@@ -166,7 +166,7 @@
     }
   }
 
-  // ========= PRE-ORDER (MODIFIKASI: BACA BERDASARKAN URUTAN KOLOM A, B, C) =========
+  // ========= PRE-ORDER (MEKANISME BERDASARKAN URUTAN KOLOM) =========
   const poSearch=document.getElementById('poSearch');
   const poStatus=document.getElementById('poStatus');
   const poSheet =document.getElementById('poSheet');
@@ -186,13 +186,15 @@
 
   const poFilterData=()=>{
     const q=poSearch.value.trim().toLowerCase();
-    const status=poStatus.value;
+    const statusFilter=poStatus.value;
     return poState.allData.filter(item=>{
-      const idOrName = (item[0] || '').toLowerCase(); // Kolom A
-      const product  = (item[1] || '').toLowerCase(); // Kolom B
-      const match = idOrName.includes(q) || product.includes(q);
-      const s = normalizeStatus(item[2]); // Kolom C
-      return match && (status === 'all' || s === status);
+      const product = (item[2] || '').toLowerCase(); // Kolom C
+      const nickname = (item[4] || '').toLowerCase(); // Kolom E
+      const idGift = (item[6] || '').toLowerCase(); // Kolom G
+      const match = product.includes(q) || nickname.includes(q) || idGift.includes(q);
+      
+      const status = normalizeStatus(item[5]); // Kolom F
+      return match && (statusFilter === 'all' || status === statusFilter);
     });
   };
 
@@ -213,24 +215,42 @@
 
     const frag=document.createDocumentFragment();
     pageData.forEach(item=>{
-      const name    = item[0] || 'Tanpa Nama'; // Kolom A
-      const product = item[1] || 'N/A';        // Kolom B
-      const status  = item[2] || 'Pending';    // Kolom C
+      // Ambil data berdasarkan urutan kolom
+      const tglOrder      = item[0]; // Kolom A
+      const estPengiriman = item[1]; // Kolom B
+      const product       = item[2]; // Kolom C
+      const bulan         = item[3]; // Kolom D
+      const name          = item[4]; // Kolom E
+      const status        = item[5]; // Kolom F
 
       const statusClass = normalizeStatus(status);
-      const statusText  = status.toUpperCase();
+      const estDeliveryText = estPengiriman ? `Estimasi Pengiriman: ${estPengiriman} 20:00 WIB` : '';
+      
+      // Siapkan data untuk detail yang bisa di-klik
+      const details = [
+        { label: 'TGL ORDER', value: tglOrder },
+        { label: 'BULAN', value: bulan }
+      ];
+      const detailsHtml = details
+        .filter(d => d.value && String(d.value).trim() !== '')
+        .map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`)
+        .join('');
 
       const card=document.createElement('article');
-      card.className='card'; // Detail view dinonaktifkan di mode ini
+      card.className=`card ${detailsHtml ? 'clickable' : ''}`;
       card.innerHTML=`
         <div class="card-header">
           <div>
-            <div class="card-name">${name}</div>
-            <div class="card-product">${product}</div>
+            <div class="card-name">${name || 'Tanpa Nama'}</div>
+            <div class="card-product">${product || 'N/A'}</div>
           </div>
-          <div class="status-badge ${statusClass}">${statusText}</div>
+          <div class="status-badge ${statusClass}">${(status || 'Pending').toUpperCase()}</div>
         </div>
+        ${estDeliveryText ? `<div class="card-date">${estDeliveryText}</div>` : ''}
+        ${detailsHtml ? `<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>` : ''}
       `;
+
+      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
       frag.appendChild(card);
     });
     poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
@@ -238,8 +258,7 @@
 
   const poSortByStatus=(data)=>{
     const order={'progress':1,'pending':2,'success':3,'failed':4};
-    // Urutkan berdasarkan status di kolom ketiga (indeks 2)
-    return data.sort((a,b)=>order[normalizeStatus(a[2])]-order[normalizeStatus(b[2])]);
+    return data.sort((a,b)=>order[normalizeStatus(a[5])]-order[normalizeStatus(b[5])]); // Kolom F
   };
 
   async function poFetch(sheetName){
@@ -251,14 +270,14 @@
       const text=await res.text();
       let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
       
-      if(rows.length < 2){ // Butuh setidaknya 1 baris header dan 1 baris data
+      if(rows.length < 2){
         poState.allData=[];
         return;
       }
 
       rows.shift(); // Hapus baris pertama (header)
       
-      const dataRows = rows.filter(row => row && (row[0] || '').trim() !== ''); // Filter baris kosong berdasarkan kolom A
+      const dataRows = rows.filter(row => row && (row[0] || '').trim() !== '');
       poState.allData = poSortByStatus(dataRows);
 
     }catch(e){
@@ -280,7 +299,6 @@
     document.getElementById('poPrev').addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
     document.getElementById('poNext').addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
     
-    // Initial fetch for the default selected sheet
     const initialSheet = poSheet.value === '0' ? SHEETS.preorder.name1 : SHEETS.preorder.name2;
     poFetch(initialSheet);
     
