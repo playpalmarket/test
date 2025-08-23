@@ -5,6 +5,20 @@
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
 
+  // ===== MENU MODULAR =====
+  // Tambah/menu baru cukup push object ke array ini.
+  // type: 'route' (pindah view) atau 'link' (ke URL eksternal).
+  const MENU_ITEMS = [
+    { id:'toKatalog', label:'Katalog', type:'route', value:'katalog' },
+    { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
+    { divider:true },
+    // Placeholder siap dipakai:
+    { id:'donasi', label:'Donasi', type:'link', href:'https://saweria.co/' },
+    { id:'ebook', label:'E‑book', type:'link', href:'#' },
+    { id:'assets', label:'Asset Editing', type:'link', href:'#' },
+    { id:'lainnya', label:'Menu Lainnya', type:'link', href:'#' }
+  ];
+
   let DATA=[],CATS=[],activeCat='',query='';
 
   // ========= ELEMENTS =========
@@ -27,7 +41,31 @@
   const menuCat  =document.getElementById('menuCat');
   const menuPO   =document.getElementById('menuPO');
 
-  // ========= MENU =========
+  // ========= UTILS =========
+  const prettyLabel=(raw)=>String(raw||'').trim().replace(/\s+/g,' ');
+  const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
+  const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+  const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
+
+  // ========= MENU (render dinamis + interaksi super smooth) =========
+  function buildMenu(container){
+    container.innerHTML = '';
+    MENU_ITEMS.forEach(item=>{
+      if(item.divider){ const d=document.createElement('div'); d.className='menu-divider'; container.appendChild(d); return; }
+      const btn=document.createElement('button');
+      btn.className='menu-btn';
+      btn.type='button';
+      btn.textContent=item.label;
+      if(item.type==='route'){
+        btn.addEventListener('click',()=>{ setMode(item.value); closeAllMenus(); });
+      }else{
+        btn.addEventListener('click',()=>{ window.open(item.href,'_blank','noopener'); closeAllMenus(); });
+      }
+      container.appendChild(btn);
+    });
+  }
+  [menuCat,menuPO].forEach(buildMenu);
+
   function closeAllMenus(){
     [burgerCat,burgerPO].forEach(b=>b && b.classList.remove('active'));
     [menuCat,menuPO].forEach(m=>m && m.classList.remove('open'));
@@ -39,31 +77,27 @@
     closeAllMenus();
     if(!open){ btn?.classList.add('active'); menu?.classList.add('open'); }
   }
-  burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
-  burgerPO ?.addEventListener('click',()=>toggleMenu('po'));
-  document.getElementById('closeMenuCat')?.addEventListener('click',closeAllMenus);
-  document.getElementById('closeMenuPO') ?.addEventListener('click',closeAllMenus);
+  burgerCat?.addEventListener('click',()=>toggleMenu('cat'),{passive:true});
+  burgerPO ?.addEventListener('click',()=>toggleMenu('po'),{passive:true});
   document.addEventListener('click',(e)=>{
     const inside = (menuCat?.contains(e.target)||burgerCat?.contains(e.target)||menuPO?.contains(e.target)||burgerPO?.contains(e.target));
     if(!inside) closeAllMenus();
-  });
+  },{passive:true});
 
   function setMode(next){
-    viewCatalog.style.display = next==='katalog' ? 'block' : 'none';
-    viewPreorder.style.display= next==='preorder' ? 'block' : 'none';
-    closeAllMenus();
+    // transisi halus via CSS (opacity) agar tidak terasa patah
+    [viewCatalog,viewPreorder].forEach(v=>{
+      v.style.transition='opacity 200ms var(--curve)';
+      v.style.opacity = 0;
+    });
+    requestAnimationFrame(()=>{
+      viewCatalog.style.display = next==='katalog' ? 'block' : 'none';
+      viewPreorder.style.display= next==='preorder' ? 'block' : 'none';
+      [viewCatalog,viewPreorder].forEach(v=>{ v.style.opacity=1; });
+    });
     if(next==='preorder' && !poState.initialized) poInit();
     window.scrollTo({top:0,behavior:'smooth'});
   }
-  [...(menuCat?.querySelectorAll('.menu-btn[data-mode]')||[]),
-   ...(menuPO ?.querySelectorAll('.menu-btn[data-mode]')||[])]
-    .forEach(btn=>btn.addEventListener('click',()=>setMode(btn.getAttribute('data-mode'))));
-
-  // ========= UTILS =========
-  const prettyLabel=(raw)=>String(raw||'').trim().replace(/\s+/g,' ');
-  const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
-  const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
-  const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
 
   // ========= KATALOG =========
   function parseGVizPairs(txt){
@@ -134,8 +168,8 @@
   let debounceTimer;
   searchEl.addEventListener('input',e=>{
     clearTimeout(debounceTimer);
-    debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); },200);
-  });
+    debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); },160);
+  },{passive:true});
 
   async function loadCatalog(){
     try{
@@ -164,7 +198,7 @@
 
   const poState={initialized:false,allData:[],currentPage:1,perPage:15};
 
-  // Kosongkan kolom sensitif (ID Gift & nomor telp/WA/HP)
+  // Hapus kolom sensitif
   const PRIVACY_KEYS=['id gift','gift id','gift','nomor','no','telepon','no telepon','no. telepon','nomor telepon','phone','hp','whatsapp','wa','no wa','no. wa'];
   const isPrivacyKey=(k)=>{ const s=String(k||'').trim().toLowerCase(); return PRIVACY_KEYS.some(key=>s===key||s.includes(key)); };
   const scrubRecord=(rec)=>{ const out={...rec}; for(const k of Object.keys(out)) if(isPrivacyKey(k)) out[k]=''; return out; };
@@ -200,7 +234,7 @@
     const pageData=filtered.slice(start, start+poState.perPage);
 
     poList.innerHTML='';
-    if(pageData.length===0){ poList.innerHTML=`<div class="empty-state"><p>Tidak Ada Hasil Ditemukan</p></div>`; poUpdatePagination(0,0); return; }
+    if(pageData.length===0){ poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`; poUpdatePagination(0,0); return; }
 
     const frag=document.createDocumentFragment();
     pageData.forEach(item=>{
@@ -230,7 +264,7 @@
         ${estDelivery?`<div class="card-date">Estimasi Pengiriman: ${estDelivery}</div>`:''}
         ${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}
       `;
-      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
+      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'),{passive:true});
       frag.appendChild(card);
     });
     poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
@@ -242,7 +276,7 @@
 
   async function poFetch(sheetIndex0){
     poTotal.textContent='Memuat data...';
-    poList.innerHTML=`<div class="loading"><div class="spinner"></div><p>Memuat data...</p></div>`;
+    poList.innerHTML=`<div class="empty">Memuat data...</div>`;
     try{
       const res=await fetch(sheetUrlCSV(sheetIndex0),{cache:'no-store'});
       if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
@@ -266,9 +300,9 @@
 
   function poInit(){
     const rebound=()=>{ poState.currentPage=1; poRender(); };
-    poSearch.addEventListener('input',rebound);
-    poStatus.addEventListener('change',rebound);
-    poSheet.addEventListener('change',e=>poFetch(parseInt(e.target.value,10)));
+    poSearch.addEventListener('input',rebound,{passive:true});
+    poStatus.addEventListener('change',rebound,{passive:true});
+    poSheet.addEventListener('change',e=>poFetch(parseInt(e.target.value,10)),{passive:true});
     document.getElementById('poPrev').addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
     document.getElementById('poNext').addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
     poFetch(parseInt(poSheet.value,10) || 0);
