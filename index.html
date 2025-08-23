@@ -24,34 +24,46 @@
       <p class="app-subtitle">Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
     </header>
 
-    <!-- ===== KATALOG (utama) ===== -->
+    <!-- ============== NAV BAR ============== -->
+    <nav class="tabs" aria-label="Navigasi tampilan">
+      <button class="tab-btn ripple" data-mode="katalog">
+        <span class="material-symbols-rounded">apps</span><span>Katalog</span>
+      </button>
+      <button class="tab-btn ripple" data-mode="preorder">
+        <span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span>
+      </button>
+      <button class="tab-btn ripple" data-mode="film">
+        <span class="material-symbols-rounded">movie</span><span>Film</span>
+      </button>
+    </nav>
+
+    <!-- ============== KATALOG ============== -->
     <section id="viewCatalog" aria-label="Katalog">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
-            <!-- DROPDOWN KATEGORI (Material custom select) -->
+            <!-- Custom Select (Material style) -->
             <div class="custom-select-wrapper" id="custom-select-wrapper">
-              <button class="custom-select-btn ripple" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false" type="button">
+              <button class="custom-select-btn ripple" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
                 <span class="material-symbols-rounded">expand_more</span>
               </button>
               <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
             </div>
 
-            <!-- BURGER MENU -->
+            <!-- Burger -->
             <button class="icon-btn burger ripple" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
               <span class="material-symbols-rounded">menu</span>
             </button>
             <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
-              <button class="menu-btn ripple" data-route="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
-              <button class="menu-btn ripple" data-route="preorder"><span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span></button>
-              <button class="menu-btn ripple" data-route="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
-              <button class="menu-btn ripple" data-route="donasi"><span class="material-symbols-rounded">volunteer_activism</span><span>Donasi</span></button>
+              <button class="menu-btn ripple" data-mode="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
+              <button class="menu-btn ripple" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span></button>
+              <button class="menu-btn ripple" data-mode="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
+              <button class="menu-btn ripple" data-mode="donasi"><span class="material-symbols-rounded">volunteer_activism</span><span>Donasi</span></button>
             </nav>
           </div>
         </div>
 
-        <!-- PENCARIAN -->
         <div class="search-row" data-rail>
           <div class="search-wrap">
             <span class="material-symbols-rounded search-icon">search</span>
@@ -61,14 +73,11 @@
       </div>
 
       <div id="countInfo" class="meta-right" data-rail></div>
-
-      <!-- LIST ITEM -->
       <section id="list-container" class="list-container" aria-live="polite" data-rail></section>
       <section id="error" class="err" style="display:none" data-rail></section>
 
-      <!-- TEMPLATE LIST -->
       <template id="itemTmpl">
-        <a class="list-item ripple" href="#" target="_blank" rel="noopener">
+        <a class="list-item ripple" target="_blank" rel="noopener">
           <div class="li-left">
             <span class="title"></span>
             <span class="subtitle"></span>
@@ -80,22 +89,122 @@
         </a>
       </template>
     </section>
+
+    <!-- ============== PRE‑ORDER ============== -->
+    <section id="viewPreorder" aria-label="Pre‑Order" style="display:none">
+      <div class="head-block po-head" data-rail>
+        <div class="topbar" data-rail>
+          <div class="topbar-grid">
+            <select class="select-native" id="poSheet" aria-label="Pilih sheet Pre‑Order">
+              <!-- diisi dari CONFIG.PREORDER_SHEETS -->
+            </select>
+
+            <button class="icon-btn burger ripple" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
+              <span class="material-symbols-rounded">menu</span>
+            </button>
+            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
+              <button class="menu-btn ripple" data-mode="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
+              <button class="menu-btn ripple" data-mode="preorder"><span class="material-symbols-rounded">pending_actions</span><span>Pre‑Order</span></button>
+              <button class="menu-btn ripple" data-mode="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
+            </nav>
+          </div>
+        </div>
+
+        <div class="search-row" data-rail>
+          <div class="search-wrap">
+            <span class="material-symbols-rounded search-icon">search</span>
+            <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server / item..." />
+          </div>
+        </div>
+
+        <div class="status-row" data-rail>
+          <select class="status-select" id="poStatus" aria-label="Filter status">
+            <option value="all">Semua Status</option>
+            <option value="success">Success</option>
+            <option value="progress">Progress</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Gagal</option>
+          </select>
+        </div>
+
+        <div class="meta" id="poTotal" data-rail></div>
+      </div>
+
+      <div class="container">
+        <main class="card-grid" id="poList" aria-live="polite" data-rail></main>
+        <nav class="pagination" aria-label="Pagination" data-rail>
+          <button class="pagination-btn ripple" id="poPrev" disabled><span class="material-symbols-rounded">chevron_left</span> Sebelumnya</button>
+          <button class="pagination-btn ripple" id="poNext" disabled>Selanjutnya <span class="material-symbols-rounded">chevron_right</span></button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- ============== FILM (gratis) ============== -->
+    <section id="viewFilm" aria-label="Film" style="display:none">
+      <div class="head-block cat-head" data-rail>
+        <div class="topbar" data-rail>
+          <div class="topbar-grid">
+            <div class="custom-select-wrapper" id="filmSelectWrap">
+              <button class="custom-select-btn ripple" id="filmSelectBtn" aria-haspopup="listbox" aria-expanded="false">
+                <span id="filmSelectValue">Pilih Film</span>
+                <span class="material-symbols-rounded">expand_more</span>
+              </button>
+              <div class="custom-select-options" id="filmSelectOptions" role="listbox"></div>
+            </div>
+
+            <button class="icon-btn burger ripple" id="burgerFilm" aria-label="Menu" aria-expanded="false" type="button">
+              <span class="material-symbols-rounded">menu</span>
+            </button>
+            <nav class="menu" id="menuFilm" aria-label="Menu tampilan (Film)">
+              <button class="menu-btn ripple" data-mode="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
+              <button class="menu-btn ripple" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span></button>
+              <button class="menu-btn ripple" data-mode="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <div id="filmMeta" class="meta" data-rail></div>
+      <section id="filmList" class="list-container" aria-live="polite" data-rail style="display:none"></section>
+
+      <template id="filmTmpl">
+        <a class="list-item ripple" href="#" rel="noopener">
+          <div class="li-left">
+            <span class="title"></span>
+            <span class="subtitle"></span>
+          </div>
+          <div class="li-right">
+            <span class="price"></span>
+            <span class="material-symbols-rounded chevron">play_arrow</span>
+          </div>
+        </a>
+      </template>
+    </section>
   </main>
 
-  <!-- Data contoh kategori (opsional). Kalau kamu sudah punya dari JS lama, bisa dihapus. -->
-  <script>
-    window.CATEGORIES = [
-      { id: 'ffid',   name: 'Free Fire Indonesia' },
-      { id: 'ml',     name: 'Mobile Legends' },
-      { id: 'pubg',   name: 'PUBG Mobile' },
-      { id: 'genshin',name: 'Genshin Impact' }
-    ];
-    // Callback saat kategori dipilih (hubungkan ke loader katalogmu)
-    window.onCategoryChange = (id, name)=>{
-      // TODO: ganti dengan fungsi filter kamu sendiri
-      document.getElementById('countInfo').textContent = `Kategori dipilih: ${name}`;
-    };
-  </script>
+  <!-- Modal Video -->
+  <div id="vidModal" class="gd-overlay" aria-hidden="true">
+    <div class="gd-backdrop" id="vidBackdrop"></div>
+    <div class="gd-stage">
+      <button class="gd-close ripple" id="vidClose" aria-label="Tutup">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+      <h3 id="vidTitle" class="gd-title">Memuat…</h3>
+      <video id="vidEl" controls playsinline></video>
+    </div>
+  </div>
+
+  <!-- Modal Folder (episode) -->
+  <div id="gdFolder" class="gd-overlay" aria-hidden="true">
+    <div class="gd-backdrop" id="gdFolderBackdrop"></div>
+    <div class="gd-stage" id="gdFolderStage">
+      <button class="gd-close ripple" id="gdFolderClose" aria-label="Tutup">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+      <h3 id="gdFolderTitle" class="gd-title">Pilih Episode</h3>
+      <ul id="gdFolderList" class="gd-list"></ul>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
