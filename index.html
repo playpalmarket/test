@@ -6,13 +6,13 @@
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
 
-  <!-- Fonts Google -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..800&family=Material+Symbols+Rounded:wght,FILL,GRAD@500,0,0" />
 
-  <!-- CSS utama (tema Google / Material You) -->
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,32 +21,39 @@
     <header class="site-header">
       <img src="logo.png" alt="PlayPal.ID" class="logo" />
       <h1 class="app-title">PlayPal.ID</h1>
-      <p class="app-subtitle">Destinasi Utama Para Pecinta Game, Film & Musik</p>
+      <p class="app-subtitle">Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
     </header>
 
-    <!-- ========== KATALOG ========== -->
-    <section id="viewCatalog">
+    <!-- ================== KATALOG ================== -->
+    <section id="viewCatalog" style="display:block">
       <div class="topbar-grid">
-        <!-- Dropdown kategori -->
+        <!-- Dropdown -->
         <div id="custom-select-wrapper" class="custom-select-wrapper">
-          <button id="custom-select-btn" class="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
+          <button id="custom-select-btn" class="custom-select-btn" aria-haspopup="listbox" aria-expanded="false" type="button">
             <span id="custom-select-value">Pilih Kategori</span>
             <span class="material-symbols-rounded">expand_more</span>
           </button>
           <div id="custom-select-options" class="custom-select-options" role="listbox"></div>
         </div>
 
-        <!-- Burger menu katalog -->
-        <button id="burgerCat" class="icon-btn burger" aria-label="Menu">
+        <!-- Burger -->
+        <button id="burgerCat" class="icon-btn burger" aria-label="Menu" type="button">
           <span class="material-symbols-rounded">menu</span>
         </button>
-        <nav id="menuCat" class="menu">
-          <button class="menu-btn" data-mode="katalog"><span class="material-symbols-rounded">apps</span>Katalog</button>
-          <button class="menu-btn" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span>Pre-Order</button>
+        <nav id="menuCat" class="menu" aria-label="Menu Katalog">
+          <button class="menu-btn" data-mode="katalog">
+            <span class="material-symbols-rounded">apps</span><span>Katalog</span>
+          </button>
+          <button class="menu-btn" data-mode="preorder">
+            <span class="material-symbols-rounded">receipt_long</span><span>Pre-Order</span>
+          </button>
+          <button class="menu-btn" data-mode="film">
+            <span class="material-symbols-rounded">movie</span><span>Film</span>
+          </button>
         </nav>
       </div>
 
-      <!-- Pencarian -->
+      <!-- Search -->
       <div class="search-row">
         <div class="search-wrap">
           <span class="material-symbols-rounded search-icon">search</span>
@@ -57,10 +64,10 @@
       <!-- Info jumlah -->
       <div id="countInfo" class="meta-right"></div>
 
-      <!-- List container -->
+      <!-- Tempat list -->
       <section id="list-container" class="list-container"></section>
 
-      <!-- Error box -->
+      <!-- Error -->
       <section id="error" class="err" style="display:none"></section>
 
       <!-- Template item -->
@@ -78,26 +85,30 @@
       </template>
     </section>
 
-    <!-- ========== PRE-ORDER ========== -->
+    <!-- ================== PRE-ORDER ================== -->
     <section id="viewPreorder" style="display:none">
       <div class="topbar-grid">
         <!-- Pilih sheet -->
-        <select id="poSheet">
+        <select id="poSheet" class="select-native">
           <option value="0">Sheet1</option>
           <option value="1">Sheet2</option>
         </select>
 
-        <!-- Burger menu preorder -->
-        <button id="burgerPO" class="icon-btn burger" aria-label="Menu">
+        <!-- Burger -->
+        <button id="burgerPO" class="icon-btn burger" aria-label="Menu" type="button">
           <span class="material-symbols-rounded">menu</span>
         </button>
-        <nav id="menuPO" class="menu">
-          <button class="menu-btn" data-mode="katalog"><span class="material-symbols-rounded">apps</span>Katalog</button>
-          <button class="menu-btn" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span>Pre-Order</button>
+        <nav id="menuPO" class="menu" aria-label="Menu Pre-Order">
+          <button class="menu-btn" data-mode="katalog">
+            <span class="material-symbols-rounded">apps</span><span>Katalog</span>
+          </button>
+          <button class="menu-btn" data-mode="preorder">
+            <span class="material-symbols-rounded">receipt_long</span><span>Pre-Order</span>
+          </button>
         </nav>
       </div>
 
-      <!-- Search + filter status -->
+      <!-- Search + Filter -->
       <div class="search-row">
         <div class="search-wrap">
           <span class="material-symbols-rounded search-icon">search</span>
@@ -105,7 +116,7 @@
         </div>
       </div>
       <div class="status-row">
-        <select id="poStatus">
+        <select id="poStatus" class="status-select">
           <option value="all">Semua Status</option>
           <option value="success">Success</option>
           <option value="progress">Progress</option>
@@ -114,19 +125,23 @@
         </select>
       </div>
 
-      <!-- Info & list -->
+      <!-- Info + list -->
       <div id="poTotal" class="meta"></div>
       <main id="poList" class="card-grid"></main>
 
       <!-- Pagination -->
       <nav class="pagination">
-        <button id="poPrev" class="pagination-btn" disabled><span class="material-symbols-rounded">chevron_left</span>Sebelumnya</button>
-        <button id="poNext" class="pagination-btn" disabled>Selanjutnya<span class="material-symbols-rounded">chevron_right</span></button>
+        <button id="poPrev" class="pagination-btn" disabled>
+          <span class="material-symbols-rounded">chevron_left</span> Sebelumnya
+        </button>
+        <button id="poNext" class="pagination-btn" disabled>
+          Selanjutnya <span class="material-symbols-rounded">chevron_right</span>
+        </button>
       </nav>
     </section>
   </main>
 
-  <!-- Script utama -->
+  <!-- JS -->
   <script src="script.js"></script>
 </body>
 </html>
