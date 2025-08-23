@@ -5,9 +5,6 @@
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
 
-  // Ganti ke URL Saweria kamu
-  const SAWERIA_URL = 'https://saweria.co/playpal';
-
   let DATA=[],CATS=[],activeCat='',query='';
 
   // ========= ELEMENTS =========
@@ -15,6 +12,7 @@
   const viewPreorder=document.getElementById('viewPreorder');
   const viewFilm   =document.getElementById('viewFilm');
 
+  // katalog
   const listEl=document.getElementById('list-container');
   const searchEl=document.getElementById('search');
   const countInfoEl=document.getElementById('countInfo');
@@ -26,6 +24,7 @@
   const customSelectValue=document.getElementById('custom-select-value');
   const customSelectOptions=document.getElementById('custom-select-options');
 
+  // burgers
   const burgerCat=document.getElementById('burgerCat');
   const burgerPO =document.getElementById('burgerPO');
   const burgerFilm=document.getElementById('burgerFilm');
@@ -33,15 +32,18 @@
   const menuPO   =document.getElementById('menuPO');
   const menuFilm =document.getElementById('menuFilm');
 
-  // ====== FILM elements ======
-  const filmGate   = document.getElementById('filmGate');
+  // FILM elements
   const filmMeta   = document.getElementById('filmMeta');
   const filmList   = document.getElementById('filmList');
   const filmTmpl   = document.getElementById('filmTmpl');
-  const btnSaweria = document.getElementById('btnSaweria');
-  const btnSudahBayar = document.getElementById('btnSudahBayar');
 
-  // ========= MENU: pakai modul terpisah =========
+  // Dropdown film
+  const filmSelectWrap = document.getElementById('filmSelectWrap');
+  const filmSelectBtn  = document.getElementById('filmSelectBtn');
+  const filmSelectVal  = document.getElementById('filmSelectValue');
+  const filmSelectOpts = document.getElementById('filmSelectOptions');
+
+  // ========= MENU (modul terpisah) =========
   function setMode(next){
     const show = (el, on) => { if(el) el.style.display = on ? 'block':'none'; };
     [viewCatalog,viewPreorder,viewFilm].forEach(v=>{ if(v){ v.style.transition='opacity 200ms var(--curve)'; v.style.opacity=0; }});
@@ -55,8 +57,6 @@
     if(next==='film'     && !filmState.initialized) filmInit();
     window.scrollTo({top:0,behavior:'smooth'});
   }
-
-  // Inisialisasi modul menu
   window.MenuAPI = window.MenuModule.init({
     burgerCat, burgerPO, burgerFilm,
     menuCat, menuPO, menuFilm,
@@ -68,12 +68,6 @@
   const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
   const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
   const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
-
-  // ====== Gate pembayaran (auto via ?paid=1 atau manual via localStorage) ======
-  const PAID_KEY = 'pp_paid_film';
-  const urlParams = new URLSearchParams(location.search);
-  const isPaid = () => urlParams.get('paid') === '1' || localStorage.getItem(PAID_KEY) === '1';
-  const markPaid = () => { localStorage.setItem(PAID_KEY,'1'); };
 
   // ========= KATALOG =========
   function parseGVizPairs(txt){
@@ -163,7 +157,7 @@
     }
   }
 
-  // ========= PRE-ORDER =========
+  // ========= PRE‑ORDER =========
   const poSearch=document.getElementById('poSearch');
   const poStatus=document.getElementById('poStatus');
   const poSheet =document.getElementById('poSheet');
@@ -260,16 +254,14 @@
       if(rows.length<1){ poState.allData=[]; return; }
 
       if(sheetIndex0===0){
-        // Sheet1 (Starlight) normal
         const headers=rows.shift();
         const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
         poState.allData=poSortByStatus(mapped.map(scrubRecord));
       }else{
-        // Sheet2 (Pesanan Umum) – skip 1 record pertama (mulai dari nomor 2)
         const body = rows[0]?.length===3 && ['id server','item','status'].includes(rows[0][0].toLowerCase())
           ? rows.slice(1)
           : rows;
-        const trimmed = body.slice(1);
+        const trimmed = body.slice(1); // skip nomor 1
         const mapped = trimmed
           .map(r=>({'ID Server':r[0]||'','Item':r[1]||'','Status':r[2]||''}))
           .filter(item=>item['ID Server']);
@@ -291,76 +283,85 @@
     poState.initialized=true;
   }
 
-  // ========= FILM (Sheet4) =========
-  const filmState = { initialized:false, data:[] };
+  // ========= FILM (Sheet4, GRATIS) =========
+  const filmState = { initialized:false, data:[], selectedIndex:0 };
 
-  function filmRender(){
+  function filmRenderList(){
     filmList.innerHTML = '';
-    if(filmState.data.length===0){
-      filmMeta.textContent = '';
-      filmList.style.display='none';
-      return;
-    }
     const frag = document.createDocumentFragment();
-    filmState.data.forEach(it=>{
+    filmState.data.forEach((it)=>{
       const clone = filmTmpl.content.cloneNode(true);
       const a = clone.querySelector('.list-item');
       a.querySelector('.title').textContent = it.title;
       a.querySelector('.price').textContent = it.price || '';
-      a.href = it.link; // buka link Drive
+      a.href = it.link; // langsung aktif (gratis)
       frag.appendChild(clone);
     });
     filmList.appendChild(frag);
-    filmMeta.textContent = `${filmState.data.length} film tersedia`;
     filmList.style.display='flex';
+    filmMeta.textContent = `${filmState.data.length} film tersedia`;
+  }
+
+  function filmSelectBuild(){
+    filmSelectOpts.innerHTML='';
+    filmState.data.forEach((it, idx)=>{
+      const el=document.createElement('div');
+      el.className='custom-select-option';
+      el.textContent = it.title;
+      el.dataset.value = String(idx);
+      el.addEventListener('click', ()=>{
+        filmSelectSet(idx);
+        filmSelectWrap.classList.remove('open');
+        filmSelectBtn.setAttribute('aria-expanded','false');
+      });
+      filmSelectOpts.appendChild(el);
+    });
+    filmSelectBtn.addEventListener('click', ()=>{
+      const isOpen = filmSelectWrap.classList.toggle('open');
+      filmSelectBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+    document.addEventListener('click', (e)=>{
+      if(!filmSelectWrap.contains(e.target) && !filmSelectBtn.contains(e.target)){
+        filmSelectWrap.classList.remove('open');
+        filmSelectBtn.setAttribute('aria-expanded','false');
+      }
+    }, {passive:true});
+    if(filmState.data.length>0) filmSelectSet(0);
+  }
+
+  function filmSelectSet(idx){
+    filmState.selectedIndex = idx;
+    const it = filmState.data[idx];
+    filmSelectVal.textContent = it ? it.title : 'Pilih Film';
   }
 
   async function filmLoad(){
     filmMeta.textContent = '';
     filmList.innerHTML = `<div class="empty">Memuat daftar film...</div>`;
     try{
-      // Ambil CSV Sheet4: kolom A=Judul Film, B=Harga, C=Link
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEETS.film.name)}`;
       const res = await fetch(url, {cache:'no-store'});
       if(!res.ok) throw new Error(res.statusText);
       const text = await res.text();
       const rows = text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
-      const body = rows.slice(1); // skip header
+      const body = rows.slice(1);
       filmState.data = body
         .map(r => ({ title:r[0]||'', price:r[1]||'', link:r[2]||'' }))
         .filter(x => x.title && x.link);
-      filmRender();
+      filmSelectBuild();
+      filmRenderList();
     }catch(e){
       filmList.innerHTML = `<div class="err">Gagal memuat film: ${e.message}</div>`;
     }
   }
 
-  function applyFilmGate(){
-    if(isPaid()){
-      filmGate.style.display = 'none';
-      filmLoad();
-    }else{
-      filmGate.style.display = 'block';
-      filmList.style.display = 'none';
-      filmMeta.textContent = '';
-    }
-  }
-
   function filmInit(){
-    if(btnSaweria){
-      // Jika platform Saweria mendukung redirect, set di dashboard ke URL berikut:
-      const backURL = location.origin + location.pathname + '?paid=1';
-      btnSaweria.href = SAWERIA_URL; // arahkan ke halaman donasi
-      console.log('Set redirect Saweria ke:', backURL);
-    }
-    btnSudahBayar?.addEventListener('click', ()=>{ markPaid(); applyFilmGate(); }, {passive:true});
-
-    applyFilmGate();
+    filmLoad();
     filmState.initialized = true;
   }
 
   // ========= START =========
-  setMode('katalog');
+  setMode('film');   // ubah ke 'katalog' bila ingin default ke katalog
   loadCatalog();
 
   // ========= ANTI‑ZOOM =========
