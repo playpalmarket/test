@@ -145,15 +145,13 @@
     </section>
   </main>
 
-  <!-- ========= Overlay Player (Google Drive Preview) ========= -->
-  <div id="gdPlayer" class="gd-overlay" aria-hidden="true">
-    <div class="gd-backdrop" id="gdPlayerBackdrop"></div>
-    <div class="gd-stage" id="gdStage">
-      <button class="gd-close" id="gdClose" aria-label="Tutup">×</button>
-      <h3 id="gdTitle" class="gd-title">Memuat…</h3>
-      <div class="gd-iframe-wrap">
-        <iframe id="gdIframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" src=""></iframe>
-      </div>
+  <!-- ========= Modal Player HTML5 (direct Google Drive) ========= -->
+  <div id="vidModal" class="gd-overlay" aria-hidden="true">
+    <div class="gd-backdrop" id="vidBackdrop"></div>
+    <div class="gd-stage">
+      <button class="gd-close" id="vidClose" aria-label="Tutup">×</button>
+      <h3 id="vidTitle" class="gd-title">Memuat…</h3>
+      <video id="vidEl" controls playsinline style="width:100%;background:#000;border-top:1px solid var(--separator)"></video>
     </div>
   </div>
 
