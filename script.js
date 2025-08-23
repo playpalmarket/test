@@ -1,5 +1,5 @@
+// ===== Ripple attach ke elemen klik-able =====
 (function(){
-  // ====== Ripple (Material) ======
   function attachRipple(el){
     if(!el) return;
     el.addEventListener('click', function(e){
@@ -14,96 +14,86 @@
       setTimeout(()=> r.remove(), 520);
     }, {passive:true});
   }
-  document.querySelectorAll('.ripple, .menu-btn, .list-item, .pagination-btn, .icon-btn').forEach(attachRipple);
+  // Auto-apply ke elemen yang relevan
+  document.querySelectorAll('.ripple, .menu-btn, .list-item, .icon-btn').forEach(attachRipple);
+})();
 
-  // ====== Burger toggle ala Material (menu <-> close) ======
-  function bindBurger(burgerBtnId, menuId){
-    const btn = document.getElementById(burgerBtnId);
-    const menu = document.getElementById(menuId);
+// ===== Dropdown Kategori (Material custom select) =====
+(function(){
+  const wrap = document.getElementById('custom-select-wrapper');
+  const btn  = document.getElementById('custom-select-btn');
+  const val  = document.getElementById('custom-select-value');
+  const box  = document.getElementById('custom-select-options');
+
+  if (!wrap || !btn || !val || !box) return;
+
+  // Ambil data kategori dari window.CATEGORIES (kalau ada), atau fallback contoh
+  const CATEGORIES = (window.CATEGORIES && Array.isArray(window.CATEGORIES) && window.CATEGORIES.length)
+    ? window.CATEGORIES
+    : [
+        { id: 'ffid',   name: 'Free Fire Indonesia' },
+        { id: 'ml',     name: 'Mobile Legends' },
+        { id: 'pubg',   name: 'PUBG Mobile' },
+        { id: 'genshin',name: 'Genshin Impact' }
+      ];
+
+  // Render opsi
+  box.innerHTML = '';
+  CATEGORIES.forEach((cat, i)=>{
+    const opt = document.createElement('div');
+    opt.className = 'custom-select-option';
+    opt.setAttribute('role','option');
+    opt.dataset.id = cat.id;
+    opt.textContent = cat.name;
+    if(i===0) opt.classList.add('selected');
+    box.appendChild(opt);
+  });
+  val.textContent = CATEGORIES[0].name;
+
+  // Open/close
+  function open(){ wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+  function close(){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', (e)=>{ e.stopPropagation(); wrap.classList.toggle('open'); btn.setAttribute('aria-expanded', String(wrap.classList.contains('open'))); });
+  document.addEventListener('click', close);
+  window.addEventListener('scroll', close, {passive:true});
+
+  // Pilih opsi
+  box.addEventListener('click', (e)=>{
+    const opt = e.target.closest('.custom-select-option');
+    if(!opt) return;
+    box.querySelectorAll('.custom-select-option').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    val.textContent = opt.textContent;
+    close();
+
+    // Callback ke logika katalogmu (kalau ada)
+    if (typeof window.onCategoryChange === 'function') {
+      window.onCategoryChange(opt.dataset.id, opt.textContent);
+    }
+  });
+})();
+
+// ===== Burger Menu (menu <-> close) =====
+(function(){
+  function bindBurger(bid, mid){
+    const btn = document.getElementById(bid);
+    const menu = document.getElementById(mid);
     if(!btn || !menu) return;
     const icon = btn.querySelector('.material-symbols-rounded');
 
-    function closeMenu(){
-      menu.classList.remove('open');
-      btn.setAttribute('aria-expanded','false');
-      if(icon) icon.textContent = 'menu';
-    }
-    function openMenu(){
-      menu.classList.add('open');
-      btn.setAttribute('aria-expanded','true');
-      if(icon) icon.textContent = 'close';
-    }
+    const close = ()=>{ menu.classList.remove('open'); btn.setAttribute('aria-expanded','false'); if(icon) icon.textContent='menu'; };
+    const open  = ()=>{ menu.classList.add('open');  btn.setAttribute('aria-expanded','true');  if(icon) icon.textContent='close'; };
 
-    btn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      if(menu.classList.contains('open')) closeMenu(); else openMenu();
-    });
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+    document.addEventListener('click', (e)=>{ if(!menu.contains(e.target) && !btn.contains(e.target)) close(); });
 
-    document.addEventListener('click', (e)=>{
-      if(!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
-    });
-
-    // Navigasi cepat via data-route (opsional, biar cocok dengan router kamu)
+    // Tutup saat klik item menu
     menu.addEventListener('click', (e)=>{
-      const b = e.target.closest('.menu-btn');
-      if(!b) return;
-      const route = b.dataset.route;
-      if(route && typeof window.setMode === 'function'){
-        window.setMode(route);
-      }
-      closeMenu();
+      if (e.target.closest('.menu-btn')) close();
     });
   }
-
-  bindBurger('burgerCat', 'menuCat');
-  bindBurger('burgerPO', 'menuPO');
-  bindBurger('burgerFilm', 'menuFilm');
-
-  // ====== Custom select open/close (Material) ======
-  const csWrap = document.getElementById('custom-select-wrapper');
-  const csBtn  = document.getElementById('custom-select-btn');
-  const csOpts = document.getElementById('custom-select-options');
-  if(csWrap && csBtn && csOpts){
-    csBtn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const open = !csWrap.classList.contains('open');
-      csWrap.classList.toggle('open', open);
-      csBtn.setAttribute('aria-expanded', String(open));
-    });
-    document.addEventListener('click', ()=>{ csWrap.classList.remove('open'); csBtn.setAttribute('aria-expanded','false'); });
-  }
-
-  // ====== Custom select (Film) ======
-  const fsWrap = document.getElementById('filmSelectWrap');
-  const fsBtn  = document.getElementById('filmSelectBtn');
-  const fsOpts = document.getElementById('filmSelectOptions');
-  if(fsWrap && fsBtn && fsOpts){
-    fsBtn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const open = !fsWrap.classList.contains('open');
-      fsWrap.classList.toggle('open', open);
-      fsBtn.setAttribute('aria-expanded', String(open));
-    });
-    document.addEventListener('click', ()=>{ fsWrap.classList.remove('open'); fsBtn.setAttribute('aria-expanded','false'); });
-  }
-
-  // ====== Modal close helper (kalau kamu pakai) ======
-  const vidModal = document.getElementById('vidModal');
-  const vidBackdrop = document.getElementById('vidBackdrop');
-  const vidClose = document.getElementById('vidClose');
-  const gdFolder = document.getElementById('gdFolder');
-  const gdFolderBackdrop = document.getElementById('gdFolderBackdrop');
-  const gdFolderClose = document.getElementById('gdFolderClose');
-
-  function closeModal(el){ if(el) el.classList.remove('open'); }
-  vidClose && vidClose.addEventListener('click', ()=> closeModal(vidModal));
-  vidBackdrop && vidBackdrop.addEventListener('click', ()=> closeModal(vidModal));
-  gdFolderClose && gdFolderClose.addEventListener('click', ()=> closeModal(gdFolder));
-  gdFolderBackdrop && gdFolderBackdrop.addEventListener('click', ()=> closeModal(gdFolder));
-
-  // NOTE:
-  // File ini fokus merombak TAMPILAN (Material You).
-  // Logic data-mu (katalog/pre-order/film) tetap berjalan dari file yang sudah ada.
-  // Kalau sebelumnya script.js berisi logic data, gabungkan bagian ripple & UI bind di atas
-  // ke paling bawah file logic-mu agar tidak bentrok.
+  bindBurger('burgerCat','menuCat');
+  // Kalau nanti ada halaman lain, aktifkan juga:
+  bindBurger('burgerPO','menuPO');
+  bindBurger('burgerFilm','menuFilm');
 })();
