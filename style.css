@@ -91,31 +91,31 @@ header p{color:var(--text-secondary);font-size:14px}
 .pagination-btn{padding:8px 14px;background:var(--primary);border:0;border-radius:8px;color:#fff;cursor:pointer}
 .pagination-btn:disabled{background:#cbd5e1;cursor:not-allowed}
 
-/* ===== Modal & Premium Player ===== */
-.modal{position:fixed;inset:0;display:none;z-index:1000;}
-.modal.open{display:block;}
-.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;}
-.modal.open .modal-backdrop{opacity:1;}
-.modal-dialog{position:relative;margin:3vh auto;max-width:1100px;width:94%;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden;transform:translateY(12px);opacity:.98;transition:transform .22s ease,opacity .22s ease;}
-.modal.open .modal-dialog{transform:translateY(0);opacity:1;}
-.modal-title{padding:14px 16px 6px;margin:0;font-weight:700;color:#1f2937}
-.modal-close{position:absolute;right:10px;top:8px;border:0;background:#edf2ff;color:#334155;font-size:22px;line-height:1;border-radius:10px;padding:6px 10px;cursor:pointer}
-.modal-close:hover{filter:brightness(.96);}
+/* ===== Modal & Premium Player (Scoped ke #filmModal) ===== */
+#filmModal{position:fixed;inset:0;display:none;z-index:1000;}
+#filmModal.open{display:block;}
+#filmModal .modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;}
+#filmModal.open .modal-backdrop{opacity:1;}
+#filmModal .modal-dialog{position:relative;margin:3vh auto;max-width:1100px;width:94%;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden;transform:translateY(12px);opacity:.98;transition:transform .22s ease,opacity .22s ease;}
+#filmModal.open .modal-dialog{transform:translateY(0);opacity:1;}
+#filmModal .modal-title{padding:14px 16px 6px;margin:0;font-weight:700;color:#1f2937}
+#filmModal .modal-close{position:absolute;right:10px;top:8px;border:0;background:#edf2ff;color:#334155;font-size:22px;line-height:1;border-radius:10px;padding:6px 10px;cursor:pointer}
+#filmModal .modal-close:hover{filter:brightness(.96);}
 
-/* Player */
-.pp-player{--pp:#5C80BC; --bg:#0b1220; background:var(--bg); border-radius:12px; margin:8px 16px 18px; overflow:hidden}
-.pp-player video{width:100%;height:auto;display:block;background:#000;}
-.pp-controls{padding:10px;background:linear-gradient(to top, rgba(0,0,0,.7), rgba(0,0,0,.2));color:#fff;font-size:14px}
-.pp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pp-btn{background:#1f2937;border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
-.pp-btn:hover{background:#111827}
-.pp-seek{appearance:none;width:100%;height:6px;border-radius:999px;background:#374151;outline:none}
-.pp-seek::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--pp);border:2px solid #fff;margin-top:-6px}
-.pp-vol input,.pp-bright input{width:110px}
-.pp-time{min-width:110px;display:flex;gap:6px;opacity:.9}
-.pp-speed{background:#1f2937;color:#fff;border:0;border-radius:8px;padding:8px}
-.pp-bright{display:flex;align-items:center;gap:6px;color:#ffe08a}
+/* Player Controls */
+#filmModal .pp-player{--pp:#5C80BC; --bg:#0b1220; background:var(--bg); border-radius:12px; margin:8px 16px 18px; overflow:hidden}
+#filmModal .pp-player video{width:100%;height:auto;display:block;background:#000;}
+#filmModal .pp-controls{padding:10px;background:linear-gradient(to top, rgba(0,0,0,.7), rgba(0,0,0,.2));color:#fff;font-size:14px}
+#filmModal .pp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#filmModal .pp-btn{background:#1f2937;border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+#filmModal .pp-btn:hover{background:#111827}
+#filmModal .pp-seek{appearance:none;width:100%;height:6px;border-radius:999px;background:#374151;outline:none}
+#filmModal .pp-seek::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--pp);border:2px solid #fff;margin-top:-6px}
+#filmModal .pp-vol input,#filmModal .pp-bright input{width:110px}
+#filmModal .pp-time{min-width:110px;display:flex;gap:6px;opacity:.9}
+#filmModal .pp-speed{background:#1f2937;color:#fff;border:0;border-radius:8px;padding:8px}
+#filmModal .pp-bright{display:flex;align-items:center;gap:6px;color:#ffe08a}
 @media (max-width:560px){
-  .pp-vol input,.pp-bright input{width:90px}
-  .modal-dialog{width:96%}
+  #filmModal .pp-vol input,#filmModal .pp-bright input{width:90px}
+  #filmModal .modal-dialog{width:96%}
 }
