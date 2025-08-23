@@ -188,12 +188,12 @@
     const q=poSearch.value.trim().toLowerCase();
     const statusFilter=poStatus.value;
     return poState.allData.filter(item=>{
-      const product = (item[2] || '').toLowerCase(); // Kolom C
-      const nickname = (item[4] || '').toLowerCase(); // Kolom E
-      const idGift = (item[6] || '').toLowerCase(); // Kolom G
+      const product   = (item[3] || '').toLowerCase(); // Kolom D
+      const nickname  = (item[5] || '').toLowerCase(); // Kolom F
+      const idGift    = (item[7] || '').toLowerCase(); // Kolom H
       const match = product.includes(q) || nickname.includes(q) || idGift.includes(q);
       
-      const status = normalizeStatus(item[5]); // Kolom F
+      const status = normalizeStatus(item[6]); // Kolom G
       return match && (statusFilter === 'all' || status === statusFilter);
     });
   };
@@ -215,18 +215,19 @@
 
     const frag=document.createDocumentFragment();
     pageData.forEach(item=>{
-      // Ambil data berdasarkan urutan kolom
+      // Ambil data berdasarkan urutan kolom BARU
       const tglOrder      = item[0]; // Kolom A
       const estPengiriman = item[1]; // Kolom B
-      const product       = item[2]; // Kolom C
-      const bulan         = item[3]; // Kolom D
-      const name          = item[4]; // Kolom E
-      const status        = item[5]; // Kolom F
+      // Kolom C (Nomor Telepon) sengaja dilewati
+      const product       = item[3]; // Kolom D
+      const bulan         = item[4]; // Kolom E
+      const name          = item[5]; // Kolom F
+      const status        = item[6]; // Kolom G
+      // Kolom H (ID Gift) sengaja dilewati
 
       const statusClass = normalizeStatus(status);
       const estDeliveryText = estPengiriman ? `Estimasi Pengiriman: ${estPengiriman} 20:00 WIB` : '';
       
-      // Siapkan data untuk detail yang bisa di-klik
       const details = [
         { label: 'TGL ORDER', value: tglOrder },
         { label: 'BULAN', value: bulan }
@@ -242,7 +243,7 @@
         <div class="card-header">
           <div>
             <div class="card-name">${name || 'Tanpa Nama'}</div>
-            <div class="card-product">${product || 'N/A'}</div>
+            <div class.card-product">${product || 'N/A'}</div>
           </div>
           <div class="status-badge ${statusClass}">${(status || 'Pending').toUpperCase()}</div>
         </div>
@@ -258,7 +259,7 @@
 
   const poSortByStatus=(data)=>{
     const order={'progress':1,'pending':2,'success':3,'failed':4};
-    return data.sort((a,b)=>order[normalizeStatus(a[5])]-order[normalizeStatus(b[5])]); // Kolom F
+    return data.sort((a,b)=>order[normalizeStatus(a[6])]-order[normalizeStatus(b[6])]); // Kolom G
   };
 
   async function poFetch(sheetName){
@@ -275,7 +276,7 @@
         return;
       }
 
-      rows.shift(); // Hapus baris pertama (header)
+      rows.shift();
       
       const dataRows = rows.filter(row => row && (row[0] || '').trim() !== '');
       poState.allData = poSortByStatus(dataRows);
