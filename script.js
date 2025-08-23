@@ -9,6 +9,10 @@
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
 
+  // ==== Google Drive API key (untuk listing isi folder) ====
+  // Jika tidak diisi, modal folder akan menampilkan pesan & tombol "Buka di Google Drive".
+  const DRIVE_API_KEY = ''; // contoh: 'AIza...'
+
   let DATA=[],CATS=[],activeCat='',query='';
 
   // ========= ELEMENTS =========
@@ -60,7 +64,7 @@
   const filmSelectOpts = document.getElementById('filmSelectOptions');
   const filmState = { initialized:false, data:[], selectedIndex:0 };
 
-  // ========= MENU =========
+  // ========= MENU MODULE (assume ada di menu.js) =========
   function setMode(next){
     const show = (el, on) => { if(el) el.style.display = on ? 'block':'none'; };
     [viewCatalog,viewPreorder,viewFilm].forEach(v=>{ if(v){ v.style.transition='opacity 200ms var(--curve)'; v.style.opacity=0; }});
@@ -307,7 +311,7 @@
       a.href = '#';
       a.addEventListener('click', (e)=>{
         e.preventDefault();
-        handleFilmClick(it); // ← Integrasi Google Drive Player/Folder
+        handleFilmClick(it);
       });
       a.addEventListener('mouseover', ()=>filmSelectSet(idx), {passive:true});
       frag.appendChild(clone);
@@ -381,49 +385,49 @@
     filmState.initialized = true;
   }
 
-  // ========= GOOGLE DRIVE PLAYER / FOLDER =========
-  // 1) ISI API KEY kamu di sini (Google Cloud → enable Drive API v3, buat API key Browser):
-  const DRIVE_API_KEY = 'PASTE_API_KEY_KAMU_DI_SINI';
+  // ========= HTML5 VIDEO PLAYER (direct Google Drive) =========
+  function driveFileId(url){
+    const m1 = url.match(/\/file\/d\/([A-Za-z0-9_-]+)/);
+    const m2 = url.match(/[?&]id=([A-Za-z0-9_-]+)/);
+    return (m1 && m1[1]) || (m2 && m2[1]) || null;
+  }
+  function driveDirectUrl(fileUrlOrId){
+    const id = /^[A-Za-z0-9_-]+$/.test(fileUrlOrId) ? fileUrlOrId : driveFileId(fileUrlOrId);
+    return id ? `https://drive.google.com/uc?export=download&id=${id}` : '';
+  }
 
-  // Ambil elemen overlay
-  const gdPlayer = document.getElementById('gdPlayer');
-  const gdStage = document.getElementById('gdStage');
-  const gdIframe = document.getElementById('gdIframe');
-  const gdTitle = document.getElementById('gdTitle');
-  const gdClose = document.getElementById('gdClose');
-  const gdPlayerBackdrop = document.getElementById('gdPlayerBackdrop');
+  const vidModal = document.getElementById('vidModal');
+  const vidBackdrop = document.getElementById('vidBackdrop');
+  const vidClose = document.getElementById('vidClose');
+  const vidTitle = document.getElementById('vidTitle');
+  const vidEl = document.getElementById('vidEl');
 
+  function openNativeVideo(title, srcUrl){
+    vidTitle.textContent = title || 'Memutar video';
+    vidEl.src = srcUrl;
+    vidEl.load();
+    vidModal.classList.add('open');
+  }
+  function closeNativeVideo(){
+    vidModal.classList.remove('open');
+    try{ vidEl.pause(); }catch{}
+    vidEl.removeAttribute('src');
+    vidEl.load();
+  }
+  vidClose?.addEventListener('click', closeNativeVideo);
+  vidBackdrop?.addEventListener('click', closeNativeVideo);
+  document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && vidModal.classList.contains('open')) closeNativeVideo(); });
+
+  // ========= GOOGLE DRIVE FOLDER (list episode) =========
   const gdFolder = document.getElementById('gdFolder');
-  const gdFolderStage = document.getElementById('gdFolderStage');
   const gdFolderTitle = document.getElementById('gdFolderTitle');
   const gdFolderList = document.getElementById('gdFolderList');
   const gdFolderClose = document.getElementById('gdFolderClose');
   const gdFolderBackdrop = document.getElementById('gdFolderBackdrop');
 
-  function driveIdFromFile(url){
-    const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    return (m1 && m1[1]) || (m2 && m2[1]) || null;
-  }
   function driveIdFromFolder(url){
-    const m = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+    const m = url.match(/\/folders\/([A-Za-z0-9_-]+)/);
     return m ? m[1] : null;
-  }
-  const isFolderLink = (url)=>/\/folders\//.test(url);
-
-  function openDriveFile(title, fileId){
-    gdTitle.textContent = title || 'Memuat…';
-    gdIframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
-    gdPlayer.classList.add('open');
-
-    const fsEl = gdStage;
-    if (fsEl.requestFullscreen) fsEl.requestFullscreen().catch(()=>{});
-    else if (fsEl.webkitRequestFullscreen) fsEl.webkitRequestFullscreen();
-  }
-  function closeDriveFile(){
-    gdPlayer.classList.remove('open');
-    gdIframe.src = '';
-    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   }
 
   async function openDriveFolder(title, folderId){
@@ -431,15 +435,21 @@
     gdFolderList.innerHTML = '<li><span class="name">Memuat episode…</span></li>';
     gdFolder.classList.add('open');
 
+    if(!DRIVE_API_KEY){
+      gdFolderList.innerHTML = `
+        <li><span class="name">Butuh API key Drive untuk menampilkan daftar episode di sini.</span>
+        <span class="meta"><a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" rel="noopener">Buka di Google Drive</a></span></li>`;
+      return;
+    }
+
     try{
       const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
       const fields = encodeURIComponent('files(id,name,mimeType,modifiedTime,size)');
       const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&orderBy=name&key=${DRIVE_API_KEY}`;
       const res = await fetch(url, {cache:'no-store'});
-      if(!res.ok) throw new Error(`Gagal memuat folder: ${res.statusText}`);
+      if(!res.ok) throw new Error(res.statusText);
       const data = await res.json();
-
-      const files = (data.files || []).filter(f => f.mimeType.startsWith('video/') || f.mimeType === 'application/vnd.google-apps.file');
+      const files = (data.files || []).filter(f => f.mimeType.startsWith('video/'));
 
       if(files.length === 0){
         gdFolderList.innerHTML = '<li><span class="name">Folder kosong / tidak ada video.</span></li>';
@@ -453,38 +463,38 @@
         li.innerHTML = `<span class="name">${f.name}</span><span class="meta">${(f.modifiedTime||'').slice(0,10)} ${fmt(f.size)}</span>`;
         li.addEventListener('click', ()=>{
           gdFolder.classList.remove('open');
-          openDriveFile(f.name, f.id);
+          const src = driveDirectUrl(f.id);
+          openNativeVideo(f.name, src);
         }, {passive:true});
         gdFolderList.appendChild(li);
       });
     }catch(e){
-      gdFolderList.innerHTML = `<li><span class="name">Gagal memuat folder. ${e.message}</span></li>`;
+      gdFolderList.innerHTML = `<li><span class="name">Gagal memuat folder. ${e.message}</span>
+        <span class="meta"><a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" rel="noopener">Buka di Google Drive</a></span></li>`;
     }
   }
   function closeDriveFolder(){ gdFolder.classList.remove('open'); }
-
-  gdClose?.addEventListener('click', closeDriveFile);
-  gdPlayerBackdrop?.addEventListener('click', closeDriveFile);
   gdFolderClose?.addEventListener('click', closeDriveFolder);
   gdFolderBackdrop?.addEventListener('click', closeDriveFolder);
-  document.addEventListener('keydown', (e)=>{
-    if(e.key==='Escape'){
-      if(gdPlayer.classList.contains('open')) closeDriveFile();
-      if(gdFolder.classList.contains('open')) closeDriveFolder();
-    }
-  });
+  document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && gdFolder.classList.contains('open')) closeDriveFolder(); });
 
+  // ========= HANDLER KLIK FILM =========
   function handleFilmClick(item){
-    const link = item.link || '';
+    const link  = item.link || '';
     const title = item.title || 'Film';
-    if (isFolderLink(link)){
-      const folderId = driveIdFromFolder(link);
-      if (folderId) openDriveFolder(title, folderId);
-    } else {
-      const fileId = driveIdFromFile(link);
-      if (fileId) openDriveFile(title, fileId);
-      else window.open(link, '_blank', 'noopener');
+
+    // Google Drive FILE → <video> native (direct link)
+    if (/\/file\/d\//.test(link) || /[?&]id=/.test(link)) {
+      const direct = driveDirectUrl(link);
+      if (direct) { openNativeVideo(title, direct); return; }
     }
+    // Google Drive FOLDER → tampilkan list episode (modal)
+    if (/\/folders\//.test(link)) {
+      const folderId = driveIdFromFolder(link);
+      if (folderId) { openDriveFolder(title, folderId); return; }
+    }
+    // Fallback
+    window.open(link, '_blank', 'noopener');
   }
 
   // ========= START =========
