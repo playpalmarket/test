@@ -1,354 +1,301 @@
-/* =========================
-   PlayPal.ID — Elegant & Full Feature
-   ========================= */
+(function(){
+  // ========= CONFIG =========
+  const SHEET_ID='1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw';
+  const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'}};
+  const WA_NUMBER='6285877001999';
+  const WA_GREETING='*Detail pesanan:*';
+  const PO_ITEMS_PER_PAGE = 15;
 
-const CONFIG = {
-  SHEET_ID: "1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw",
-  DEFAULT_SHEET: "Sheet1",
-  PAGE_SIZE: 30,
-  COLUMN_ALIASES: {
-    name:  ["nama","name","buyer","user","id","id server"],
-    item:  ["item","produk","product","paket","order","deskripsi"],
-    status:["status","state","progress"]
-  },
-  STATUS_MAP: {
-    "SUCCESS":"success","DONE":"success","SELESAI":"success",
-    "PROGRESS":"progress","PROCESS":"progress","ON PROGRESS":"progress",
-    "PENDING":"pending","WAITING":"pending",
-    "FAILED":"failed","CANCEL":"failed"
-  },
-  STORAGE: {
-    sheet: "pp_sheet",
-    section: "pp_section",
-    query: "pp_query",
-    status: "pp_status",
-    sort: "pp_sort"
+  let DATA=[],CATS=[],activeCat='',query='';
+
+  // ========= ELEMENTS =========
+  const viewCatalog=document.getElementById('viewCatalog');
+  const viewPreorder=document.getElementById('viewPreorder');
+  // ... (element selectors remain the same, but grouped for clarity)
+  // Catalog elements
+  const listEl=document.getElementById('list-container');
+  const searchEl=document.getElementById('search');
+  const countInfoEl=document.getElementById('countInfo');
+  const itemTmpl=document.getElementById('itemTmpl');
+  const errBox=document.getElementById('error');
+  const customSelectWrapper=document.getElementById('custom-select-wrapper');
+  const customSelectBtn=document.getElementById('custom-select-btn');
+  const customSelectValue=document.getElementById('custom-select-value');
+  const customSelectOptions=document.getElementById('custom-select-options');
+  const burgerCat=document.getElementById('burgerCat');
+  const menuCat  =document.getElementById('menuCat');
+  // Pre-order elements
+  const poSearch=document.getElementById('poSearch');
+  const poStatus=document.getElementById('poStatus');
+  const poSheet =document.getElementById('poSheet');
+  const poList  =document.getElementById('poList');
+  const poPrev  =document.getElementById('poPrev');
+  const poNext  =document.getElementById('poNext');
+  const poTotal =document.getElementById('poTotal');
+  const burgerPO =document.getElementById('burgerPO');
+  const menuPO   =document.getElementById('menuPO');
+  
+  // ========= MENU =========
+  function closeAllMenus(){
+    [burgerCat,burgerPO].forEach(b=>b && b.classList.remove('active'));
+    [menuCat,menuPO].forEach(m=>m && m.classList.remove('open'));
   }
-};
-
-// ----- Elements
-const $ = sel => document.querySelector(sel);
-const els = {
-  burgerBtn: $("#burgerBtn"),
-  dropdown: $("#dropdown"),
-  refreshBtn: $("#refreshBtn"),
-  tabs: Array.from(document.querySelectorAll(".tabbar .tab")),
-  sheetSelect: $("#sheetSelect"),
-  searchInput: $("#searchInput"),
-  statusFilter: $("#statusFilter"),
-  sortSelect: $("#sortSelect"),
-  totalInfo: $("#totalInfo"),
-  loadMoreBtn: $("#loadMoreBtn"),
-  loader: $("#loader"),
-  toast: $("#toast"),
-  sections: {
-    katalog: $("#katalog"),
-    preorder: $("#preorder"),
-    film: $("#film"),
-  },
-  lists: {
-    katalog: $("#listKatalog"),
-    preorder: $("#listPreorder"),
-    film: $("#listFilm"),
+  function toggleMenu(which){
+    const btn = which==='cat'?burgerCat:burgerPO;
+    const menu= which==='cat'?menuCat:menuPO;
+    const open= menu.classList.contains('open');
+    closeAllMenus();
+    if(!open){ btn?.classList.add('active'); menu?.classList.add('open'); }
   }
-};
-
-let currentSection = "katalog";
-let cache = {};      // { sheetName: rows[] }
-let headerMap = {};  // { sheetName: {name:idx,item:idx,status:idx} }
-let filteredRows = []; // hasil filter saat ini (untuk paging)
-let shownCount = 0;
-
-// ----- Basic UI
-els.burgerBtn.addEventListener("click", () => els.dropdown.classList.toggle("hidden"));
-document.addEventListener("click", (e)=>{
-  if (!els.dropdown.contains(e.target) && e.target !== els.burgerBtn) els.dropdown.classList.add("hidden");
-});
-els.dropdown.addEventListener("click", (e)=>{
-  const btn = e.target.closest(".dropdown-item");
-  if (!btn) return;
-  const action = btn.dataset.action;
-  if (action === "refresh") { hardRefresh(); return; }
-  const id = (btn.dataset.target || "").replace("#","");
-  showSection(id);
-  els.dropdown.classList.add("hidden");
-});
-
-// Tabs
-els.tabs.forEach(t => t.addEventListener("click", () => {
-  showSection(t.dataset.section);
-}));
-
-function syncTabs(){
-  els.tabs.forEach(t=>{
-    const active = t.dataset.section === currentSection;
-    t.classList.toggle("active", active);
-    t.setAttribute("aria-selected", active ? "true" : "false");
-  });
-}
-
-// ----- Controls
-els.refreshBtn.addEventListener("click", hardRefresh);
-
-els.sheetSelect.addEventListener("change", async ()=>{
-  localStorage.setItem(CONFIG.STORAGE.sheet, els.sheetSelect.value);
-  await ensureSheetLoaded(els.sheetSelect.value, true);
-  applyAndRender(); toast(`Sheet: ${els.sheetSelect.value}`);
-});
-
-const debouncedSearch = debounce(() => {
-  localStorage.setItem(CONFIG.STORAGE.query, els.searchInput.value || "");
-  applyAndRender();
-}, 150);
-els.searchInput.addEventListener("input", debouncedSearch);
-
-els.statusFilter.addEventListener("change", () => {
-  localStorage.setItem(CONFIG.STORAGE.status, els.statusFilter.value || "");
-  applyAndRender();
-});
-
-els.sortSelect.addEventListener("change", () => {
-  localStorage.setItem(CONFIG.STORAGE.sort, els.sortSelect.value || "name-asc");
-  applyAndRender();
-});
-
-els.loadMoreBtn.addEventListener("click", () => {
-  renderChunk();
-});
-
-// ----- Section toggle
-function showSection(id){
-  if (!els.sections[id]) return;
-  currentSection = id;
-  localStorage.setItem(CONFIG.STORAGE.section, id);
-  Object.keys(els.sections).forEach(k=>{
-    els.sections[k].classList.toggle("is-active", k === id);
-  });
-  syncTabs();
-  applyAndRender();
-}
-
-// ----- GViz helpers
-function gvizUrl(sheet){
-  const base = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq`;
-  const p = new URLSearchParams({ tqx: "out:json", sheet });
-  return `${base}?${p.toString()}`;
-}
-
-async function fetchSheetRows(sheet){
-  const res = await fetch(gvizUrl(sheet), { cache: "no-store" });
-  const text = await res.text();
-  const json = JSON.parse(text.replace(/^[\s\S]*setResponse\(/,"").replace(/\);\s*$/,""));
-  const cols = json.table.cols.map(c => (c.label || "").trim());
-  const rows = json.table.rows.map(r => (r.c || []).map(cell => normalizeCell(cell)));
-  const lc = cols.map(c => c.toLowerCase());
-
-  headerMap[sheet] = {
-    name: findHeaderIndex(lc, CONFIG.COLUMN_ALIASES.name),
-    item: findHeaderIndex(lc, CONFIG.COLUMN_ALIASES.item),
-    status: findHeaderIndex(lc, CONFIG.COLUMN_ALIASES.status)
-  };
-  return rows.slice(1); // buang header baris-0
-}
-
-function normalizeCell(cell){
-  if (!cell || cell.v === null) return "";
-  // tampilkan format (cell.f) jika ada (GViz sering memberi format tanggal siap pakai)
-  if (cell.f && typeof cell.f === "string") return cell.f;
-  // Date object
-  if (cell.v instanceof Date) return formatDate(cell.v);
-  // String Date(…)
-  if (typeof cell.v === "string" && /^Date\(\d+,\d+,\d+\)/.test(cell.v)) {
-    const [y,m,d] = cell.v.match(/\d+/g).map(Number);
-    return formatDate(new Date(y, m-1, d));
-  }
-  return String(cell.v);
-}
-function formatDate(d){
-  return d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
-}
-function findHeaderIndex(lowercaseCols, aliases){
-  for (const a of aliases){
-    const i = lowercaseCols.indexOf(a);
-    if (i !== -1) return i;
-  }
-  return Math.min(0, lowercaseCols.length-1);
-}
-
-async function ensureSheetLoaded(sheet, force=false){
-  if (!force && cache[sheet]) return;
-  try{
-    showLoader(true);
-    cache[sheet] = await fetchSheetRows(sheet);
-  }catch(e){
-    console.error(e);
-    cache[sheet] = [];
-    toast("Gagal memuat data. Pastikan izin sheet publik (viewer).");
-  }finally{
-    showLoader(false);
-  }
-}
-
-function hardRefresh(){
-  const s = els.sheetSelect.value;
-  cache[s] = null;
-  ensureSheetLoaded(s, true).then(()=> applyAndRender());
-  toast("Data diperbarui");
-}
-
-// ----- Apply (search/filter/sort) & render
-function applyFilters(rows){
-  const sheet = els.sheetSelect.value || CONFIG.DEFAULT_SHEET;
-  const map = headerMap[sheet] || {name:0,item:1,status:2};
-
-  const q = (els.searchInput.value || "").trim().toLowerCase();
-  const fStatus = (els.statusFilter.value || "").trim().toUpperCase();
-  const sort = (els.sortSelect.value || "name-asc");
-
-  let list = rows.filter(r=>{
-    const name = String(r[map.name] ?? "");
-    const item = String(r[map.item] ?? "");
-    const statusRaw = String(r[map.status] ?? "");
-
-    const hay = `${name} ${item} ${statusRaw}`.toLowerCase();
-    const okQuery = q ? hay.includes(q) : true;
-
-    const badge = statusToClass(statusRaw);
-    const okStatus = fStatus ? (badge && badge.toUpperCase() === fStatus) : true;
-
-    return okQuery && okStatus;
+  burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
+  burgerPO ?.addEventListener('click',()=>toggleMenu('po'));
+  document.getElementById('closeMenuCat')?.addEventListener('click',closeAllMenus);
+  document.getElementById('closeMenuPO') ?.addEventListener('click',closeAllMenus);
+  document.addEventListener('click',(e)=>{
+    const isInsideMenu = menuCat?.contains(e.target) || burgerCat?.contains(e.target) || menuPO?.contains(e.target) || burgerPO?.contains(e.target);
+    if(!isInsideMenu) closeAllMenus();
   });
 
-  // sort
-  const byName = (a,b) => {
-    const map = headerMap[sheet]; const av=(a[map.name]||"").toString().toLowerCase(); const bv=(b[map.name]||"").toString().toLowerCase();
-    return av.localeCompare(bv, "id");
-  };
-  const statusOrder = ["SUCCESS","PROGRESS","PENDING","FAILED"];
-  const byStatus = (a,b) => {
-    const map = headerMap[sheet];
-    const as = statusToClass(a[map.status]||"").toUpperCase();
-    const bs = statusToClass(b[map.status]||"").toUpperCase();
-    return statusOrder.indexOf(as) - statusOrder.indexOf(bs);
-  };
-
-  if (sort === "name-asc") list.sort(byName);
-  else if (sort === "name-desc") list.sort((a,b)=>-byName(a,b));
-  else if (sort === "status") list.sort(byStatus);
-
-  return list;
-}
-
-function applyAndRender(){
-  const s = els.sheetSelect.value || CONFIG.DEFAULT_SHEET;
-  const rows = cache[s] || [];
-
-  filteredRows = applyFilters(rows);
-  els.totalInfo.textContent = `${filteredRows.length} total pesanan`;
-
-  shownCount = 0;
-  getActiveList().innerHTML = "";
-  renderChunk();
-}
-
-function renderChunk(){
-  const listEl = getActiveList();
-  const sheet = els.sheetSelect.value || CONFIG.DEFAULT_SHEET;
-  const map = headerMap[sheet] || {name:0,item:1,status:2};
-
-  const next = filteredRows.slice(shownCount, shownCount + CONFIG.PAGE_SIZE);
-  for (const r of next){
-    const title = safe(r[map.name]);
-    const sub = safe(r[map.item]);
-    const badge = statusToClass(r[map.status]);
-    listEl.appendChild(cardEl(title, sub, badge));
+  function setMode(next){
+    viewCatalog.style.display = next==='katalog' ? 'block' : 'none';
+    viewPreorder.style.display= next==='preorder' ? 'block' : 'none';
+    closeAllMenus();
+    if(next==='preorder' && !poState.initialized) poInit();
+    window.scrollTo({top:0,behavior:'smooth'});
   }
-  shownCount += next.length;
+  [...document.querySelectorAll('.menu-btn[data-mode]')]
+    .forEach(btn=>btn.addEventListener('click',()=>setMode(btn.getAttribute('data-mode'))));
 
-  // empty state
-  if (filteredRows.length === 0){
-    listEl.innerHTML = "";
-    listEl.appendChild(emptyState());
+  // ========= UTILS =========
+  const prettyLabel=(raw)=>String(raw||'').trim().replace(/\s+/g,' ');
+  const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
+  const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+  const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
+
+  // ========= KATALOG =========
+  function parseGVizPairs(txt){
+    const match = txt.match(/google\.visualization\.Query\.setResponse\((.*)\)/s);
+    if (!match || !match[1]) throw new Error('Invalid GViz response.');
+    const obj = JSON.parse(match[1]);
+    const table=obj.table||{}, rows=table.rows||[], cols=table.cols||[];
+    const pairs=Array.from({length:Math.floor(cols.length/2)},(_,i)=>({iTitle:i*2,iPrice:i*2+1,label:cols[i*2]?.label||''}))
+      .filter(p=>p.label&&cols[p.iPrice]);
+    const out=[];
+    for(const r of rows){ const c=r.c||[];
+      for(const p of pairs){
+        const title=String(c[p.iTitle]?.v||'').trim();
+        const priceRaw=c[p.iPrice]?.v; const price=(priceRaw!=null&&priceRaw!=='')?Number(priceRaw):NaN;
+        if(title&&!isNaN(price)) out.push({catKey:p.label,catLabel:prettyLabel(p.label),title,price});
+      }
+    }
+    return out;
   }
 
-  // toggle "load more"
-  toggleLoadMore(shownCount < filteredRows.length);
-}
+  function toggleCustomSelect(open){
+    const isOpen=typeof open==='boolean'?open:!customSelectWrapper.classList.contains('open');
+    customSelectWrapper.classList.toggle('open',isOpen);
+    customSelectBtn.setAttribute('aria-expanded',isOpen);
+  }
+  customSelectBtn.addEventListener('click',()=>toggleCustomSelect());
+  document.addEventListener('click',(e)=>{
+    if(!customSelectWrapper.contains(e.target)) toggleCustomSelect(false);
+  });
 
-function toggleLoadMore(show){
-  els.loadMoreBtn.classList.toggle("hidden", !show);
-}
+  function buildGameSelect(){
+    CATS = [...new Map(DATA.map(it => [it.catKey, it.catLabel])).entries()]
+           .map(([key, label]) => ({ key, label }));
 
-function getActiveList(){
-  return currentSection === "katalog" ? els.lists.katalog :
-         currentSection === "preorder" ? els.lists.preorder :
-         els.lists.film;
-}
+    customSelectOptions.innerHTML='';
+    CATS.forEach((c,idx)=>{
+      const el=document.createElement('div');
+      el.className='custom-select-option'; el.textContent=c.label; el.dataset.value=c.key; el.setAttribute('role','option');
+      if(idx===0) el.classList.add('selected');
+      el.addEventListener('click',()=>{
+        activeCat=c.key; customSelectValue.textContent=c.label;
+        customSelectOptions.querySelector('.selected')?.classList.remove('selected');
+        el.classList.add('selected'); toggleCustomSelect(false); renderList();
+      });
+      customSelectOptions.appendChild(el);
+    });
 
-// ----- DOM factories
-function cardEl(title, sub, badgeClass){
-  const d = document.createElement("article");
-  d.className = "card";
-  d.setAttribute("role", "listitem");
-  d.innerHTML = `
-    <div class="item-left">
-      <h3 class="item-title">${title || "-"}</h3>
-      <p class="item-sub">${sub || ""}</p>
-    </div>
-    <div class="item-right">
-      <span class="badge ${badgeClass.toLowerCase()}">${(badgeClass||"").toUpperCase()}</span>
-    </div>
-  `;
-  return d;
-}
-function emptyState(){
-  const d = document.createElement("div");
-  d.className = "card";
-  d.innerHTML = `<div class="item-left">
-    <h3 class="item-title">Tidak ada data</h3>
-    <p class="item-sub">Ubah kata kunci, status, atau sheet.</p>
-  </div>`;
-  return d;
-}
+    if(CATS.length>0){ activeCat=CATS[0].key; customSelectValue.textContent=CATS[0].label; }
+    else{ customSelectValue.textContent="Data tidak tersedia"; }
+  }
 
-// ----- Utils
-function statusToClass(raw){
-  const key = String(raw || "").trim().toUpperCase();
-  return CONFIG.STATUS_MAP[key] ? CONFIG.STATUS_MAP[key] : (key || "PENDING");
-}
-function safe(v){ return (v===undefined || v===null) ? "" : String(v); }
-function debounce(fn, wait=150){
-  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,args), wait); };
-}
-function toast(msg){
-  els.toast.textContent = msg;
-  els.toast.classList.remove("hidden");
-  clearTimeout(els.toast._t);
-  els.toast._t = setTimeout(()=> els.toast.classList.add("hidden"), 1800);
-}
-function showLoader(show){
-  els.loader.classList.toggle("hidden", !show);
-}
+  function renderList(){
+    const queryLower = query.toLowerCase();
+    const items=DATA.filter(x=>x.catKey===activeCat&&(query===''||x.title.toLowerCase().includes(queryLower)||String(x.price).includes(queryLower)));
+    listEl.innerHTML='';
+    if(items.length===0){ listEl.innerHTML=`<div class="empty">Tidak ada hasil ditemukan.</div>`; countInfoEl.textContent=''; return; }
+    
+    const frag=document.createDocumentFragment();
+    for(const it of items){
+      const clone=itemTmpl.content.cloneNode(true);
+      const link=clone.querySelector('.list-item');
+      link.querySelector('.title').textContent=it.title;
+      link.querySelector('.price').textContent=toIDR(it.price);
+      const text=`${WA_GREETING}\n› Tipe: Katalog\n› Game: ${it.catLabel}\n› Item: ${it.title}\n› Harga: ${toIDR(it.price)}`;
+      link.href=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+      frag.appendChild(clone);
+    }
+    listEl.appendChild(frag);
+    countInfoEl.textContent=`${items.length} item ditemukan`;
+  }
 
-// ----- Init
-(async function init(){
-  // Restore state
-  const savedSheet = localStorage.getItem(CONFIG.STORAGE.sheet) || CONFIG.DEFAULT_SHEET;
-  const savedSection = localStorage.getItem(CONFIG.STORAGE.section) || "katalog";
-  const savedQuery = localStorage.getItem(CONFIG.STORAGE.query) || "";
-  const savedStatus = localStorage.getItem(CONFIG.STORAGE.status) || "";
-  const savedSort = localStorage.getItem(CONFIG.STORAGE.sort) || "name-asc";
+  let debounceTimer;
+  searchEl.addEventListener('input',e=>{
+    clearTimeout(debounceTimer);
+    debounceTimer=setTimeout(()=>{ query=e.target.value.trim(); renderList(); }, 250);
+  });
 
-  // Sheet list (fallback statis-aman)
-  const sheets = [CONFIG.DEFAULT_SHEET, "PreOrder", "Film"].filter((v,i,a)=>a.indexOf(v)===i);
-  els.sheetSelect.innerHTML = sheets.map(s => `<option value="${s}" ${s===savedSheet?'selected':''}>${s}</option>`).join("");
+  async function loadCatalog(){
+    try{
+      errBox.style.display='none';
+      listEl.innerHTML=`<div class="empty">Memuat katalog...</div>`;
+      const res=await fetch(sheetUrlJSON(SHEETS.katalog.name),{cache:'no-store'});
+      if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText} (${res.status})`);
+      const txt=await res.text();
+      DATA=parseGVizPairs(txt);
+      if(DATA.length===0) throw new Error('Data kosong atau format kolom tidak sesuai.');
+      buildGameSelect(); renderList();
+    }catch(err){
+      console.error("Fetch Katalog failed:",err);
+      errBox.style.display='block'; 
+      errBox.textContent=`Gagal memuat data. Silakan coba muat ulang halaman. (${err.message})`;
+    }
+  }
 
-  // Controls restore
-  els.searchInput.value = savedQuery;
-  els.statusFilter.value = savedStatus;
-  els.sortSelect.value = savedSort;
+  // ========= PRE-ORDER =========
+  const poState={initialized:false,allData:[],currentPage:1,perPage: PO_ITEMS_PER_PAGE};
 
-  // Data
-  await ensureSheetLoaded(els.sheetSelect.value);
-  showSection(savedSection); // akan sekaligus render
+  const PRIVACY_KEYS=new Set(['id gift','gift id','gift','nomor','no','telepon','no telepon','no. telepon','nomor telepon','phone','hp','whatsapp','wa','no wa','no. wa']);
+  const isPrivacyKey=(k)=>{ const s=String(k||'').trim().toLowerCase(); return PRIVACY_KEYS.has(s) || [...PRIVACY_KEYS].some(key=>s.includes(key)); };
+  const scrubRecord=(rec)=>{ const out={}; for(const k in rec) if(!isPrivacyKey(k)) out[k]=rec[k]; return out; };
+
+  const STATUS_MAP = new Map([
+    [['success','selesai','berhasil','done'], 'success'],
+    [['progress','proses','diproses','processing'], 'progress'],
+    [['failed','gagal','dibatalkan','cancel','error'], 'failed']
+  ]);
+  const normalizeStatus = (raw) => {
+    const s = String(raw || '').trim().toLowerCase();
+    for (const [keys, value] of STATUS_MAP.entries()) {
+      if (keys.includes(s)) return value;
+    }
+    return 'pending';
+  };
+  
+  const poFilterData=()=>{ const q=poSearch.value.trim().toLowerCase(); const status=poStatus.value;
+    return poState.allData.filter(item=>{
+      const name=(item['Nickname']||'').toLowerCase();
+      const idServer=(item['ID Server']||'').toLowerCase();
+      const product=(item['Produk / Item']||item['Item']||'').toLowerCase();
+      const match=name.includes(q)||idServer.includes(q)||product.includes(q);
+      const s=normalizeStatus(item['Status']);
+      return match&&(status==='all'||s===status);
+    });
+  };
+
+  const poUpdatePagination=(cur,total)=>{ poPrev.disabled=cur<=1; poNext.disabled=cur>=total; };
+
+  const poRender=()=>{
+    const filtered=poFilterData();
+    const totalItems=poState.allData.length;
+    poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;
+
+    const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));
+    poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);
+    const start=(poState.currentPage-1)*poState.perPage;
+    const pageData=filtered.slice(start, start+poState.perPage);
+
+    poList.innerHTML='';
+    if(pageData.length===0){ poList.innerHTML=`<div class="empty-state"><p>Tidak Ada Hasil Ditemukan</p></div>`; poUpdatePagination(0,0); return; }
+
+    const frag=document.createDocumentFragment();
+    pageData.forEach(item=>{
+      const clean=scrubRecord(item);
+      const statusClass=normalizeStatus(clean['Status']);
+      const name=clean['Nickname']||clean['ID Server']||'Tanpa Nama';
+      const product=clean['Produk / Item']||clean['Item']||'N/A';
+      const estDelivery=clean['Est. Pengiriman']?`${clean['Est. Pengiriman']} 20:00 WIB`:'';
+
+      const HIDE=new Set(['Nickname','ID Server','Produk / Item','Item','Status','Est. Pengiriman']);
+      const detailsHtml=Object.entries(clean).filter(([k,v])=>v&&!HIDE.has(k)).map(([k,v])=>`
+        <div class="detail-item">
+          <div class="detail-label">${k}</div>
+          <div class="detail-value">${v}</div>
+        </div>`).join('');
+
+      const card=document.createElement('article');
+      card.className=`card ${detailsHtml?'clickable':''}`;
+      card.innerHTML=`
+        <div class="card-header">
+          <div>
+            <div class="card-name">${name}</div>
+            <div class="card-product">${product}</div>
+          </div>
+          <div class="status-badge ${statusClass}">${(clean['Status']||'Pending').toUpperCase()}</div>
+        </div>
+        ${estDelivery?`<div class="card-date">Estimasi Pengiriman: ${estDelivery}</div>`:''}
+        ${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;
+      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
+      frag.appendChild(card);
+    });
+    poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
+  };
+
+  const poSortByStatus=(data)=>{ const order={'progress':1,'pending':2,'success':3,'failed':4};
+    return data.sort((a,b)=>order[normalizeStatus(a.Status)]-order[normalizeStatus(b.Status)]);
+  };
+
+  async function poFetch(sheetIndex0){
+    poList.innerHTML=`<div class="loading"><div class="spinner"></div><p>Memuat data...</p></div>`;
+    poTotal.textContent='Memuat data...';
+    try{
+      const res=await fetch(sheetUrlCSV(sheetIndex0),{cache:'no-store'});
+      if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
+      const text=await res.text();
+      const rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
+      if(rows.length<1){ poState.allData=[]; return; }
+
+      let mappedData;
+      if(sheetIndex0===0){
+        const headers=rows.shift();
+        mappedData=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
+      }else{
+        const body=rows[0]?.length===3&&['id server','item','status'].includes(rows[0][0].toLowerCase())?rows.slice(1):rows;
+        mappedData=body.map(r=>({'ID Server':r[0]||'','Item':r[1]||'','Status':r[2]||''})).filter(item=>item['ID Server']);
+      }
+       poState.allData = poSortByStatus(mappedData);
+    }catch(e){
+      poState.allData=[]; 
+      poTotal.textContent='Gagal memuat data.'; 
+      console.error('Fetch Pre-Order failed:',e);
+    }finally{ 
+      poState.currentPage=1; 
+      poRender(); 
+    }
+  }
+
+  function poInit(){
+    if(poState.initialized) return;
+    const rebound=()=>{ poState.currentPage=1; poRender(); };
+    poSearch.addEventListener('input',rebound);
+    poStatus.addEventListener('change',rebound);
+    poSheet.addEventListener('change',e=>poFetch(parseInt(e.target.value,10)));
+    poPrev.addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
+    poNext.addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
+    poFetch(parseInt(poSheet.value,10) || 0);
+    poState.initialized=true;
+  }
+
+  // ========= START =========
+  loadCatalog();
+
+  // ========= ANTI‑ZOOM =========
+  // (No changes needed, this code is effective)
+  window.addEventListener('gesturestart',e=>e.preventDefault());
+  window.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey)e.preventDefault()},{passive:false});
+  window.addEventListener('keydown',e=>{const z=['Equal','NumpadAdd','Minus','NumpadSubtract','Digit0','Numpad0'];if((e.ctrlKey||e.metaKey)&&z.includes(e.code))e.preventDefault()});
+  (function(){let t=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-t<=300)e.preventDefault();t=n},{passive:false})})();
 })();
