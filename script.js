@@ -166,7 +166,7 @@
     }
   }
 
-  // ========= PRE-ORDER (MEKANISME BERDASARKAN URUTAN KOLOM) =========
+  // ========= PRE-ORDER =========
   const poSearch=document.getElementById('poSearch');
   const poStatus=document.getElementById('poStatus');
   const poSheet =document.getElementById('poSheet');
@@ -175,7 +175,7 @@
   const poNext  =document.getElementById('poNext');
   const poTotal =document.getElementById('poTotal');
 
-  const poState={initialized:false,allData:[],currentPage:1,perPage:15};
+  const poState={initialized:false,allData:[],currentPage:1,perPage:15, displayMode:'detailed'};
 
   const normalizeStatus=(raw)=>{ const s=String(raw||'').trim().toLowerCase();
     if(['success','selesai','berhasil','done'].includes(s)) return 'success';
@@ -187,14 +187,22 @@
   const poFilterData=()=>{
     const q=poSearch.value.trim().toLowerCase();
     const statusFilter=poStatus.value;
+    
     return poState.allData.filter(item=>{
-      const product   = (item[3] || '').toLowerCase(); // Kolom D
-      const nickname  = (item[5] || '').toLowerCase(); // Kolom F
-      const idGift    = (item[7] || '').toLowerCase(); // Kolom H
-      const match = product.includes(q) || nickname.includes(q) || idGift.includes(q);
-      
-      const status = normalizeStatus(item[6]); // Kolom G
-      return match && (statusFilter === 'all' || status === statusFilter);
+      if (poState.displayMode === 'detailed') {
+        const product   = (item[3] || '').toLowerCase(); // Kolom D
+        const nickname  = (item[5] || '').toLowerCase(); // Kolom F
+        const idGift    = (item[7] || '').toLowerCase(); // Kolom H
+        const match = product.includes(q) || nickname.includes(q) || idGift.includes(q);
+        const status = normalizeStatus(item[6]); // Kolom G
+        return match && (statusFilter === 'all' || status === statusFilter);
+      } else { // simple mode
+        const orderNum = (item[0] || '').toLowerCase(); // Kolom A
+        const product  = (item[1] || '').toLowerCase(); // Kolom B
+        const match = orderNum.includes(q) || product.includes(q);
+        const status = normalizeStatus(item[2]); // Kolom C
+        return match && (statusFilter === 'all' || status === statusFilter);
+      }
     });
   };
 
@@ -215,56 +223,76 @@
 
     const frag=document.createDocumentFragment();
     pageData.forEach(item=>{
-      // Ambil data berdasarkan urutan kolom yang BENAR
-      const tglOrder      = item[0]; // Kolom A
-      const estPengiriman = item[1]; // Kolom B
-      // Kolom C (Nomor Telepon) tidak ditampilkan
-      const product       = item[3]; // Kolom D
-      const bulan         = item[4]; // Kolom E
-      const name          = item[5]; // Kolom F
-      const status        = item[6]; // Kolom G
-      // Kolom H (ID Gift) tidak ditampilkan
-
-      const statusClass = normalizeStatus(status);
-      const estDeliveryText = estPengiriman ? `Estimasi Pengiriman: ${estPengiriman} 20:00 WIB` : '';
-      
-      const details = [
-        { label: 'TGL ORDER', value: tglOrder },
-        { label: 'BULAN', value: bulan }
-      ];
-      const detailsHtml = details
-        .filter(d => d.value && String(d.value).trim() !== '')
-        .map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`)
-        .join('');
-
       const card=document.createElement('article');
-      card.className=`card ${detailsHtml ? 'clickable' : ''}`;
-      card.innerHTML=`
-        <div class="card-header">
-          <div>
-            <div class="card-name">${name || 'Tanpa Nama'}</div>
-            <div class="card-product">${product || 'N/A'}</div>
-          </div>
-          <div class="status-badge ${statusClass}">${(status || 'Pending').toUpperCase()}</div>
-        </div>
-        ${estDeliveryText ? `<div class="card-date">${estDeliveryText}</div>` : ''}
-        ${detailsHtml ? `<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>` : ''}
-      `;
 
-      if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
+      if (poState.displayMode === 'detailed') {
+        // TAMPILAN DETAIL UNTUK SHEET 1
+        const tglOrder      = item[0];
+        const estPengiriman = item[1];
+        const product       = item[3];
+        const bulan         = item[4];
+        const name          = item[5];
+        const status        = item[6];
+
+        const statusClass = normalizeStatus(status);
+        const estDeliveryText = estPengiriman ? `Estimasi Pengiriman: ${estPengiriman} 20:00 WIB` : '';
+        
+        const details = [ { label: 'TGL ORDER', value: tglOrder }, { label: 'BULAN', value: bulan } ];
+        const detailsHtml = details
+          .filter(d => d.value && String(d.value).trim() !== '')
+          .map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`)
+          .join('');
+
+        card.className=`card ${detailsHtml ? 'clickable' : ''}`;
+        card.innerHTML=`
+          <div class="card-header">
+            <div>
+              <div class="card-name">${name || 'Tanpa Nama'}</div>
+              <div class="card-product">${product || 'N/A'}</div>
+            </div>
+            <div class="status-badge ${statusClass}">${(status || 'Pending').toUpperCase()}</div>
+          </div>
+          ${estDeliveryText ? `<div class="card-date">${estDeliveryText}</div>` : ''}
+          ${detailsHtml ? `<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>` : ''}
+        `;
+        if(detailsHtml) card.addEventListener('click',()=>card.classList.toggle('expanded'));
+
+      } else {
+        // TAMPILAN SIMPEL UNTUK SHEET 2
+        const orderNum = item[0];
+        const product  = item[1];
+        const status   = item[2];
+        const statusClass = normalizeStatus(status);
+
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <div class="card-name">${orderNum || 'Tanpa Nomor'}</div>
+              <div class="card-product">${product || 'N/A'}</div>
+            </div>
+            <div class="status-badge ${statusClass}">${(status || 'Pending').toUpperCase()}</div>
+          </div>
+        `;
+      }
       frag.appendChild(card);
     });
     poList.appendChild(frag); poUpdatePagination(poState.currentPage,totalPages);
   };
 
-  const poSortByStatus=(data)=>{
+  const poSortByStatus=(data, mode)=>{
     const order={'progress':1,'pending':2,'success':3,'failed':4};
-    return data.sort((a,b)=>order[normalizeStatus(a[6])]-order[normalizeStatus(b[6])]); // Kolom G
+    const statusIndex = (mode === 'detailed') ? 6 : 2; // Kolom G untuk detail, Kolom C untuk simpel
+    return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);
   };
 
   async function poFetch(sheetName){
     poTotal.textContent='Memuat data...';
     showSkeleton(poList, skeletonCardTmpl, 5);
+    
+    // Set display mode based on sheet
+    poState.displayMode = (sheetName === SHEETS.preorder.name1) ? 'detailed' : 'simple';
+
     try{
       const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});
       if(!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
@@ -279,7 +307,7 @@
       rows.shift();
       
       const dataRows = rows.filter(row => row && (row[0] || '').trim() !== '');
-      poState.allData = poSortByStatus(dataRows);
+      poState.allData = poSortByStatus(dataRows, poState.displayMode);
 
     }catch(e){
       poState.allData=[]; poTotal.textContent='Gagal memuat data.'; console.error('Fetch Pre-Order failed:',e);
