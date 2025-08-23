@@ -1,153 +1,119 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <title>PlayPal.ID — Katalog & Pre-Order</title>
-  <meta name="description" content="Destinasi utama top-up game & layanan digital. Katalog harga realtime dan status pre-order yang jelas." />
-
-  <!-- Open Graph / Twitter -->
-  <meta property="og:title" content="PlayPal.ID — Katalog & Pre-Order" />
-  <meta property="og:description" content="Katalog harga realtime dan status pre-order yang jelas." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="logo.jpeg" />
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <link rel="icon" href="logo.jpeg" />
-  <link rel="preconnect" href="https://docs.google.com" />
-  <link rel="dns-prefetch" href="https://docs.google.com" />
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+  <title>PlayPal.ID</title>
+  <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ==== HEADER ==== -->
-  <header class="appbar">
-    <div class="appbar-left">
-      <img src="logo.jpeg" alt="PlayPal.ID" class="logo">
-      <div class="brand">
-        <strong>PlayPal.ID</strong>
-        <span>Katalog & Pre-Order</span>
-      </div>
-    </div>
-    <div class="appbar-right">
-      <!-- burger untuk Katalog -->
-      <button id="burgerCat" class="icon-btn burger" aria-label="Menu Katalog" aria-expanded="false" aria-controls="menuCat">
-        <span></span><span></span><span></span>
-      </button>
-      <!-- burger untuk Pre-Order -->
-      <button id="burgerPO" class="icon-btn burger" aria-label="Menu Pre-Order" aria-expanded="false" aria-controls="menuPO">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </header>
+  <main class="wrap">
+    <header data-rail>
+      <img src="logo.png" alt="PlayPal.ID Logo" class="logo">
+      <h1>PlayPal.ID</h1>
+      <p>Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
+    </header>
 
-  <!-- ==== MENU PANEL KATALOG ==== -->
-  <aside id="menuCat" class="menu-panel" aria-hidden="true">
-    <div class="menu-head">
-      <h3>Katalog</h3>
-      <button id="closeMenuCat" class="icon-btn plain" aria-label="Tutup">✕</button>
-    </div>
-    <div class="menu-body">
-      <button class="menu-btn" data-mode="katalog">Tampilkan Katalog</button>
-      <button class="menu-btn" data-mode="preorder">Buka Pre-Order</button>
-      <div class="menu-note">Gunakan pencarian & kategori untuk menyaring item.</div>
-    </div>
-  </aside>
+    <section id="viewCatalog" aria-label="Katalog">
+      <div class="head-block cat-head" data-rail>
+        <div class="topbar" data-rail>
+          <div class="topbar-grid">
+            <div class="custom-select-wrapper" id="custom-select-wrapper">
+              <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span id="custom-select-value">Pilih Kategori</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+              </button>
+              <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
+            </div>
 
-  <!-- ==== MENU PANEL PRE-ORDER ==== -->
-  <aside id="menuPO" class="menu-panel" aria-hidden="true">
-    <div class="menu-head">
-      <h3>Pre-Order</h3>
-      <button id="closeMenuPO" class="icon-btn plain" aria-label="Tutup">✕</button>
-    </div>
-    <div class="menu-body">
-      <button class="menu-btn" data-mode="preorder">Tampilkan Pre-Order</button>
-      <button class="menu-btn" data-mode="katalog">Kembali ke Katalog</button>
-      <div class="menu-note">Pantau status dan filter data sesuai kebutuhan.</div>
-    </div>
-  </aside>
-
-  <main>
-    <!-- ===================== KATALOG ===================== -->
-    <section id="viewCatalog" class="view active">
-      <div class="toolbar">
-        <div id="custom-select-wrapper" class="custom-select" role="listbox" aria-expanded="false">
-          <button id="custom-select-btn" class="select-btn" aria-haspopup="listbox" aria-expanded="false">
-            <span id="custom-select-value">Memuat…</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-          </button>
-          <div id="custom-select-options" class="select-options" role="listbox"></div>
+            <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
+              <span></span><span></span><span></span>
+            </button>
+            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
+              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
+              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
+              <div class="menu-divider"></div>
+              <button class="menu-btn" id="closeMenuCat" type="button">Tutup</button>
+            </nav>
+          </div>
         </div>
 
-        <div class="searchbox">
-          <input id="search" type="search" placeholder="Cari item…">
+        <div class="search-row" data-rail>
+          <div class="search-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.901l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+            <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
+          </div>
         </div>
-
-        <div id="countInfo" class="count-info"></div>
       </div>
 
-      <div id="error" class="error" hidden></div>
+      <div id="countInfo" data-rail></div>
+      <section id="list-container" class="list-container" aria-live="polite" data-rail></section>
+      <section id="error" class="err" style="display:none" data-rail></section>
 
-      <div id="list-container" class="list"></div>
-
-      <!-- Template item katalog -->
       <template id="itemTmpl">
         <a class="list-item" target="_blank" rel="noopener">
-          <div class="meta">
-            <div class="title"></div>
-            <div class="subtitle">Klik untuk order via WhatsApp</div>
-          </div>
-          <div class="price"></div>
+          <span class="title"></span>
+          <span class="price"></span>
         </a>
       </template>
     </section>
 
-    <!-- ===================== PRE-ORDER ===================== -->
-    <section id="viewPreorder" class="view">
-      <div class="po-toolbar">
-        <label class="po-field">
-          <span>Sheet</span>
-          <select id="poSheet">
-            <option value="0">Sheet1</option>
-            <option value="1">Sheet2 (skip baris judul)</option>
-          </select>
-        </label>
+    <section id="viewPreorder" aria-label="Pre-Order">
+      <div class="head-block po-head" data-rail>
+        <div class="topbar" data-rail>
+          <div class="topbar-grid">
+            <select class="select-native" id="poSheet" aria-label="Pilih kategori pesanan">
+              <option value="0">Starlight Member</option>
+              <option value="1">Pesanan Umum</option>
+            </select>
 
-        <label class="po-field">
-          <span>Status</span>
-          <select id="poStatus">
-            <option value="all">Semua</option>
-            <option value="progress">Proses</option>
+            <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
+              <span></span><span></span><span></span>
+            </button>
+            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
+              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
+              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
+              <div class="menu-divider"></div>
+              <button class="menu-btn" id="closeMenuPO" type="button">Tutup</button>
+            </nav>
+          </div>
+        </div>
+
+        <div class="search-row" data-rail>
+          <div class="search-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.901l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+            <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server / item..." />
+          </div>
+        </div>
+
+        <div class="status-row" data-rail>
+          <select class="status-select" id="poStatus" aria-label="Filter status">
+            <option value="all">Semua Status</option>
+            <option value="success">Success</option>
+            <option value="progress">Progress</option>
             <option value="pending">Pending</option>
-            <option value="success">Sukses</option>
             <option value="failed">Gagal</option>
           </select>
-        </label>
+        </div>
 
-        <label class="po-field grow">
-          <span>Cari</span>
-          <input id="poSearch" type="search" placeholder="ID / Item / Status">
-        </label>
+        <div class="meta" id="poTotal" data-rail></div>
       </div>
 
-      <div id="poList" class="po-list"></div>
-
-      <div class="po-pager">
-        <button id="poPrev" class="btn">‹ Prev</button>
-        <div id="poTotal" class="po-total">—</div>
-        <button id="poNext" class="btn">Next ›</button>
+      <div class="container">
+        <main class="card-grid" id="poList" aria-live="polite" data-rail></main>
+        <nav class="pagination" aria-label="Pagination" data-rail>
+          <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
+          <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
+        </nav>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>© <span id="year"></span> PlayPal.ID</p>
-  </footer>
-
-  <script>
-    document.getElementById('year').textContent=new Date().getFullYear();
-  </script>
-  <script src="script.js" defer></script>
+  <script src="script.js"></script>
 </body>
 </html>
