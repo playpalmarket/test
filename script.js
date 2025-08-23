@@ -1,15 +1,19 @@
 (function(){
   // ========= CONFIG =========
   const SHEET_ID='1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw';
-  const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'}};
+  const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'}, film:{name:'Sheet4'}};
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
+
+  // Ganti ke URL Saweria kamu
+  const SAWERIA_URL = 'https://saweria.co/playpal';
 
   let DATA=[],CATS=[],activeCat='',query='';
 
   // ========= ELEMENTS =========
   const viewCatalog=document.getElementById('viewCatalog');
   const viewPreorder=document.getElementById('viewPreorder');
+  const viewFilm   =document.getElementById('viewFilm');
 
   const listEl=document.getElementById('list-container');
   const searchEl=document.getElementById('search');
@@ -24,28 +28,39 @@
 
   const burgerCat=document.getElementById('burgerCat');
   const burgerPO =document.getElementById('burgerPO');
+  const burgerFilm=document.getElementById('burgerFilm');
   const menuCat  =document.getElementById('menuCat');
   const menuPO   =document.getElementById('menuPO');
+  const menuFilm =document.getElementById('menuFilm');
+
+  // ====== FILM elements ======
+  const filmGate   = document.getElementById('filmGate');
+  const filmMeta   = document.getElementById('filmMeta');
+  const filmList   = document.getElementById('filmList');
+  const filmTmpl   = document.getElementById('filmTmpl');
+  const btnSaweria = document.getElementById('btnSaweria');
+  const btnSudahBayar = document.getElementById('btnSudahBayar');
 
   // ========= MENU: pakai modul terpisah =========
   function setMode(next){
-    // transisi halus via CSS (opacity)
-    [viewCatalog,viewPreorder].forEach(v=>{
-      v.style.transition='opacity 200ms var(--curve)';
-      v.style.opacity = 0;
-    });
+    const show = (el, on) => { if(el) el.style.display = on ? 'block':'none'; };
+    [viewCatalog,viewPreorder,viewFilm].forEach(v=>{ if(v){ v.style.transition='opacity 200ms var(--curve)'; v.style.opacity=0; }});
     requestAnimationFrame(()=>{
-      viewCatalog.style.display = next==='katalog' ? 'block' : 'none';
-      viewPreorder.style.display= next==='preorder' ? 'block' : 'none';
-      [viewCatalog,viewPreorder].forEach(v=>{ v.style.opacity=1; });
+      show(viewCatalog,  next==='katalog');
+      show(viewPreorder, next==='preorder');
+      show(viewFilm,     next==='film');
+      [viewCatalog,viewPreorder,viewFilm].forEach(v=>{ if(v) v.style.opacity=1; });
     });
     if(next==='preorder' && !poState.initialized) poInit();
+    if(next==='film'     && !filmState.initialized) filmInit();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  // Inisialisasi modul menu, simpan API-nya global biar mudah dipakai
+  // Inisialisasi modul menu
   window.MenuAPI = window.MenuModule.init({
-    burgerCat, burgerPO, menuCat, menuPO, onRoute: setMode
+    burgerCat, burgerPO, burgerFilm,
+    menuCat, menuPO, menuFilm,
+    onRoute: setMode
   });
 
   // ========= UTILS =========
@@ -53,6 +68,12 @@
   const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
   const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
   const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
+
+  // ====== Gate pembayaran (auto via ?paid=1 atau manual via localStorage) ======
+  const PAID_KEY = 'pp_paid_film';
+  const urlParams = new URLSearchParams(location.search);
+  const isPaid = () => urlParams.get('paid') === '1' || localStorage.getItem(PAID_KEY) === '1';
+  const markPaid = () => { localStorage.setItem(PAID_KEY,'1'); };
 
   // ========= KATALOG =========
   function parseGVizPairs(txt){
@@ -76,9 +97,9 @@
     customSelectWrapper.classList.toggle('open',isOpen);
     customSelectBtn.setAttribute('aria-expanded',isOpen);
   }
-  customSelectBtn.addEventListener('click',()=>toggleCustomSelect());
+  customSelectBtn?.addEventListener('click',()=>toggleCustomSelect());
   document.addEventListener('click',(e)=>{
-    if(!customSelectWrapper.contains(e.target) && !customSelectBtn.contains(e.target)) toggleCustomSelect(false);
+    if(!customSelectWrapper?.contains(e.target) && !customSelectBtn?.contains(e.target)) toggleCustomSelect(false);
   });
 
   function buildGameSelect(){
@@ -121,7 +142,7 @@
   }
 
   let debounceTimer;
-  searchEl.addEventListener('input',e=>{
+  searchEl?.addEventListener('input',e=>{
     clearTimeout(debounceTimer);
     debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); },160);
   },{passive:true});
@@ -261,17 +282,84 @@
 
   function poInit(){
     const rebound=()=>{ poState.currentPage=1; poRender(); };
-    poSearch.addEventListener('input',rebound,{passive:true});
-    poStatus.addEventListener('change',rebound,{passive:true});
-    poSheet.addEventListener('change',e=>poFetch(parseInt(e.target.value,10)),{passive:true});
-    document.getElementById('poPrev').addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
-    document.getElementById('poNext').addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
-    poFetch(parseInt(poSheet.value,10) || 0);
+    poSearch?.addEventListener('input',rebound,{passive:true});
+    poStatus?.addEventListener('change',rebound,{passive:true});
+    poSheet ?.addEventListener('change',e=>poFetch(parseInt(e.target.value,10)),{passive:true});
+    document.getElementById('poPrev')?.addEventListener('click',()=>{ if(poState.currentPage>1){ poState.currentPage--; poRender(); window.scrollTo({top:0,behavior:'smooth'});} });
+    document.getElementById('poNext')?.addEventListener('click',()=>{ poState.currentPage++; poRender(); window.scrollTo({top:0,behavior:'smooth'});} );
+    poFetch(parseInt(poSheet?.value||'0',10) || 0);
     poState.initialized=true;
   }
 
+  // ========= FILM (Sheet4) =========
+  const filmState = { initialized:false, data:[] };
+
+  function filmRender(){
+    filmList.innerHTML = '';
+    if(filmState.data.length===0){
+      filmMeta.textContent = '';
+      filmList.style.display='none';
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    filmState.data.forEach(it=>{
+      const clone = filmTmpl.content.cloneNode(true);
+      const a = clone.querySelector('.list-item');
+      a.querySelector('.title').textContent = it.title;
+      a.querySelector('.price').textContent = it.price || '';
+      a.href = it.link; // buka link Drive
+      frag.appendChild(clone);
+    });
+    filmList.appendChild(frag);
+    filmMeta.textContent = `${filmState.data.length} film tersedia`;
+    filmList.style.display='flex';
+  }
+
+  async function filmLoad(){
+    filmMeta.textContent = '';
+    filmList.innerHTML = `<div class="empty">Memuat daftar film...</div>`;
+    try{
+      // Ambil CSV Sheet4: kolom A=Judul Film, B=Harga, C=Link
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEETS.film.name)}`;
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error(res.statusText);
+      const text = await res.text();
+      const rows = text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));
+      const body = rows.slice(1); // skip header
+      filmState.data = body
+        .map(r => ({ title:r[0]||'', price:r[1]||'', link:r[2]||'' }))
+        .filter(x => x.title && x.link);
+      filmRender();
+    }catch(e){
+      filmList.innerHTML = `<div class="err">Gagal memuat film: ${e.message}</div>`;
+    }
+  }
+
+  function applyFilmGate(){
+    if(isPaid()){
+      filmGate.style.display = 'none';
+      filmLoad();
+    }else{
+      filmGate.style.display = 'block';
+      filmList.style.display = 'none';
+      filmMeta.textContent = '';
+    }
+  }
+
+  function filmInit(){
+    if(btnSaweria){
+      // Jika platform Saweria mendukung redirect, set di dashboard ke URL berikut:
+      const backURL = location.origin + location.pathname + '?paid=1';
+      btnSaweria.href = SAWERIA_URL; // arahkan ke halaman donasi
+      console.log('Set redirect Saweria ke:', backURL);
+    }
+    btnSudahBayar?.addEventListener('click', ()=>{ markPaid(); applyFilmGate(); }, {passive:true});
+
+    applyFilmGate();
+    filmState.initialized = true;
+  }
+
   // ========= START =========
-  // Default buka katalog
   setMode('katalog');
   loadCatalog();
 
