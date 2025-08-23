@@ -2,82 +2,70 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
 
-  <!-- Google Fonts: Roboto Flex + Material Symbols (Rounded) -->
+  <!-- Fonts Google -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..800&family=Material+Symbols+Rounded:wght,FILL,GRAD@500,0,0" />
 
+  <!-- CSS utama (tema Google / Material You) -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="wrap">
     <!-- HEADER -->
-    <header class="site-header" data-rail>
+    <header class="site-header">
       <img src="logo.png" alt="PlayPal.ID" class="logo" />
       <h1 class="app-title">PlayPal.ID</h1>
-      <p class="app-subtitle">Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
+      <p class="app-subtitle">Destinasi Utama Para Pecinta Game, Film & Musik</p>
     </header>
 
-    <!-- ============== NAV BAR ============== -->
-    <nav class="tabs" aria-label="Navigasi tampilan">
-      <button class="tab-btn ripple" data-mode="katalog">
-        <span class="material-symbols-rounded">apps</span><span>Katalog</span>
-      </button>
-      <button class="tab-btn ripple" data-mode="preorder">
-        <span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span>
-      </button>
-      <button class="tab-btn ripple" data-mode="film">
-        <span class="material-symbols-rounded">movie</span><span>Film</span>
-      </button>
-    </nav>
-
-    <!-- ============== KATALOG ============== -->
-    <section id="viewCatalog" aria-label="Katalog">
-      <div class="head-block cat-head" data-rail>
-        <div class="topbar" data-rail>
-          <div class="topbar-grid">
-            <!-- Custom Select (Material style) -->
-            <div class="custom-select-wrapper" id="custom-select-wrapper">
-              <button class="custom-select-btn ripple" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
-                <span id="custom-select-value">Pilih Kategori</span>
-                <span class="material-symbols-rounded">expand_more</span>
-              </button>
-              <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
-            </div>
-
-            <!-- Burger -->
-            <button class="icon-btn burger ripple" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
-              <span class="material-symbols-rounded">menu</span>
-            </button>
-            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
-              <button class="menu-btn ripple" data-mode="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
-              <button class="menu-btn ripple" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span></button>
-              <button class="menu-btn ripple" data-mode="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
-              <button class="menu-btn ripple" data-mode="donasi"><span class="material-symbols-rounded">volunteer_activism</span><span>Donasi</span></button>
-            </nav>
-          </div>
+    <!-- ========== KATALOG ========== -->
+    <section id="viewCatalog">
+      <div class="topbar-grid">
+        <!-- Dropdown kategori -->
+        <div id="custom-select-wrapper" class="custom-select-wrapper">
+          <button id="custom-select-btn" class="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span id="custom-select-value">Pilih Kategori</span>
+            <span class="material-symbols-rounded">expand_more</span>
+          </button>
+          <div id="custom-select-options" class="custom-select-options" role="listbox"></div>
         </div>
 
-        <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <span class="material-symbols-rounded search-icon">search</span>
-            <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
-          </div>
+        <!-- Burger menu katalog -->
+        <button id="burgerCat" class="icon-btn burger" aria-label="Menu">
+          <span class="material-symbols-rounded">menu</span>
+        </button>
+        <nav id="menuCat" class="menu">
+          <button class="menu-btn" data-mode="katalog"><span class="material-symbols-rounded">apps</span>Katalog</button>
+          <button class="menu-btn" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span>Pre-Order</button>
+        </nav>
+      </div>
+
+      <!-- Pencarian -->
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="material-symbols-rounded search-icon">search</span>
+          <input id="search" class="search-input" type="search" placeholder="Cari item..." />
         </div>
       </div>
 
-      <div id="countInfo" class="meta-right" data-rail></div>
-      <section id="list-container" class="list-container" aria-live="polite" data-rail></section>
-      <section id="error" class="err" style="display:none" data-rail></section>
+      <!-- Info jumlah -->
+      <div id="countInfo" class="meta-right"></div>
 
+      <!-- List container -->
+      <section id="list-container" class="list-container"></section>
+
+      <!-- Error box -->
+      <section id="error" class="err" style="display:none"></section>
+
+      <!-- Template item -->
       <template id="itemTmpl">
-        <a class="list-item ripple" target="_blank" rel="noopener">
+        <a class="list-item" target="_blank" rel="noopener">
           <div class="li-left">
             <span class="title"></span>
             <span class="subtitle"></span>
@@ -90,122 +78,55 @@
       </template>
     </section>
 
-    <!-- ============== PRE‑ORDER ============== -->
-    <section id="viewPreorder" aria-label="Pre‑Order" style="display:none">
-      <div class="head-block po-head" data-rail>
-        <div class="topbar" data-rail>
-          <div class="topbar-grid">
-            <select class="select-native" id="poSheet" aria-label="Pilih sheet Pre‑Order">
-              <!-- diisi dari CONFIG.PREORDER_SHEETS -->
-            </select>
+    <!-- ========== PRE-ORDER ========== -->
+    <section id="viewPreorder" style="display:none">
+      <div class="topbar-grid">
+        <!-- Pilih sheet -->
+        <select id="poSheet">
+          <option value="0">Sheet1</option>
+          <option value="1">Sheet2</option>
+        </select>
 
-            <button class="icon-btn burger ripple" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
-              <span class="material-symbols-rounded">menu</span>
-            </button>
-            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
-              <button class="menu-btn ripple" data-mode="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
-              <button class="menu-btn ripple" data-mode="preorder"><span class="material-symbols-rounded">pending_actions</span><span>Pre‑Order</span></button>
-              <button class="menu-btn ripple" data-mode="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
-            </nav>
-          </div>
-        </div>
-
-        <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <span class="material-symbols-rounded search-icon">search</span>
-            <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server / item..." />
-          </div>
-        </div>
-
-        <div class="status-row" data-rail>
-          <select class="status-select" id="poStatus" aria-label="Filter status">
-            <option value="all">Semua Status</option>
-            <option value="success">Success</option>
-            <option value="progress">Progress</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Gagal</option>
-          </select>
-        </div>
-
-        <div class="meta" id="poTotal" data-rail></div>
-      </div>
-
-      <div class="container">
-        <main class="card-grid" id="poList" aria-live="polite" data-rail></main>
-        <nav class="pagination" aria-label="Pagination" data-rail>
-          <button class="pagination-btn ripple" id="poPrev" disabled><span class="material-symbols-rounded">chevron_left</span> Sebelumnya</button>
-          <button class="pagination-btn ripple" id="poNext" disabled>Selanjutnya <span class="material-symbols-rounded">chevron_right</span></button>
+        <!-- Burger menu preorder -->
+        <button id="burgerPO" class="icon-btn burger" aria-label="Menu">
+          <span class="material-symbols-rounded">menu</span>
+        </button>
+        <nav id="menuPO" class="menu">
+          <button class="menu-btn" data-mode="katalog"><span class="material-symbols-rounded">apps</span>Katalog</button>
+          <button class="menu-btn" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span>Pre-Order</button>
         </nav>
       </div>
-    </section>
 
-    <!-- ============== FILM (gratis) ============== -->
-    <section id="viewFilm" aria-label="Film" style="display:none">
-      <div class="head-block cat-head" data-rail>
-        <div class="topbar" data-rail>
-          <div class="topbar-grid">
-            <div class="custom-select-wrapper" id="filmSelectWrap">
-              <button class="custom-select-btn ripple" id="filmSelectBtn" aria-haspopup="listbox" aria-expanded="false">
-                <span id="filmSelectValue">Pilih Film</span>
-                <span class="material-symbols-rounded">expand_more</span>
-              </button>
-              <div class="custom-select-options" id="filmSelectOptions" role="listbox"></div>
-            </div>
-
-            <button class="icon-btn burger ripple" id="burgerFilm" aria-label="Menu" aria-expanded="false" type="button">
-              <span class="material-symbols-rounded">menu</span>
-            </button>
-            <nav class="menu" id="menuFilm" aria-label="Menu tampilan (Film)">
-              <button class="menu-btn ripple" data-mode="katalog"><span class="material-symbols-rounded">apps</span><span>Katalog</span></button>
-              <button class="menu-btn ripple" data-mode="preorder"><span class="material-symbols-rounded">receipt_long</span><span>Pre‑Order</span></button>
-              <button class="menu-btn ripple" data-mode="film"><span class="material-symbols-rounded">movie</span><span>Film</span></button>
-            </nav>
-          </div>
+      <!-- Search + filter status -->
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="material-symbols-rounded search-icon">search</span>
+          <input id="poSearch" class="search-input" type="search" placeholder="Cari nama / ID Server / item..." />
         </div>
       </div>
+      <div class="status-row">
+        <select id="poStatus">
+          <option value="all">Semua Status</option>
+          <option value="success">Success</option>
+          <option value="progress">Progress</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Gagal</option>
+        </select>
+      </div>
 
-      <div id="filmMeta" class="meta" data-rail></div>
-      <section id="filmList" class="list-container" aria-live="polite" data-rail style="display:none"></section>
+      <!-- Info & list -->
+      <div id="poTotal" class="meta"></div>
+      <main id="poList" class="card-grid"></main>
 
-      <template id="filmTmpl">
-        <a class="list-item ripple" href="#" rel="noopener">
-          <div class="li-left">
-            <span class="title"></span>
-            <span class="subtitle"></span>
-          </div>
-          <div class="li-right">
-            <span class="price"></span>
-            <span class="material-symbols-rounded chevron">play_arrow</span>
-          </div>
-        </a>
-      </template>
+      <!-- Pagination -->
+      <nav class="pagination">
+        <button id="poPrev" class="pagination-btn" disabled><span class="material-symbols-rounded">chevron_left</span>Sebelumnya</button>
+        <button id="poNext" class="pagination-btn" disabled>Selanjutnya<span class="material-symbols-rounded">chevron_right</span></button>
+      </nav>
     </section>
   </main>
 
-  <!-- Modal Video -->
-  <div id="vidModal" class="gd-overlay" aria-hidden="true">
-    <div class="gd-backdrop" id="vidBackdrop"></div>
-    <div class="gd-stage">
-      <button class="gd-close ripple" id="vidClose" aria-label="Tutup">
-        <span class="material-symbols-rounded">close</span>
-      </button>
-      <h3 id="vidTitle" class="gd-title">Memuat…</h3>
-      <video id="vidEl" controls playsinline></video>
-    </div>
-  </div>
-
-  <!-- Modal Folder (episode) -->
-  <div id="gdFolder" class="gd-overlay" aria-hidden="true">
-    <div class="gd-backdrop" id="gdFolderBackdrop"></div>
-    <div class="gd-stage" id="gdFolderStage">
-      <button class="gd-close ripple" id="gdFolderClose" aria-label="Tutup">
-        <span class="material-symbols-rounded">close</span>
-      </button>
-      <h3 id="gdFolderTitle" class="gd-title">Pilih Episode</h3>
-      <ul id="gdFolderList" class="gd-list"></ul>
-    </div>
-  </div>
-
+  <!-- Script utama -->
   <script src="script.js"></script>
 </body>
 </html>
