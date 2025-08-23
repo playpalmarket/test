@@ -136,7 +136,7 @@
       link.querySelector('.title').textContent=it.title;
       link.querySelector('.price').textContent=toIDR(it.price);
       const text=`${WA_GREETING}\n› Tipe: Katalog\n› Game: ${it.catLabel}\n› Item: ${it.title}\n› Harga: ${toIDR(it.price)}`;
-      link.href=`https.wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+      link.href=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
       frag.appendChild(clone);
     }
     listEl.appendChild(frag);
@@ -290,7 +290,6 @@
     poTotal.textContent='Memuat data...';
     showSkeleton(poList, skeletonCardTmpl, 5);
     
-    // Set display mode based on sheet
     poState.displayMode = (sheetName === SHEETS.preorder.name1) ? 'detailed' : 'simple';
 
     try{
