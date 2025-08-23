@@ -2,120 +2,117 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
-  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <main class="wrap">
-    <header data-rail>
-      <img src="logo.png" alt="PlayPal.ID Logo" class="logo">
-      <h1>PlayPal.ID</h1>
-      <p>Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
-    </header>
-
-    <section id="viewCatalog" aria-label="Katalog">
-      <div class="head-block cat-head" data-rail>
-        <div class="topbar" data-rail>
-          <div class="topbar-grid">
-            <div class="custom-select-wrapper" id="custom-select-wrapper">
-              <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="custom-select-options">
-                <span id="custom-select-value">Pilih Kategori</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
-              </button>
-              <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
-            </div>
-
-            <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button" aria-controls="menuCat">
-              <span></span><span></span><span></span>
-            </button>
-            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
-              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
-              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
-              <div class="menu-divider"></div>
-              <button class="menu-btn" id="closeMenuCat" type="button">Tutup</button>
-            </nav>
-          </div>
-        </div>
-
-        <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <svg xmlns="http://www.w.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.901l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
-            <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
-          </div>
-        </div>
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <span class="logo-tile"></span>
+        <span class="logo-tile second"></span>
       </div>
+      <div class="brand-text">
+        <h1>PlayPal.ID</h1>
+        <p>Destinasi Utama Para Pecinta Game, Film & Musik</p>
+      </div>
+    </div>
 
-      <div id="countInfo" data-rail></div>
-      <section id="list-container" class="list-container" aria-live="polite" data-rail></section>
-      <section id="error" class="err" style="display:none" data-rail></section>
+    <div class="header-actions">
+      <button id="refreshBtn" class="icon-btn" aria-label="Segarkan data"><span class="i-refresh"></span></button>
+      <button id="burgerBtn" class="icon-btn" aria-label="Menu"><span class="i-burger"></span></button>
+    </div>
 
-      <template id="itemTmpl">
-        <a class="list-item" target="_blank" rel="noopener">
-          <span class="title"></span>
-          <span class="price"></span>
-        </a>
-      </template>
+    <!-- Dropdown -->
+    <nav id="dropdown" class="dropdown hidden" aria-label="Navigasi">
+      <button class="dropdown-item" data-target="#katalog"><span class="dot"></span> Katalog</button>
+      <button class="dropdown-item" data-target="#preorder"><span class="dot"></span> Pre-Order</button>
+      <button class="dropdown-item" data-target="#film"><span class="dot"></span> Film</button>
+      <hr>
+      <button class="dropdown-item" data-action="refresh"><span class="dot"></span> Segarkan Data</button>
+    </nav>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabbar container" role="tablist" aria-label="Tampilan">
+    <button class="tab active" data-section="katalog" role="tab" aria-selected="true">Katalog</button>
+    <button class="tab" data-section="preorder" role="tab" aria-selected="false">Pre-Order</button>
+    <button class="tab" data-section="film" role="tab" aria-selected="false">Film</button>
+  </nav>
+
+  <!-- TOOLBAR -->
+  <section class="toolbar container">
+    <div class="select-wrap">
+      <select id="sheetSelect" class="select-native" aria-label="Pilih sheet"></select>
+      <span class="i-caret"></span>
+    </div>
+
+    <div class="search-wrap">
+      <span class="i-search"></span>
+      <input id="searchInput" type="search" class="search-input" placeholder="Cari nama / ID Server / item" aria-label="Cari" autocomplete="off" />
+    </div>
+
+    <div class="filter-wrap">
+      <label for="statusFilter" class="filter-label">Status</label>
+      <select id="statusFilter" class="select-native" aria-label="Filter status">
+        <option value="">Semua</option>
+        <option value="SUCCESS">SUCCESS</option>
+        <option value="PROGRESS">PROGRESS</option>
+        <option value="PENDING">PENDING</option>
+        <option value="FAILED">FAILED</option>
+      </select>
+      <span class="i-caret"></span>
+    </div>
+
+    <div class="select-wrap">
+      <select id="sortSelect" class="select-native" aria-label="Urutkan">
+        <option value="name-asc">Nama A–Z</option>
+        <option value="name-desc">Nama Z–A</option>
+        <option value="status">Status</option>
+      </select>
+      <span class="i-caret"></span>
+    </div>
+  </section>
+
+  <!-- META -->
+  <div class="container meta-row">
+    <div class="total-pesanan" id="totalInfo">0 total pesanan</div>
+    <button id="loadMoreBtn" class="ghost-btn hidden" aria-label="Muat lebih banyak">Muat lebih banyak</button>
+  </div>
+
+  <!-- MAIN -->
+  <main class="container">
+    <section id="katalog" class="section is-active" aria-labelledby="katalogTitle">
+      <h2 id="katalogTitle" class="sr-only">Katalog</h2>
+      <div id="listKatalog" class="card-list" role="list"></div>
     </section>
 
-    <section id="viewPreorder" aria-label="Pre-Order">
-      <div class="head-block po-head" data-rail>
-        <div class="topbar" data-rail>
-          <div class="topbar-grid">
-            <select class="select-native" id="poSheet" aria-label="Pilih kategori pesanan">
-              <option value="0">Starlight Member</option>
-              <option value="1">Pesanan Umum</option>
-            </select>
+    <section id="preorder" class="section" aria-labelledby="preorderTitle">
+      <h2 id="preorderTitle" class="sr-only">Pre-Order</h2>
+      <div id="listPreorder" class="card-list" role="list"></div>
+    </section>
 
-            <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button" aria-controls="menuPO">
-              <span></span><span></span><span></span>
-            </button>
-            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
-              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
-              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
-              <div class="menu-divider"></div>
-              <button class="menu-btn" id="closeMenuPO" type="button">Tutup</button>
-            </nav>
-          </div>
-        </div>
-
-        <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.901l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
-            <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server / item..." />
-          </div>
-        </div>
-
-        <div class="status-row" data-rail>
-          <select class="status-select" id="poStatus" aria-label="Filter status">
-            <option value="all">Semua Status</option>
-            <option value="success">Success</option>
-            <option value="progress">Progress</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Gagal</option>
-          </select>
-        </div>
-
-        <div class="meta" id="poTotal" data-rail></div>
-      </div>
-
-      <div class="container">
-        <main class="card-grid" id="poList" aria-live="polite" data-rail></main>
-        <nav class="pagination" aria-label="Pagination" data-rail>
-          <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
-          <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
-        </nav>
-      </div>
+    <section id="film" class="section" aria-labelledby="filmTitle">
+      <h2 id="filmTitle" class="sr-only">Film</h2>
+      <div id="listFilm" class="card-list" role="list"></div>
     </section>
   </main>
 
-  <script src="script.js" defer></script>
+  <!-- OVERLAYS -->
+  <div id="loader" class="loader hidden" aria-hidden="true">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="./script.js"></script>
 </body>
 </html>
