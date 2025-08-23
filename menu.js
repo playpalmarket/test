@@ -1,6 +1,6 @@
 // menu.js
 (function (global) {
-  // Menu sekarang: Film gratis, + Donasi (Saweria)
+  // Menu: Film gratis + Donasi (Saweria)
   const MENU_ITEMS = [
     { id:'toKatalog',  label:'Katalog',         type:'route', value:'katalog' },
     { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
@@ -61,12 +61,18 @@
     return {
       closeAll,
       get items(){ return [...MENU_ITEMS]; },
-      set(items){ MENU_ITEMS.splice(0, MENU_ITEMS.length, ...items);
-        [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll)); },
-      add(item){ MENU_ITEMS.push(item);
-        [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll)); },
-      insertAt(i,item){ MENU_ITEMS.splice(i,0,item);
-        [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll)); }
+      set(items){
+        MENU_ITEMS.splice(0, MENU_ITEMS.length, ...items);
+        [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+      },
+      add(item){
+        MENU_ITEMS.push(item);
+        [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+      },
+      insertAt(i,item){
+        MENU_ITEMS.splice(i,0,item);
+        [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+      }
     };
   }
 
