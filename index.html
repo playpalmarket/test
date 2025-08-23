@@ -65,7 +65,7 @@
     </section>
 
     <!-- ============ PRE‑ORDER ============ -->
-    <section id="viewPreorder" aria-label="Pre-Order">
+    <section id="viewPreorder" aria-label="Pre-Order" style="display:none">
       <div class="head-block po-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
@@ -111,6 +111,48 @@
           <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
         </nav>
       </div>
+    </section>
+
+    <!-- ============ FILM (bayar seikhlasnya via Saweria) ============ -->
+    <section id="viewFilm" aria-label="Film Berbayar" style="display:none">
+      <div class="head-block cat-head" data-rail>
+        <div class="topbar" data-rail>
+          <div class="topbar-grid">
+            <div></div><!-- spacer -->
+            <button class="icon-btn burger" id="burgerFilm" aria-label="Menu" aria-expanded="false" type="button">
+              <span class="line"></span><span class="line"></span><span class="line"></span>
+            </button>
+            <nav class="menu" id="menuFilm" aria-label="Menu tampilan (Film)"></nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- GATE PEMBAYARAN -->
+      <section id="filmGate" class="list-container" data-rail>
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-name">Tonton Film (Bayar Seikhlasnya*)</div>
+              <div class="card-product">Minimal sesuai ketentuan di Saweria</div>
+            </div>
+          </div>
+          <div class="card-date">Setelah bayar &amp; scan QR, kamu akan diarahkan kembali dan link film otomatis tampil.</div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <a id="btnSaweria" class="pagination-btn" href="#" target="_blank" rel="noopener">Bayar via Saweria</a>
+            <button id="btnSudahBayar" class="pagination-btn">Saya sudah bayar</button>
+          </div>
+        </article>
+      </section>
+
+      <!-- LIST FILM -->
+      <div id="filmMeta" class="meta" data-rail></div>
+      <section id="filmList" class="list-container" aria-live="polite" data-rail style="display:none"></section>
+      <template id="filmTmpl">
+        <a class="list-item" target="_blank" rel="noopener">
+          <span class="title"></span>
+          <span class="price"></span>
+        </a>
+      </template>
     </section>
   </main>
 
