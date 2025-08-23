@@ -1,271 +1,354 @@
 /* =========================
-   PlayPal.ID — Frontend vFinal
-   Fokus: stabilitas toggle, layout rapih, dan fetch Google Sheets (gviz)
+   PlayPal.ID — Elegant & Full Feature
    ========================= */
 
 const CONFIG = {
   SHEET_ID: "1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw",
   DEFAULT_SHEET: "Sheet1",
-
-  // Alias header → kolom yang kamu pakai di Sheet.
-  // Parser akan cari salah satu dari alias di baris header (case-insensitive).
+  PAGE_SIZE: 30,
   COLUMN_ALIASES: {
-    name: ["nama", "name", "buyer", "user"],
-    item: ["item", "produk", "product", "paket", "order"],
-    status: ["status", "state", "progress"]
+    name:  ["nama","name","buyer","user","id","id server"],
+    item:  ["item","produk","product","paket","order","deskripsi"],
+    status:["status","state","progress"]
   },
-
-  // Mapping status → class badge
   STATUS_MAP: {
-    "SUCCESS": "success",
-    "DONE": "success",
-    "SELESAI": "success",
-    "PROGRESS": "progress",
-    "PROCESS": "progress",
-    "ON PROGRESS": "progress",
-    "PENDING": "pending",
-    "WAITING": "pending",
-    "FAILED": "failed",
-    "CANCEL": "failed"
+    "SUCCESS":"success","DONE":"success","SELESAI":"success",
+    "PROGRESS":"progress","PROCESS":"progress","ON PROGRESS":"progress",
+    "PENDING":"pending","WAITING":"pending",
+    "FAILED":"failed","CANCEL":"failed"
+  },
+  STORAGE: {
+    sheet: "pp_sheet",
+    section: "pp_section",
+    query: "pp_query",
+    status: "pp_status",
+    sort: "pp_sort"
   }
 };
 
-const el = {
-  burgerBtn: document.getElementById("burgerBtn"),
-  dropdown: document.getElementById("dropdown"),
-  sheetSelect: document.getElementById("sheetSelect"),
-  searchInput: document.getElementById("searchInput"),
-  statusFilter: document.getElementById("statusFilter"),
-  totalInfo: document.getElementById("totalInfo"),
+// ----- Elements
+const $ = sel => document.querySelector(sel);
+const els = {
+  burgerBtn: $("#burgerBtn"),
+  dropdown: $("#dropdown"),
+  refreshBtn: $("#refreshBtn"),
+  tabs: Array.from(document.querySelectorAll(".tabbar .tab")),
+  sheetSelect: $("#sheetSelect"),
+  searchInput: $("#searchInput"),
+  statusFilter: $("#statusFilter"),
+  sortSelect: $("#sortSelect"),
+  totalInfo: $("#totalInfo"),
+  loadMoreBtn: $("#loadMoreBtn"),
+  loader: $("#loader"),
+  toast: $("#toast"),
   sections: {
-    katalog: document.getElementById("katalog"),
-    preorder: document.getElementById("preorder")
+    katalog: $("#katalog"),
+    preorder: $("#preorder"),
+    film: $("#film"),
   },
   lists: {
-    katalog: document.getElementById("listKatalog"),
-    preorder: document.getElementById("listPreorder")
-  },
-  toast: document.getElementById("toast")
+    katalog: $("#listKatalog"),
+    preorder: $("#listPreorder"),
+    film: $("#listFilm"),
+  }
 };
 
 let currentSection = "katalog";
-let cache = {}; // { sheetName: [rows] }
-let headerMap = {}; // { sheetName: {name: idx, item: idx, status: idx} }
+let cache = {};      // { sheetName: rows[] }
+let headerMap = {};  // { sheetName: {name:idx,item:idx,status:idx} }
+let filteredRows = []; // hasil filter saat ini (untuk paging)
+let shownCount = 0;
 
-// =================== UI BEHAVIOR ===================
-
-// Burger toggle — tidak merusak DOM
-el.burgerBtn.addEventListener("click", () => {
-  el.dropdown.classList.toggle("hidden");
+// ----- Basic UI
+els.burgerBtn.addEventListener("click", () => els.dropdown.classList.toggle("hidden"));
+document.addEventListener("click", (e)=>{
+  if (!els.dropdown.contains(e.target) && e.target !== els.burgerBtn) els.dropdown.classList.add("hidden");
 });
-
-// Klik item dropdown → ganti section by toggle
-el.dropdown.addEventListener("click", (e) => {
+els.dropdown.addEventListener("click", (e)=>{
   const btn = e.target.closest(".dropdown-item");
   if (!btn) return;
-  const target = btn.dataset.section; // 'katalog' | 'preorder'
-  showSection(target);
-  el.dropdown.classList.add("hidden");
+  const action = btn.dataset.action;
+  if (action === "refresh") { hardRefresh(); return; }
+  const id = (btn.dataset.target || "").replace("#","");
+  showSection(id);
+  els.dropdown.classList.add("hidden");
 });
 
-// Close dropdown kalau klik di luar
-document.addEventListener("click", (e) => {
-  if (!el.dropdown.contains(e.target) && e.target !== el.burgerBtn) {
-    el.dropdown.classList.add("hidden");
-  }
-});
+// Tabs
+els.tabs.forEach(t => t.addEventListener("click", () => {
+  showSection(t.dataset.section);
+}));
 
-// Search + filter
-el.searchInput.addEventListener("input", renderActiveSection);
-el.statusFilter.addEventListener("change", renderActiveSection);
-
-// Change sheet
-el.sheetSelect.addEventListener("change", async () => {
-  await ensureSheetLoaded(el.sheetSelect.value);
-  renderActiveSection();
-  toast(`Berpindah ke sheet: ${el.sheetSelect.value}`);
-});
-
-// =================== SECTION TOGGLING ===================
-
-function showSection(section) {
-  if (!el.sections[section]) return;
-  currentSection = section;
-
-  // Toggle kelas active — elemen tidak dihancurkan (konten tetap ada)
-  Object.keys(el.sections).forEach(id => {
-    el.sections[id].classList.toggle("active", id === section);
+function syncTabs(){
+  els.tabs.forEach(t=>{
+    const active = t.dataset.section === currentSection;
+    t.classList.toggle("active", active);
+    t.setAttribute("aria-selected", active ? "true" : "false");
   });
-
-  renderActiveSection();
 }
 
-// =================== DATA ===================
+// ----- Controls
+els.refreshBtn.addEventListener("click", hardRefresh);
 
-function gvizUrl(sheetName) {
+els.sheetSelect.addEventListener("change", async ()=>{
+  localStorage.setItem(CONFIG.STORAGE.sheet, els.sheetSelect.value);
+  await ensureSheetLoaded(els.sheetSelect.value, true);
+  applyAndRender(); toast(`Sheet: ${els.sheetSelect.value}`);
+});
+
+const debouncedSearch = debounce(() => {
+  localStorage.setItem(CONFIG.STORAGE.query, els.searchInput.value || "");
+  applyAndRender();
+}, 150);
+els.searchInput.addEventListener("input", debouncedSearch);
+
+els.statusFilter.addEventListener("change", () => {
+  localStorage.setItem(CONFIG.STORAGE.status, els.statusFilter.value || "");
+  applyAndRender();
+});
+
+els.sortSelect.addEventListener("change", () => {
+  localStorage.setItem(CONFIG.STORAGE.sort, els.sortSelect.value || "name-asc");
+  applyAndRender();
+});
+
+els.loadMoreBtn.addEventListener("click", () => {
+  renderChunk();
+});
+
+// ----- Section toggle
+function showSection(id){
+  if (!els.sections[id]) return;
+  currentSection = id;
+  localStorage.setItem(CONFIG.STORAGE.section, id);
+  Object.keys(els.sections).forEach(k=>{
+    els.sections[k].classList.toggle("is-active", k === id);
+  });
+  syncTabs();
+  applyAndRender();
+}
+
+// ----- GViz helpers
+function gvizUrl(sheet){
   const base = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq`;
-  // tqx=out:json menghasilkan JSON “dibungkus” boilerplate — kita parse manual.
-  const params = new URLSearchParams({
-    tqx: "out:json",
-    sheet: sheetName
-  });
-  return `${base}?${params.toString()}`;
+  const p = new URLSearchParams({ tqx: "out:json", sheet });
+  return `${base}?${p.toString()}`;
 }
 
-async function fetchSheetRows(sheetName) {
-  const res = await fetch(gvizUrl(sheetName), { cache: "no-store" });
+async function fetchSheetRows(sheet){
+  const res = await fetch(gvizUrl(sheet), { cache: "no-store" });
   const text = await res.text();
-
-  // Parse “gviz” response → JSON
-  const json = JSON.parse(text.replace(/^[\s\S]*setResponse\(/, "").replace(/\);\s*$/, ""));
+  const json = JSON.parse(text.replace(/^[\s\S]*setResponse\(/,"").replace(/\);\s*$/,""));
   const cols = json.table.cols.map(c => (c.label || "").trim());
-  const rows = json.table.rows.map(r => (r.c || []).map(cell => (cell ? cell.v : "")));
-
-  // Buat headerMap untuk sheet ini (case-insensitive + alias)
+  const rows = json.table.rows.map(r => (r.c || []).map(cell => normalizeCell(cell)));
   const lc = cols.map(c => c.toLowerCase());
-  headerMap[sheetName] = {
+
+  headerMap[sheet] = {
     name: findHeaderIndex(lc, CONFIG.COLUMN_ALIASES.name),
     item: findHeaderIndex(lc, CONFIG.COLUMN_ALIASES.item),
     status: findHeaderIndex(lc, CONFIG.COLUMN_ALIASES.status)
   };
-
-  return rows.slice(1); // baris 0 = header asli (tetap kita pakai mapping di atas)
+  return rows.slice(1); // buang header baris-0
 }
 
-function findHeaderIndex(lowercaseCols, aliasList){
-  for (const alias of aliasList){
-    const idx = lowercaseCols.indexOf(alias);
-    if (idx !== -1) return idx;
+function normalizeCell(cell){
+  if (!cell || cell.v === null) return "";
+  // tampilkan format (cell.f) jika ada (GViz sering memberi format tanggal siap pakai)
+  if (cell.f && typeof cell.f === "string") return cell.f;
+  // Date object
+  if (cell.v instanceof Date) return formatDate(cell.v);
+  // String Date(…)
+  if (typeof cell.v === "string" && /^Date\(\d+,\d+,\d+\)/.test(cell.v)) {
+    const [y,m,d] = cell.v.match(/\d+/g).map(Number);
+    return formatDate(new Date(y, m-1, d));
   }
-  // fallback: kolom 0/1/2 kalau header tak ditemukan
+  return String(cell.v);
+}
+function formatDate(d){
+  return d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
+}
+function findHeaderIndex(lowercaseCols, aliases){
+  for (const a of aliases){
+    const i = lowercaseCols.indexOf(a);
+    if (i !== -1) return i;
+  }
   return Math.min(0, lowercaseCols.length-1);
 }
 
-async function ensureSheetLoaded(sheetName){
-  if (cache[sheetName]) return;
+async function ensureSheetLoaded(sheet, force=false){
+  if (!force && cache[sheet]) return;
   try{
-    const rows = await fetchSheetRows(sheetName);
-    cache[sheetName] = rows;
-  }catch(err){
-    console.error(err);
-    toast("Gagal memuat data. Periksa permission sheet & nama tab.");
-    cache[sheetName] = [];
+    showLoader(true);
+    cache[sheet] = await fetchSheetRows(sheet);
+  }catch(e){
+    console.error(e);
+    cache[sheet] = [];
+    toast("Gagal memuat data. Pastikan izin sheet publik (viewer).");
+  }finally{
+    showLoader(false);
   }
 }
 
-// =================== RENDER ===================
+function hardRefresh(){
+  const s = els.sheetSelect.value;
+  cache[s] = null;
+  ensureSheetLoaded(s, true).then(()=> applyAndRender());
+  toast("Data diperbarui");
+}
 
-function renderActiveSection(){
-  const sheetName = el.sheetSelect.value || CONFIG.DEFAULT_SHEET;
-  const rows = (cache[sheetName] || []);
-  const map = headerMap[sheetName] || {name:0,item:1,status:2};
+// ----- Apply (search/filter/sort) & render
+function applyFilters(rows){
+  const sheet = els.sheetSelect.value || CONFIG.DEFAULT_SHEET;
+  const map = headerMap[sheet] || {name:0,item:1,status:2};
 
-  const q = (el.searchInput.value || "").trim().toLowerCase();
-  const fStatus = (el.statusFilter.value || "").trim().toUpperCase();
+  const q = (els.searchInput.value || "").trim().toLowerCase();
+  const fStatus = (els.statusFilter.value || "").trim().toUpperCase();
+  const sort = (els.sortSelect.value || "name-asc");
 
-  const filtered = rows.filter(r => {
-    const name = (r[map.name] || "").toString();
-    const item = (r[map.item] || "").toString();
-    const statusRaw = (r[map.status] || "").toString();
+  let list = rows.filter(r=>{
+    const name = String(r[map.name] ?? "");
+    const item = String(r[map.item] ?? "");
+    const statusRaw = String(r[map.status] ?? "");
 
     const hay = `${name} ${item} ${statusRaw}`.toLowerCase();
-    const passQuery = q ? hay.includes(q) : true;
+    const okQuery = q ? hay.includes(q) : true;
 
-    const statusClass = statusToClass(statusRaw);
-    const passStatus = fStatus ? (statusClass && statusClass.toUpperCase()===fStatus) : true;
+    const badge = statusToClass(statusRaw);
+    const okStatus = fStatus ? (badge && badge.toUpperCase() === fStatus) : true;
 
-    return passQuery && passStatus;
+    return okQuery && okStatus;
   });
 
-  // Info total
-  el.totalInfo.textContent = `${filtered.length} total pesanan`;
+  // sort
+  const byName = (a,b) => {
+    const map = headerMap[sheet]; const av=(a[map.name]||"").toString().toLowerCase(); const bv=(b[map.name]||"").toString().toLowerCase();
+    return av.localeCompare(bv, "id");
+  };
+  const statusOrder = ["SUCCESS","PROGRESS","PENDING","FAILED"];
+  const byStatus = (a,b) => {
+    const map = headerMap[sheet];
+    const as = statusToClass(a[map.status]||"").toUpperCase();
+    const bs = statusToClass(b[map.status]||"").toUpperCase();
+    return statusOrder.indexOf(as) - statusOrder.indexOf(bs);
+  };
 
-  // Render ke section aktif
-  const container = currentSection === "katalog" ? el.lists.katalog : el.lists.preorder;
-  container.innerHTML = "";
-  for (const row of filtered){
-    const name = safe(row[map.name]);
-    const item = safe(row[map.item]);
-    const statusRaw = (row[map.status] || "").toString();
-    const badgeClass = statusToClass(statusRaw);
-    container.appendChild(cardEl(name, item, badgeClass));
-  }
+  if (sort === "name-asc") list.sort(byName);
+  else if (sort === "name-desc") list.sort((a,b)=>-byName(a,b));
+  else if (sort === "status") list.sort(byStatus);
 
-  // Jika kosong
-  if (!filtered.length){
-    const empty = document.createElement("div");
-    empty.className = "card";
-    empty.innerHTML = `<div class="item-left">
-      <h3 class="item-title">Tidak ada data</h3>
-      <p class="item-sub">Coba ubah kata kunci atau status.</p>
-    </div>`;
-    container.appendChild(empty);
-  }
+  return list;
 }
 
-function statusToClass(statusRaw){
-  const key = (statusRaw || "").toString().trim().toUpperCase();
-  return CONFIG.STATUS_MAP[key] ? CONFIG.STATUS_MAP[key] : key || "PENDING";
+function applyAndRender(){
+  const s = els.sheetSelect.value || CONFIG.DEFAULT_SHEET;
+  const rows = cache[s] || [];
+
+  filteredRows = applyFilters(rows);
+  els.totalInfo.textContent = `${filteredRows.length} total pesanan`;
+
+  shownCount = 0;
+  getActiveList().innerHTML = "";
+  renderChunk();
 }
 
-function cardEl(name, item, badgeClass){
-  const div = document.createElement("article");
-  div.className = "card";
-  div.setAttribute("role","listitem");
-  div.innerHTML = `
+function renderChunk(){
+  const listEl = getActiveList();
+  const sheet = els.sheetSelect.value || CONFIG.DEFAULT_SHEET;
+  const map = headerMap[sheet] || {name:0,item:1,status:2};
+
+  const next = filteredRows.slice(shownCount, shownCount + CONFIG.PAGE_SIZE);
+  for (const r of next){
+    const title = safe(r[map.name]);
+    const sub = safe(r[map.item]);
+    const badge = statusToClass(r[map.status]);
+    listEl.appendChild(cardEl(title, sub, badge));
+  }
+  shownCount += next.length;
+
+  // empty state
+  if (filteredRows.length === 0){
+    listEl.innerHTML = "";
+    listEl.appendChild(emptyState());
+  }
+
+  // toggle "load more"
+  toggleLoadMore(shownCount < filteredRows.length);
+}
+
+function toggleLoadMore(show){
+  els.loadMoreBtn.classList.toggle("hidden", !show);
+}
+
+function getActiveList(){
+  return currentSection === "katalog" ? els.lists.katalog :
+         currentSection === "preorder" ? els.lists.preorder :
+         els.lists.film;
+}
+
+// ----- DOM factories
+function cardEl(title, sub, badgeClass){
+  const d = document.createElement("article");
+  d.className = "card";
+  d.setAttribute("role", "listitem");
+  d.innerHTML = `
     <div class="item-left">
-      <h3 class="item-title">${name || "-"}</h3>
-      <p class="item-sub">${item || ""}</p>
+      <h3 class="item-title">${title || "-"}</h3>
+      <p class="item-sub">${sub || ""}</p>
     </div>
     <div class="item-right">
-      <span class="badge ${badgeClass.toLowerCase()}">${(badgeClass || "").toUpperCase()}</span>
+      <span class="badge ${badgeClass.toLowerCase()}">${(badgeClass||"").toUpperCase()}</span>
     </div>
   `;
-  return div;
+  return d;
+}
+function emptyState(){
+  const d = document.createElement("div");
+  d.className = "card";
+  d.innerHTML = `<div class="item-left">
+    <h3 class="item-title">Tidak ada data</h3>
+    <p class="item-sub">Ubah kata kunci, status, atau sheet.</p>
+  </div>`;
+  return d;
 }
 
+// ----- Utils
+function statusToClass(raw){
+  const key = String(raw || "").trim().toUpperCase();
+  return CONFIG.STATUS_MAP[key] ? CONFIG.STATUS_MAP[key] : (key || "PENDING");
+}
 function safe(v){ return (v===undefined || v===null) ? "" : String(v); }
-
-// =================== SHEET DISCOVERY (optional quality-of-life) ===================
-// Kita coba ambil daftar sheet via “metadata hack” (tidak resmi). Kalau gagal,
-// kita fallback ke daftar statis [DEFAULT_SHEET].
-async function loadSheetList(){
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?`;
-  try{
-    const res = await fetch(url);
-    const text = await res.text();
-    // Di response awal ada daftar sheet di properti "table" → "parsedNumHeaders" dll,
-    // tapi cara paling aman: scrape "table" dari setResponse yang pertama. Kalau gagal, fallback.
-    const json = JSON.parse(text.replace(/^[\s\S]*setResponse\(/, "").replace(/\);\s*$/, ""));
-    // Kadang ‘json.table.cols’ memuat satu kolom saja → tidak berguna untuk daftar sheet.
-    // Jadi kita akan fallback langsung.
-    throw new Error("skip discovery");
-  }catch{
-    // Fallback: izinkan user mengetik sendiri? Untuk stabil, kita pakai list fixed.
-    return [CONFIG.DEFAULT_SHEET, "PreOrder", "Katalog"].filter((v,i,self)=>self.indexOf(v)===i);
-  }
+function debounce(fn, wait=150){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,args), wait); };
 }
-
-// =================== TOAST ===================
-let toastTimer;
 function toast(msg){
-  el.toast.textContent = msg;
-  el.toast.classList.remove("hidden");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> el.toast.classList.add("hidden"), 2200);
+  els.toast.textContent = msg;
+  els.toast.classList.remove("hidden");
+  clearTimeout(els.toast._t);
+  els.toast._t = setTimeout(()=> els.toast.classList.add("hidden"), 1800);
+}
+function showLoader(show){
+  els.loader.classList.toggle("hidden", !show);
 }
 
-// =================== INIT ===================
+// ----- Init
 (async function init(){
-  // Isi sheetSelect
-  const sheets = await loadSheetList();
-  el.sheetSelect.innerHTML = sheets.map(s =>
-    `<option value="${s}" ${s===CONFIG.DEFAULT_SHEET?'selected':''}>${s}</option>`
-  ).join("");
+  // Restore state
+  const savedSheet = localStorage.getItem(CONFIG.STORAGE.sheet) || CONFIG.DEFAULT_SHEET;
+  const savedSection = localStorage.getItem(CONFIG.STORAGE.section) || "katalog";
+  const savedQuery = localStorage.getItem(CONFIG.STORAGE.query) || "";
+  const savedStatus = localStorage.getItem(CONFIG.STORAGE.status) || "";
+  const savedSort = localStorage.getItem(CONFIG.STORAGE.sort) || "name-asc";
 
-  // Preload data default
-  await ensureSheetLoaded(el.sheetSelect.value);
+  // Sheet list (fallback statis-aman)
+  const sheets = [CONFIG.DEFAULT_SHEET, "PreOrder", "Film"].filter((v,i,a)=>a.indexOf(v)===i);
+  els.sheetSelect.innerHTML = sheets.map(s => `<option value="${s}" ${s===savedSheet?'selected':''}>${s}</option>`).join("");
 
-  // Render pertama
-  showSection("katalog");
+  // Controls restore
+  els.searchInput.value = savedQuery;
+  els.statusFilter.value = savedStatus;
+  els.sortSelect.value = savedSort;
+
+  // Data
+  await ensureSheetLoaded(els.sheetSelect.value);
+  showSection(savedSection); // akan sekaligus render
 })();
