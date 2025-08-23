@@ -9,14 +9,14 @@
   // Tambah/menu baru cukup push object ke array ini.
   // type: 'route' (pindah view) atau 'link' (ke URL eksternal).
   const MENU_ITEMS = [
-    { id:'toKatalog', label:'Katalog', type:'route', value:'katalog' },
-    { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
+    { id:'toKatalog',  label:'Katalog',        type:'route', value:'katalog' },
+    { id:'toPreorder', label:'Lacak Pre‑Order',type:'route', value:'preorder' },
     { divider:true },
     // Placeholder siap dipakai:
-    { id:'donasi', label:'Donasi', type:'link', href:'https://saweria.co/' },
-    { id:'ebook', label:'E‑book', type:'link', href:'#' },
-    { id:'assets', label:'Asset Editing', type:'link', href:'#' },
-    { id:'lainnya', label:'Menu Lainnya', type:'link', href:'#' }
+    { id:'donasi',  label:'Donasi',        type:'link', href:'https://saweria.co/' },
+    { id:'ebook',   label:'E‑book',        type:'link', href:'#' },
+    { id:'assets',  label:'Asset Editing', type:'link', href:'#' },
+    { id:'lainnya', label:'Menu Lainnya',  type:'link', href:'#' }
   ];
 
   let DATA=[],CATS=[],activeCat='',query='';
@@ -47,15 +47,15 @@
   const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
   const sheetUrlCSV =(sheetIndex0)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet${sheetIndex0+1}`;
 
-  // ========= MENU (render dinamis + interaksi super smooth) =========
+  // ========= MENU (render dinamis + interaksi smooth) =========
   function buildMenu(container){
     container.innerHTML = '';
     MENU_ITEMS.forEach(item=>{
-      if(item.divider){ const d=document.createElement('div'); d.className='menu-divider'; container.appendChild(d); return; }
+      if(item.divider){
+        const d=document.createElement('div'); d.className='menu-divider'; container.appendChild(d); return;
+      }
       const btn=document.createElement('button');
-      btn.className='menu-btn';
-      btn.type='button';
-      btn.textContent=item.label;
+      btn.className='menu-btn'; btn.type='button'; btn.textContent=item.label;
       if(item.type==='route'){
         btn.addEventListener('click',()=>{ setMode(item.value); closeAllMenus(); });
       }else{
@@ -285,13 +285,22 @@
       if(rows.length<1){ poState.allData=[]; return; }
 
       if(sheetIndex0===0){
+        // === Sheet1 (Starlight) normal ===
         const headers=rows.shift();
         const mapped=rows.map(row=>Object.fromEntries(row.map((val,i)=>[headers[i]||`col_${i+1}`,val]))).filter(item=>item[headers[0]]);
         poState.allData=poSortByStatus(mapped.map(scrubRecord));
       }else{
-        const body=rows[0]?.length===3&&['id server','item','status'].includes(rows[0][0].toLowerCase())?rows.slice(1):rows;
-        const mapped=body.map(r=>({'ID Server':r[0]||'','Item':r[1]||'','Status':r[2]||''})).filter(item=>item['ID Server']);
-        poState.allData=poSortByStatus(mapped.map(scrubRecord));
+        // === Sheet2 (Pesanan Umum) ===
+        // Jika baris pertama adalah header "ID Server, Item, Status", lewati header,
+        // lalu SKIP 1 RECORD PERTAMA agar tampilan dimulai dari nomor 2.
+        const body = rows[0]?.length===3 && ['id server','item','status'].includes(rows[0][0].toLowerCase())
+          ? rows.slice(1)  // sudah buang header
+          : rows;
+        const trimmed = body.slice(1); // <<< skip record nomor 1
+        const mapped = trimmed
+          .map(r=>({'ID Server':r[0]||'','Item':r[1]||'','Status':r[2]||''}))
+          .filter(item=>item['ID Server']);
+        poState.allData = poSortByStatus(mapped.map(scrubRecord));
       }
     }catch(e){
       poState.allData=[]; poTotal.textContent='Gagal memuat data.'; console.error('Fetch Pre-Order failed:',e);
