@@ -8,7 +8,6 @@
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,27 +18,29 @@
       <p>Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
     </header>
 
+    <!-- KATALOG -->
     <section id="viewCatalog" aria-label="Katalog">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
+            <!-- Custom select -->
             <div class="custom-select-wrapper" id="custom-select-wrapper">
               <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+                </svg>
               </button>
               <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
             </div>
 
+            <!-- Burger -->
             <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
-              <span></span><span></span><span></span>
+              <span class="line"></span><span class="line"></span><span class="line"></span>
             </button>
-            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
-              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
-              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
-              <div class="menu-divider"></div>
-              <button class="menu-btn" id="closeMenuCat" type="button">Tutup</button>
-            </nav>
+
+            <!-- Menu akan di-render dinamis dari MENU_ITEMS -->
+            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)"></nav>
           </div>
         </div>
 
@@ -63,6 +64,7 @@
       </template>
     </section>
 
+    <!-- PRE‑ORDER -->
     <section id="viewPreorder" aria-label="Pre-Order">
       <div class="head-block po-head" data-rail>
         <div class="topbar" data-rail>
@@ -73,14 +75,10 @@
             </select>
 
             <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
-              <span></span><span></span><span></span>
+              <span class="line"></span><span class="line"></span><span class="line"></span>
             </button>
-            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
-              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
-              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
-              <div class="menu-divider"></div>
-              <button class="menu-btn" id="closeMenuPO" type="button">Tutup</button>
-            </nav>
+            <!-- Menu akan di-render dinamis dari MENU_ITEMS -->
+            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)"></nav>
           </div>
         </div>
 
