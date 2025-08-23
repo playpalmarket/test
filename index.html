@@ -23,6 +23,7 @@
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
+            <!-- Custom select kategori game -->
             <div class="custom-select-wrapper" id="custom-select-wrapper">
               <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
@@ -33,6 +34,7 @@
               <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
             </div>
 
+            <!-- Burger -->
             <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
               <span class="line"></span><span class="line"></span><span class="line"></span>
             </button>
@@ -110,7 +112,7 @@
       </div>
     </section>
 
-    <!-- ============ FILM (Gratis) ============ -->
+    <!-- ============ FILM (Gratis, dengan modal player premium) ============ -->
     <section id="viewFilm" aria-label="Film" style="display:none">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
@@ -138,7 +140,7 @@
       <section id="filmList" class="list-container" aria-live="polite" data-rail style="display:none"></section>
 
       <template id="filmTmpl">
-        <a class="list-item" target="_blank" rel="noopener">
+        <a class="list-item" href="#" rel="noopener">
           <span class="title"></span>
           <span class="price"></span>
         </a>
@@ -146,6 +148,57 @@
     </section>
   </main>
 
+  <!-- ===== Modal Player Premium ===== -->
+  <div id="filmModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" id="filmModalBackdrop"></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="filmModalTitle">
+      <button class="modal-close" id="filmModalClose" aria-label="Tutup">×</button>
+      <h3 id="filmModalTitle" class="modal-title">Memuat…</h3>
+
+      <div class="pp-player" id="ppPlayer">
+        <video id="ppVideo" playsinline></video>
+
+        <div class="pp-controls">
+          <div class="pp-row">
+            <button class="pp-btn" id="ppPlay" title="Play/Pause (Space)">▶</button>
+            <button class="pp-btn" id="ppBack" title="Mundur 10s (←)">⟲10s</button>
+            <button class="pp-btn" id="ppFwd"  title="Maju 10s (→)">10s⟳</button>
+
+            <div class="pp-time">
+              <span id="ppCur">00:00</span> /
+              <span id="ppDur">00:00</span>
+            </div>
+
+            <input type="range" id="ppSeek" min="0" max="100" value="0" step="0.1" class="pp-seek" aria-label="Seek">
+
+            <div class="pp-vol">
+              <button class="pp-btn" id="ppMute" title="Mute (M)">🔊</button>
+              <input type="range" id="ppVol" min="0" max="1" step="0.01" value="1" aria-label="Volume">
+            </div>
+
+            <label class="pp-bright">
+              ☀︎
+              <input type="range" id="ppBright" min="0.5" max="1.5" step="0.01" value="1" aria-label="Brightness">
+            </label>
+
+            <select id="ppSpeed" class="pp-speed" title="Kecepatan (</> )" aria-label="Kecepatan">
+              <option value="0.5">0.5×</option>
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+            </select>
+
+            <button class="pp-btn" id="ppPip" title="Picture‑in‑Picture (P)">🗔</button>
+            <button class="pp-btn" id="ppFs"  title="Fullscreen (F)">⛶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="menu.js"></script>
   <script src="script.js"></script>
 </body>
