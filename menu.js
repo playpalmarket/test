@@ -3,11 +3,11 @@
   // Menu: Film gratis + Donasi (Saweria)
   const MENU_ITEMS = [
     { id:'toKatalog',  label:'Katalog',         type:'route', value:'katalog' },
-    { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
+    { id:'toPreorder', label:'Lacak Pre-Order', type:'route', value:'preorder' },
     { divider:true },
     { id:'film',    label:'Tonton Film (Gratis)',  type:'route', value:'film' },
     { id:'donasi',  label:'Donasi (Saweria)',      type:'link',  href:'https://saweria.co/playpal' },
-    { id:'ebook',   label:'E‑book',        type:'link', href:'#' },
+    { id:'ebook',   label:'E-book',        type:'link', href:'#' },
     { id:'assets',  label:'Asset Editing', type:'link', href:'#' }
   ];
 
@@ -36,13 +36,25 @@
 
   function init({ burgerCat, burgerPO, burgerFilm, menuCat, menuPO, menuFilm, onRoute }) {
     const closeAll = () => {
-      [burgerCat, burgerPO, burgerFilm].forEach(b => b && b.classList.remove('active'));
+      [burgerCat, burgerPO, burgerFilm].forEach(b => b && b.classList.remove('is-open', 'rub'));
       [menuCat, menuPO, menuFilm].forEach(m => m && m.classList.remove('open'));
     };
     const toggle = (btn, menu) => {
       const open = menu?.classList.contains('open');
       closeAll();
-      if (!open) { btn?.classList.add('active'); menu?.classList.add('open'); }
+      // micro interaction rub
+      if (btn) {
+        btn.classList.add('rub');
+        // bersihkan kelas rub setelah animasi selesai
+        setTimeout(() => btn.classList.remove('rub'), 200);
+      }
+      if (!open) {
+        btn?.classList.add('is-open');
+        menu?.classList.add('open');
+      } else {
+        btn?.classList.remove('is-open');
+        menu?.classList.remove('open');
+      }
     };
 
     [menuCat, menuPO, menuFilm].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
