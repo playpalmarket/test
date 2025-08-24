@@ -115,7 +115,7 @@ header p { margin: var(--sp-fib-2) 0 0; white-space: nowrap; }
 
 /* ================== HEAD BLOCK, MENU & OVERLAY ================== */
 .head-block {
-  /* margin-bottom has been removed to reduce empty space */
+  /* This block is intentionally left empty. Spacing is handled by child elements. */
 }
 .po-head.head-block, .cat-head.head-block {
   position: sticky; top: 0; z-index: 10;
@@ -243,7 +243,7 @@ body.dark-mode .select-native {
   text-align: center;
   
   /* Mengatur jarak agar lebih sempit dan konsisten */
-  margin-top: var(--sp-fib-4);    /* Jarak dari atas (13px) */
+  margin-top: var(--sp-fib-5);    /* Jarak dari atas (21px) */
   margin-bottom: var(--sp-fib-5); /* Jarak ke konten di bawah (21px) */
 
   /* Logika untuk centering */
