@@ -112,7 +112,7 @@ header h1 { margin: var(--sp-fib-4) 0 0; }
 header p { margin: var(--sp-fib-3) 0 0; white-space: nowrap; }
 
 /* ================== HEAD BLOCK, MENU & OVERLAY ================== */
-.head-block { margin-bottom: var(--sp-fib-5); }
+.head-block { margin-bottom: var(--sp-fib-4); } /* PERUBAHAN: Jarak dipersempit */
 .head-block.sticky {
   position: sticky; top: 0; z-index: 10;
   padding: var(--sp-fib-4) 0;
@@ -230,7 +230,7 @@ body.dark-mode .select-native {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--sp-fib-5);
+  margin-top: var(--sp-fib-4);
   padding: 0 var(--sp-fib-5);
 }
 .meta-row h2 {
@@ -246,7 +246,7 @@ body.dark-mode .select-native {
   text-align: right;
 }
 
-.list-container { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); margin-top: var(--sp-fib-4); }
+.list-container { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); }
 .list-item {
   display: flex; justify-content: space-between; align-items: center; padding: var(--sp-fib-5);
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-medium);
@@ -258,7 +258,7 @@ body.dark-mode .select-native {
 .list-item .title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; pointer-events: none; }
 .list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); pointer-events: none; }
 
-.card-grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-5); margin-top: var(--sp-fib-4); }
+.card-grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-5); }
 .card {
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-5);
   transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
