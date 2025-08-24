@@ -303,7 +303,7 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* ================== PAYMENT MODAL STYLES ================== */
+/* ================== PAYMENT MODAL STYLES (MINIMALIST) ================== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -320,6 +320,7 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   opacity: 0;
   transition: opacity var(--duration-fast) var(--ease-natural);
   pointer-events: none;
+  padding: var(--sp-fib-5);
 }
 .modal-overlay.visible {
   opacity: 1;
@@ -327,11 +328,13 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 .modal-content {
   background: var(--surface-primary);
-  padding: var(--sp-fib-6);
+  /* MENGURANGI PADDING UTAMA */
+  padding: var(--sp-fib-5);
   border-radius: var(--radius-fib-large);
   box-shadow: 0 8px 34px rgba(0,0,0,0.15);
-  width: 90%;
-  max-width: 420px;
+  width: 100%;
+  /* MEMPERKECIL LEBAR MAKSIMUM */
+  max-width: 380px;
   transform: scale(0.95);
   transition: transform var(--duration-natural) var(--ease-natural);
 }
@@ -343,11 +346,13 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--separator);
+  /* MENGURANGI JARAK HEADER */
   padding-bottom: var(--sp-fib-4);
-  margin-bottom: var(--sp-fib-5);
+  margin-bottom: var(--sp-fib-4);
 }
 .modal-header h2 {
-  font-size: var(--font-size-h2);
+  /* MEMPERKECIL FONT JUDUL */
+  font-size: 18px;
   margin: 0;
 }
 .close-btn {
@@ -361,14 +366,16 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   padding: 0;
 }
 .item-recap {
-  margin-bottom: var(--sp-fib-5);
-  font-size: 15px;
+  /* MENGURANGI JARAK & FONT REKAP */
+  margin-bottom: var(--sp-fib-4);
+  font-size: 14px;
 }
-.item-recap p { margin: var(--sp-fib-3) 0; color: var(--text-secondary); }
+.item-recap p { margin: var(--sp-fib-2) 0; color: var(--text-secondary); }
 .payment-options {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-fib-4);
+  /* MENGURANGI JARAK ANTAR OPSI */
+  gap: var(--sp-fib-3);
 }
 .payment-option {
   display: block;
@@ -378,30 +385,34 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 .payment-option label {
   display: block;
-  padding: var(--sp-fib-4) var(--sp-fib-5);
-  border: 2px solid var(--separator);
+  /* MENGURANGI PADDING OPSI */
+  padding: var(--sp-fib-4);
+  border: 1px solid var(--separator);
   border-radius: var(--radius-fib-small);
   cursor: pointer;
   transition: all var(--duration-fast);
+  font-size: 15px;
 }
 .payment-option label:hover {
-  border-color: var(--text-tertiary);
+  background: var(--surface-secondary);
+  border-color: var(--separator);
 }
 .payment-option input:checked + label {
   border-color: var(--brand-blue);
   background-color: rgba(var(--brand-blue-rgb), 0.1);
   font-weight: 700;
-  box-shadow: var(--shadow-focus);
+  box-shadow: 0 0 0 2px var(--brand-blue);
 }
 .price-details {
-  margin-top: var(--sp-fib-5);
-  padding-top: var(--sp-fib-5);
+  /* MENGURANGI JARAK & FONT DETAIL HARGA */
+  margin-top: var(--sp-fib-4);
+  padding-top: var(--sp-fib-4);
   border-top: 1px solid var(--separator);
   text-align: right;
-  font-size: 16px;
+  font-size: 14px;
 }
-.price-details p { margin: var(--sp-fib-3) 0; }
-.price-details strong { font-size: 21px; }
+.price-details p { margin: var(--sp-fib-2) 0; }
+.price-details strong { font-size: 18px; }
 .wa-button {
   display: block;
   width: 100%;
