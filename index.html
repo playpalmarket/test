@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-
   <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
   <noscript>
@@ -20,43 +21,41 @@
     </div>
   </noscript>
 
+  <div id="page-transition-overlay"></div>
+
   <main class="wrap">
-    <header data-rail>
+    <header class="reveal-on-scroll" data-rail>
       <img src="logo.png" alt="PlayPal.ID Logo" class="logo">
       <h1>PlayPal.ID</h1>
       <p>Destinasi Utama Para Pecinta Game, Film &amp; Musik</p>
     </header>
 
-    <section id="viewCatalog" aria-label="Katalog">
+    <section id="viewCatalog" class="view-section active" aria-label="Katalog">
       <div class="head-block cat-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
             <div class="custom-select-wrapper" id="custom-select-wrapper">
               <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
                 <span id="custom-select-value">Pilih Kategori</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
               </button>
               <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
             </div>
 
             <button class="icon-btn burger" id="burgerCat" aria-label="Menu" aria-expanded="false" type="button">
-              <span></span>
-              <span></span>
-              <span></span>
+              <span></span><span></span><span></span>
             </button>
-            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)">
-              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
-              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
-              <div class="menu-divider"></div>
-              <button class="menu-btn" id="closeMenuCat" type="button">Tutup</button>
-            </nav>
+            <nav class="menu" id="menuCat" aria-label="Menu tampilan (Katalog)"></nav>
           </div>
         </div>
 
         <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <span class="material-symbols-outlined">search</span>
-            <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
+          <div class="form-field">
+            <input id="search" class="form-input" type="search" placeholder=" " aria-label="Cari">
+            <label for="search" class="form-label">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                <span>Cari item...</span>
+            </label>
           </div>
         </div>
       </div>
@@ -66,7 +65,7 @@
       <section id="error" class="err" style="display:none" data-rail></section>
     </section>
 
-    <section id="viewPreorder" aria-label="Pre-Order">
+    <section id="viewPreorder" class="view-section" aria-label="Pre-Order">
       <div class="head-block po-head" data-rail>
         <div class="topbar" data-rail>
           <div class="topbar-grid">
@@ -76,23 +75,19 @@
             </select>
 
             <button class="icon-btn burger" id="burgerPO" aria-label="Menu" aria-expanded="false" type="button">
-              <span></span>
-              <span></span>
-              <span></span>
+              <span></span><span></span><span></span>
             </button>
-            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)">
-              <button class="menu-btn" data-mode="katalog" type="button">Katalog</button>
-              <button class="menu-btn" data-mode="preorder" type="button">Lacak Pre‑Order</button>
-              <div class="menu-divider"></div>
-              <button class="menu-btn" id="closeMenuPO" type="button">Tutup</button>
-            </nav>
+            <nav class="menu" id="menuPO" aria-label="Menu tampilan (Pre‑Order)"></nav>
           </div>
         </div>
 
         <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <span class="material-symbols-outlined">search</span>
-            <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server / item..." />
+          <div class="form-field">
+            <input type="search" class="form-input" id="poSearch" placeholder=" " />
+            <label for="poSearch" class="form-label">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                <span>Cari nama / ID Server...</span>
+            </label>
           </div>
         </div>
 
@@ -119,33 +114,8 @@
     </section>
   </main>
 
-  <template id="itemTmpl">
-    <a class="list-item" target="_blank" rel="noopener">
-      <span class="title"></span>
-      <span class="price"></span>
-    </a>
-  </template>
-
-  <template id="skeletonItemTmpl">
-    <div class="list-item skeleton">
-      <span class="skeleton-text" style="width: 60%;"></span>
-      <span class="skeleton-text" style="width: 25%;"></span>
-    </div>
-  </template>
-
-  <template id="skeletonCardTmpl">
-    <div class="card skeleton">
-      <div class="card-header">
-        <div>
-          <div class="skeleton-text" style="width: 50%; height: 18px; margin-bottom: 8px;"></div>
-          <div class="skeleton-text" style="width: 75%; height: 14px;"></div>
-        </div>
-        <div class="skeleton-badge"></div>
-      </div>
-      <div class="skeleton-text" style="width: 65%; height: 12px; margin-top: 10px;"></div>
-    </div>
-  </template>
-
-  <script src="script.js"></script>
+  <template id="itemTmpl"><a class="list-item" target="_blank" rel="noopener"><span class="title"></span><span class="price"></span></a></template>
+  <template id="skeletonItemTmpl"><div class="list-item skeleton"><span class="skeleton-text" style="width: 60%;"></span><span class="skeleton-text" style="width: 25%;"></span></div></template>
+  <template id="skeletonCardTmpl"><div class="card skeleton"><div class="card-header"><div><div class="skeleton-text" style="width: 50%; height: 18px; margin-bottom: 8px;"></div><div class="skeleton-text" style="width: 75%; height: 14px;"></div></div><div class="skeleton-badge"></div></div><div class="skeleton-text" style="width: 65%; height: 12px; margin-top: 10px;"></div></div></template>
 </body>
 </html>
