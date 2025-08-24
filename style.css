@@ -54,6 +54,9 @@
   --duration-natural: 0.34s;
   --duration-smooth: 0.55s;
   --ease-natural: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Layout Variable */
+  --maxw: 1200px;
 }
 
 /* Dark Mode Tokens */
@@ -103,7 +106,7 @@ p { font-size: var(--font-size-body); color: var(--text-secondary); line-height:
 .reveal-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
 
 /* ================== LAYOUT & SPACING ================== */
-.wrap { max-width: 1200px; margin: 0 auto; padding: var(--sp-fib-7) var(--sp-fib-5); }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: var(--sp-fib-7) var(--sp-fib-5); }
 [data-rail] { padding: 0; margin: 0; width: 100%; } /* No horizontal padding on rail elements */
 header { text-align: center; margin-bottom: var(--sp-fib-7); }
 .logo { height: var(--sp-fib-7); width: auto; }
@@ -111,7 +114,9 @@ header h1 { margin: var(--sp-fib-4) 0 0; }
 header p { margin: var(--sp-fib-2) 0 0; white-space: nowrap; }
 
 /* ================== HEAD BLOCK, MENU & OVERLAY ================== */
-.head-block { margin-bottom: var(--sp-fib-5); }
+.head-block {
+  /* margin-bottom has been removed to reduce empty space */
+}
 .po-head.head-block, .cat-head.head-block {
   position: sticky; top: 0; z-index: 10;
   padding: var(--sp-fib-4) 0;
@@ -233,12 +238,19 @@ body.dark-mode .select-native {
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 700;
+  text-align: center;
   margin-top: var(--sp-fib-4);
-  width: 100%;
-  text-align: center; /* Mengatur posisi ke tengah */
+  max-width: var(--maxw);
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.list-container[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); }
+.list-container[data-rail] { 
+  display: grid; 
+  grid-template-columns: 1fr; 
+  gap: var(--sp-fib-4);
+  padding-top: var(--sp-fib-5); /* Added padding to create space from the counter */
+}
 
 /* This is the new button style for list items */
 .list-item {
@@ -252,7 +264,12 @@ body.dark-mode .select-native {
 .list-item .title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; pointer-events: none; }
 .list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); pointer-events: none; }
 
-#viewPreorder .card-grid[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-5); }
+#viewPreorder .card-grid[data-rail] { 
+  display: grid; 
+  grid-template-columns: 1fr; 
+  gap: var(--sp-fib-5);
+  padding-top: var(--sp-fib-5); /* Added padding to create space from the counter */
+}
 #viewPreorder .card {
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-5);
   transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
