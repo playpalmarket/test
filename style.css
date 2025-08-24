@@ -120,7 +120,6 @@ body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
   display: flex;
   align-items: center;
   gap: var(--sp-12);
-  /* --- PERUBAHAN: Memaksa perataan vertikal --- */
   vertical-align: middle;
 }
 
@@ -151,7 +150,6 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 .custom-select-wrapper{
   position:relative;
   flex-grow: 1;
-  /* --- PERUBAHAN: Memaksa perataan vertikal --- */
   vertical-align: middle;
 }
 .custom-select-btn{ 
@@ -171,19 +169,39 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 .select-native{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2386868b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; }
 
 .search-row[data-rail], .status-row[data-rail]{ margin-top:var(--sp-12); }
-.form-field { position: relative; }
-.form-input {
-  width:100%; height:var(--control-h); padding: var(--sp-8) var(--sp-16) 0 var(--sp-16); background:var(--fill-primary); border:1px solid var(--separator);
-  border-radius:var(--radius-medium); font-size:16px; color:var(--text-primary); outline:none;
+
+/* --- PERUBAHAN: Menghapus .form-field & .form-label, menambahkan .search-wrap & .search-input --- */
+.search-wrap {
+  position: relative;
+}
+.search-wrap .icon {
+  position: absolute;
+  left: var(--sp-16);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+.search-input {
+  width:100%; 
+  height:var(--control-h); 
+  padding: 0 var(--sp-16) 0 48px; /* Padding kiri untuk ikon */
+  background:var(--fill-primary); 
+  border:1px solid var(--separator);
+  border-radius:var(--radius-medium); 
+  font-size:16px; 
+  color:var(--text-primary); 
+  outline:none;
   transition:border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
-.form-label { position: absolute; left: var(--sp-16); top: 50%; transform: translateY(-50%); color: var(--text-tertiary); font-size: 16px; pointer-events: none; transition: all var(--duration-normal) var(--ease-out-quint); display: flex; align-items: center; gap: var(--sp-8); }
-.form-input:focus-visible { border-color:var(--primary-blue); box-shadow:var(--shadow-glow); }
-.form-input:focus-visible + .form-label, .form-input:not(:placeholder-shown) + .form-label {
-    top: 12px; transform: translateY(0); font-size: 11px; font-weight: 500;
-    color: var(--primary-blue);
+.search-input:focus-visible {
+  border-color:var(--primary-blue); 
+  box-shadow:var(--shadow-glow);
 }
-.form-input:focus-visible + .form-label .icon, .form-input:not(:placeholder-shown) + .form-label .icon { display: none; }
+.search-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
 
 /* ================== KATALOG & PRE-ORDER CARDS ================== */
 #viewCatalog{--list-gap: 8px;}
