@@ -84,7 +84,10 @@ p { font-size: clamp(16px, 2vw, 16px); color: var(--text-secondary); line-height
 header { text-align: center; margin-bottom: var(--sp-32); }
 .logo { height: 48px; width: auto; }
 header h1 { margin: 12px 0 0; }
-header p { margin: 4px 0 0; }
+header p { 
+  margin: 4px 0 0;
+  white-space: nowrap;
+}
 
 /* ================== HEAD BLOCK, MENU & OVERLAY ================== */
 .head-block { margin-bottom: var(--head-gap-bottom); }
