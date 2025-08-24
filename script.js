@@ -1,12 +1,12 @@
 (function(){
-  // ========= CONFIG (unchanged) =========
+  // ========= CONFIG =========
   const SHEET_ID='1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw';
   const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'}};
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
   let DATA=[],CATS=[],activeCat='',query='';
 
-  // ========= ELEMENTS (unchanged) =========
+  // ========= ELEMENTS =========
   const viewCatalog=document.getElementById('viewCatalog');
   const viewPreorder=document.getElementById('viewPreorder');
   const listEl=document.getElementById('list-container');
@@ -24,19 +24,20 @@
   const burgerPO=document.getElementById('burgerPO');
   const menuCat=document.getElementById('menuCat');
   const menuPO=document.getElementById('menuPO');
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const themeToggleBtnPO = document.getElementById('theme-toggle-btn-po');
 
-  // ========= NEW: MENU ITEMS & THEME TOGGLE =================
+  // ========= MENU ITEMS =========
   const MENU_ITEMS = [
     { label:'Katalog', mode:'katalog' },
     { label:'Lacak Pre‑Order', mode:'preorder' },
     { divider:true },
-    { label: 'Dark Mode', mode:'toggleTheme', isThemeToggle: true },
     { label:'Donasi (Saweria)', href:'https://saweria.co/playpal' },
     { divider:true },
     { label:'Tutup', mode:'close' }
   ];
 
-  // ========= NEW: SCROLL ANIMATION ==================
+  // ========= SCROLL ANIMATION =========
   function initScrollAnimations() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -47,19 +48,13 @@
       });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+    // Animate header immediately if it's already in view
+    document.querySelectorAll('header.reveal-on-scroll').forEach(el => observer.observe(el));
   }
   
-  // ========= NEW: THEME MANAGER =================
+  // ========= THEME MANAGER =========
   function applyTheme(theme) {
-    if (theme === 'dark') {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-    // Update toggle text
-    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-        btn.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-    });
+    document.body.classList.toggle('dark-mode', theme === 'dark');
   }
   
   function initTheme() {
@@ -70,13 +65,12 @@
   }
   
   function toggleTheme() {
-    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
     localStorage.setItem('theme', newTheme);
     applyTheme(newTheme);
   }
 
-  // ========= MENU & MODE SWITCHER (UPGRADED) =================
+  // ========= MENU & MODE SWITCHER =========
   function renderMenu(container) {
     container.innerHTML = '';
     MENU_ITEMS.forEach(item => {
@@ -87,11 +81,7 @@
       const btn = document.createElement('button');
       btn.className = 'menu-btn';
       btn.textContent = item.label;
-      
-      if (item.isThemeToggle) {
-        btn.classList.add('theme-toggle-btn');
-        btn.addEventListener('click', toggleTheme);
-      } else if (item.href) {
+      if (item.href) {
         btn.addEventListener('click', () => window.open(item.href, '_blank', 'noopener'));
       } else if (item.mode === 'close') {
         btn.addEventListener('click', closeAllMenus);
@@ -112,21 +102,15 @@
     const menu = which === 'cat' ? menuCat : menuPO;
     const isOpen = menu.classList.contains('open');
     closeAllMenus();
-    if (!isOpen) { 
-      btn?.classList.add('active'); 
-      menu?.classList.add('open'); 
-    }
+    if (!isOpen) { btn?.classList.add('active'); menu?.classList.add('open'); }
   }
 
   function setMode(nextMode){
     const currentActive = document.querySelector('.view-section.active');
     const nextView = document.getElementById(nextMode === 'katalog' ? 'viewCatalog' : 'viewPreorder');
     if (currentActive === nextView) { closeAllMenus(); return; }
-
-    currentActive.style.display = 'none';
-    currentActive.classList.remove('active');
     
-    nextView.style.display = 'block';
+    currentActive.classList.remove('active');
     nextView.classList.add('active');
 
     closeAllMenus();
@@ -134,13 +118,13 @@
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
   
-  // ========= UTILS (unchanged) =========
+  // ========= UTILS =========
   const prettyLabel=(raw)=>String(raw||'').trim().replace(/\s+/g,' ');
   const toIDR=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
   const sheetUrlJSON=(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
   const sheetUrlCSV =(sheetName)=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
 
-  // ========= SKELETON LOADER (unchanged) =========
+  // ========= SKELETON LOADER =========
   function showSkeleton(container, template, count=6){container.innerHTML='';const frag=document.createDocumentFragment();for(let i=0;i<count;i++){frag.appendChild(template.content.cloneNode(true));}container.appendChild(frag);}
 
   // ========= KATALOG LOGIC (unchanged) =========
@@ -154,16 +138,29 @@
   const poSearch=document.getElementById('poSearch');const poStatus=document.getElementById('poStatus');const poSheet=document.getElementById('poSheet');const poList=document.getElementById('poList');const poPrev=document.getElementById('poPrev');const poNext=document.getElementById('poNext');const poTotal=document.getElementById('poTotal');const poState={initialized:false,allData:[],currentPage:1,perPage:15,displayMode:'detailed'};const normalizeStatus=(raw)=>{const s=String(raw||'').trim().toLowerCase();if(['success','selesai','berhasil','done'].includes(s))return'success';if(['progress','proses','diproses','processing'].includes(s))return'progress';if(['failed','gagal','dibatalkan','cancel','error'].includes(s))return'failed';return'pending';};const poFilterData=()=>{const q=poSearch.value.trim().toLowerCase();const statusFilter=poStatus.value;return poState.allData.filter(item=>{if(poState.displayMode==='detailed'){const product=(item[3]||'').toLowerCase();const nickname=(item[5]||'').toLowerCase();const idGift=(item[7]||'').toLowerCase();const match=product.includes(q)||nickname.includes(q)||idGift.includes(q);const status=normalizeStatus(item[6]);return match&&(statusFilter==='all'||status===statusFilter);}else{const orderNum=(item[0]||'').toLowerCase();const product=(item[1]||'').toLowerCase();const match=orderNum.includes(q)||product.includes(q);const status=normalizeStatus(item[2]);return match&&(statusFilter==='all'||status===statusFilter);}});};const poUpdatePagination=(cur,total)=>{poPrev.disabled=cur<=1;poNext.disabled=cur>=total;};const poRender=()=>{const filtered=poFilterData();const totalItems=poState.allData.length;poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);const start=(poState.currentPage-1)*poState.perPage;const pageData=filtered.slice(start,start+poState.perPage);poList.innerHTML='';if(pageData.length===0){poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`;poUpdatePagination(0,0);return;}const frag=document.createDocumentFragment();pageData.forEach(item=>{const card=document.createElement('article');if(poState.displayMode==='detailed'){const tglOrder=item[0];const estPengiriman=item[1];const product=item[3];const bulan=item[4];const name=item[5];const status=item[6];const statusClass=normalizeStatus(status);const estDeliveryText=estPengiriman?`Estimasi Pengiriman: ${estPengiriman} 20:00 WIB`:'';const details=[{label:'TGL ORDER',value:tglOrder},{label:'BULAN',value:bulan}];const detailsHtml=details.filter(d=>d.value&&String(d.value).trim()!=='').map(d=>`<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');card.className=`card ${detailsHtml?'clickable':''}`;card.innerHTML=`<div class="card-header"><div><div class="card-name">${name||'Tanpa Nama'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>${estDeliveryText?`<div class="card-date">${estDeliveryText}</div>`:''}${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;if(detailsHtml)card.addEventListener('click',()=>card.classList.toggle('expanded'));}else{const orderNum=item[0];const product=item[1];const status=item[2];const statusClass=normalizeStatus(status);card.className='card';card.innerHTML=`<div class="card-header"><div><div class="card-name">${orderNum||'Tanpa Nomor'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>`;}frag.appendChild(card);});poList.appendChild(frag);poUpdatePagination(poState.currentPage,totalPages);};const poSortByStatus=(data,mode)=>{const order={'progress':1,'pending':2,'success':3,'failed':4};const statusIndex=(mode==='detailed')?6:2;return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);};async function poFetch(sheetName){poTotal.textContent='Memuat data...';showSkeleton(poList,skeletonCardTmpl,5);poState.displayMode=(sheetName===SHEETS.preorder.name1)?'detailed':'simple';try{const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});if(!res.ok)throw new Error(`Network response was not ok: ${res.statusText}`);const text=await res.text();let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));if(rows.length<2){poState.allData=[];return;}rows.shift();const dataRows=rows.filter(row=>row&&(row[0]||'').trim()!=='');poState.allData=poSortByStatus(dataRows,poState.displayMode);}catch(e){poState.allData=[];poTotal.textContent='Gagal memuat data.';console.error('Fetch Pre-Order failed:',e);}finally{poState.currentPage=1;poRender();}}
   function poInit(){const rebound=()=>{poState.currentPage=1;poRender();};poSearch.addEventListener('input',rebound);poStatus.addEventListener('change',rebound);poSheet.addEventListener('change',e=>{const selectedValue=e.target.value;const sheetToFetch=selectedValue==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(sheetToFetch);});document.getElementById('poPrev').addEventListener('click',()=>{if(poState.currentPage>1){poState.currentPage--;poRender();window.scrollTo({top:0,behavior:'smooth'});}});document.getElementById('poNext').addEventListener('click',()=>{poState.currentPage++;poRender();window.scrollTo({top:0,behavior:'smooth'});});const initialSheet=poSheet.value==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(initialSheet);poState.initialized=true;}
 
-  // ========= INITIALIZATION =================
+  // ========= INITIALIZATION =========
   function init() {
     // Event Listeners
     burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
     burgerPO?.addEventListener('click',()=>toggleMenu('po'));
-    document.addEventListener('click',(e)=>{ const inside=(menuCat?.contains(e.target)||burgerCat?.contains(e.target)||menuPO?.contains(e.target)||burgerPO?.contains(e.target)); if(!inside)closeAllMenus(); });
+    themeToggleBtn?.addEventListener('click', toggleTheme);
+    themeToggleBtnPO?.addEventListener('click', toggleTheme);
+    
+    document.addEventListener('click',(e)=>{ 
+      const isOutsideMenu = !(menuCat?.contains(e.target) || burgerCat?.contains(e.target) || menuPO?.contains(e.target) || burgerPO?.contains(e.target));
+      if(isOutsideMenu) closeAllMenus(); 
+    });
+    
     customSelectBtn.addEventListener('click',()=>toggleCustomSelect());
-    document.addEventListener('click',(e)=>{ if(!customSelectWrapper.contains(e.target) && !customSelectBtn.contains(e.target)) toggleCustomSelect(false); });
+    document.addEventListener('click',(e)=>{ 
+      if(!customSelectWrapper.contains(e.target) && !customSelectBtn.contains(e.target)) toggleCustomSelect(false);
+    });
+
     let debounceTimer;
-    searchEl.addEventListener('input',e=>{ clearTimeout(debounceTimer); debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); },200); });
+    searchEl.addEventListener('input',e=>{ 
+      clearTimeout(debounceTimer); 
+      debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); },200); 
+    });
     
     // Initial calls
     renderMenu(menuCat);
@@ -173,6 +170,5 @@
     initScrollAnimations();
   }
 
-  // Run everything after the DOM is ready
   document.addEventListener('DOMContentLoaded', init);
 })();
