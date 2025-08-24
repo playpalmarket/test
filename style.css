@@ -18,7 +18,6 @@
   /* Controls & Sizing */
   --control-h:52px;
   --head-pad-y:12px;
-  /* --- PERUBAHAN: Menyeragamkan jarak bawah header menjadi 12px --- */
   --head-gap-bottom:12px; 
   
   /* Radius & Shadows */
@@ -121,6 +120,8 @@ body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
   display: flex;
   align-items: center;
   gap: var(--sp-12);
+  /* --- PERUBAHAN: Memaksa perataan vertikal --- */
+  vertical-align: middle;
 }
 
 .icon-btn {
@@ -150,6 +151,8 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 .custom-select-wrapper{
   position:relative;
   flex-grow: 1;
+  /* --- PERUBAHAN: Memaksa perataan vertikal --- */
+  vertical-align: middle;
 }
 .custom-select-btn{ 
   width:100%; height:var(--control-h); padding:var(--sp-12) var(--sp-16); background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-medium); color:var(--text-primary); font-size:16px; font-weight:700; text-align:left; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color var(--duration-fast), box-shadow var(--duration-fast);
