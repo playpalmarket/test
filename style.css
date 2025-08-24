@@ -79,7 +79,6 @@ header p{margin:4px 0 0;}
 .po-head.head-block, .cat-head.head-block {
   position: sticky; top: 0; z-index: 10;
   padding: var(--head-pad-y) 0;
-  /* Membuat background header semi-transparan agar konten di bawahnya terlihat saat scroll */
   background: rgba(245,245,247,.8);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
@@ -89,16 +88,15 @@ body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
 .menu{
   position:absolute; z-index:100; right:0;
   
-  /* --- PERUBAHAN 1: Mengembalikan jarak antara tombol dan menu --- */
-  top: calc(var(--control-h) + var(--sp-8));
+  /* --- PERUBAHAN FINAL --- */
+  /* Jarak diperbesar dari 8px (sp-8) menjadi 12px (sp-12) */
+  top: calc(var(--control-h) + var(--sp-12));
 
-  /* --- PERUBAHAN 2: Menggunakan background solid dan border standar --- */
   background: var(--fill-primary);
   border: 1px solid var(--separator);
-  
   border-radius:var(--radius-medium);
   display:flex; flex-direction:column; min-width:210px; overflow:clip;
-  box-shadow: var(--shadow-sm); /* Menggunakan shadow yang lebih jelas */
+  box-shadow: var(--shadow-sm);
   opacity:0; transform: translateY(-6px) scale(.98);
   transition:opacity var(--duration-normal) var(--ease-out-quint), transform var(--duration-normal) var(--ease-out-quint);
   pointer-events:none;
@@ -115,7 +113,6 @@ body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
 }
 .menu-btn:hover{background:var(--fill-secondary)}
 .menu-divider{height:1px;background:var(--separator);margin:var(--sp-8) 0}
-
 
 /* ================== CONTROLS & FORMS ================== */
 .topbar-grid{ display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:var(--sp-12); align-items:center; }
