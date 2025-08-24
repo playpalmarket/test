@@ -48,7 +48,6 @@
       });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
-    // Animate header immediately if it's already in view
     document.querySelectorAll('header.reveal-on-scroll').forEach(el => observer.observe(el));
   }
   
@@ -140,6 +139,25 @@
 
   // ========= INITIALIZATION =========
   function init() {
+    // --- PERUBAHAN BARU: Menambahkan Anti-Zoom ---
+    // Mencegah zoom dengan dua jari (pinch-zoom)
+    document.addEventListener('touchstart', (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+
+    // Mencegah zoom dengan double-tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (event) => {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    // --- AKHIR PERUBAHAN ---
+
     // Event Listeners
     burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
     burgerPO?.addEventListener('click',()=>toggleMenu('po'));
