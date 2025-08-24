@@ -230,15 +230,18 @@ body.dark-mode .select-native {
 /* ================== KATALOG & PRE-ORDER CARDS ================== */
 #countInfo[data-rail] { color: var(--text-secondary); font-size: 14px; font-weight: 700; margin-top: var(--sp-fib-3); text-align: right; }
 .list-container[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); }
+
+/* This is the new button style for list items */
 .list-item {
   display: flex; justify-content: space-between; align-items: center; padding: var(--sp-fib-5);
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-medium);
-  text-decoration: none; color: inherit;
+  text-decoration: none; color: inherit; width: 100%; text-align: left; font-family: inherit; font-size: inherit;
+  cursor: pointer;
   transition: transform var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 .list-item:hover { transform: translateY(-5px); border-color: var(--brand-blue); box-shadow: var(--shadow-sm); }
-.list-item .title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
-.list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); }
+.list-item .title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; pointer-events: none; }
+.list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); pointer-events: none; }
 
 #viewPreorder .meta[data-rail] { font-size: var(--font-size-h3); color: var(--text-secondary); font-weight: 700; margin-top: var(--sp-fib-4); }
 #viewPreorder .card-grid[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-5); }
@@ -246,6 +249,7 @@ body.dark-mode .select-native {
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-5);
   transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
 }
+#viewPreorder .card.clickable { cursor: pointer; }
 #viewPreorder .card.clickable:hover { transform: translateY(-5px); border-color: var(--separator); box-shadow: var(--shadow-sm); }
 #viewPreorder .card-header { display: grid; grid-template-columns: 1fr auto; gap: var(--sp-fib-4); align-items: start; }
 #viewPreorder .card-name { font-size: var(--font-size-body); font-weight: 800; letter-spacing: -.01em; color: var(--text-primary); }
@@ -297,4 +301,121 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 @media (min-width: 1024px) {
   #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ================== PAYMENT MODAL STYLES ================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-natural);
+  pointer-events: none;
+}
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-content {
+  background: var(--surface-primary);
+  padding: var(--sp-fib-6);
+  border-radius: var(--radius-fib-large);
+  box-shadow: 0 8px 34px rgba(0,0,0,0.15);
+  width: 90%;
+  max-width: 420px;
+  transform: scale(0.95);
+  transition: transform var(--duration-natural) var(--ease-natural);
+}
+.modal-overlay.visible .modal-content {
+  transform: scale(1);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--separator);
+  padding-bottom: var(--sp-fib-4);
+  margin-bottom: var(--sp-fib-5);
+}
+.modal-header h2 {
+  font-size: var(--font-size-h2);
+  margin: 0;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0;
+}
+.item-recap {
+  margin-bottom: var(--sp-fib-5);
+  font-size: 15px;
+}
+.item-recap p { margin: var(--sp-fib-3) 0; color: var(--text-secondary); }
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-fib-4);
+}
+.payment-option {
+  display: block;
+}
+.payment-option input {
+  display: none;
+}
+.payment-option label {
+  display: block;
+  padding: var(--sp-fib-4) var(--sp-fib-5);
+  border: 2px solid var(--separator);
+  border-radius: var(--radius-fib-small);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+.payment-option label:hover {
+  border-color: var(--text-tertiary);
+}
+.payment-option input:checked + label {
+  border-color: var(--brand-blue);
+  background-color: rgba(var(--brand-blue-rgb), 0.1);
+  font-weight: 700;
+  box-shadow: var(--shadow-focus);
+}
+.price-details {
+  margin-top: var(--sp-fib-5);
+  padding-top: var(--sp-fib-5);
+  border-top: 1px solid var(--separator);
+  text-align: right;
+  font-size: 16px;
+}
+.price-details p { margin: var(--sp-fib-3) 0; }
+.price-details strong { font-size: 21px; }
+.wa-button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: var(--brand-blue);
+  color: #fff;
+  padding: var(--sp-fib-4);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-fib-small);
+  text-decoration: none;
+  margin-top: var(--sp-fib-5);
+  transition: transform var(--duration-fast);
+}
+.wa-button:hover {
+  transform: scale(1.02);
 }
