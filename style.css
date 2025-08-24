@@ -75,8 +75,6 @@ header p{margin:4px 0 0;}
 /* ================== HEAD BLOCK, MENU & OVERLAY ================== */
 .head-block{ margin-bottom: var(--head-gap-bottom); }
 
-/* --- PERUBAHAN 1 --- */
-/* Membuat SEMUA .head-block (Katalog & Pre-Order) menjadi statis/sticky di atas */
 .po-head.head-block, .cat-head.head-block {
   position: sticky; top: 0; z-index: 10;
   padding: var(--head-pad-y) 0;
@@ -87,40 +85,35 @@ body.dark-mode .po-head.head-block,
 body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.6); }
 
 .menu{
-  position:absolute; z-index:100; right:0; top:calc(var(--control-h) + var(--sp-8));
+  position:absolute; z-index:100; right:0;
+  
+  /* --- PERUBAHAN FINAL --- */
+  /* Menghilangkan spasi agar menu menempel persis di bawah tombol burger */
+  top: var(--control-h);
+
   background:rgba(255,255,255,.6); border:1px solid rgba(0,0,0,.04);
   border-radius:var(--radius-medium); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
   display:flex; flex-direction:column; min-width:210px; overflow:clip;
   box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-  
-  /* --- PERUBAHAN 2 --- */
-  /* Menghilangkan `translateY` agar animasi hanya scaling dari atas ke bawah */
   opacity:0; transform: scale(0.98);
-  transform-origin: top right; /* Memastikan animasi scale berasal dari pojok kanan atas */
+  transform-origin: top right;
   transition:opacity var(--duration-normal) var(--ease-out-quint), transform var(--duration-normal) var(--ease-out-quint);
   pointer-events:none;
 }
 body.dark-mode .menu { background:rgba(20,20,22,.7); border-color:rgba(255,255,255,.1); }
-
-/* --- PERUBAHAN 3 --- */
-/* Menyesuaikan state `.open` agar sesuai dengan animasi baru */
 .menu.open{opacity:1; transform: scale(1); pointer-events:auto}
 
 .menu-btn{
     padding:var(--sp-12) var(--sp-16); border:0; background:transparent; text-align:left; color:var(--text-primary); font-weight:700; font-size:15px; cursor:pointer; letter-spacing:-.01em;
-    opacity: 0; transform: translateY(10px);
-    transition: opacity .4s var(--ease-out-quint), transform .4s var(--ease-out-quint), background-color var(--duration-fast);
+    opacity: 0;
+    transition: opacity .2s var(--ease-out-quint), background-color var(--duration-fast);
 }
-.menu.open .menu-btn { opacity: 1; transform: translateY(0); }
+.menu.open .menu-btn {
+    opacity: 1;
+}
 .menu-btn:hover{background:rgba(0,0,0,.04)}
 body.dark-mode .menu-btn:hover{background:rgba(255,255,255,.06)}
 .menu-divider{height:1px;background:var(--separator);margin:var(--sp-8) 0}
-
-.menu.open .menu-btn:nth-child(1) { transition-delay: .05s; }
-.menu.open .menu-btn:nth-child(2) { transition-delay: .1s; }
-.menu.open .menu-btn:nth-child(3) { transition-delay: .15s; }
-.menu.open .menu-btn:nth-child(4) { transition-delay: .2s; }
-.menu.open .menu-btn:nth-child(5) { transition-delay: .25s; }
 
 /* ================== CONTROLS & FORMS ================== */
 .topbar-grid{ display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:var(--sp-12); align-items:center; }
