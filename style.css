@@ -236,8 +236,6 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 .list-item:hover{transform:translateY(-4px); background:var(--fill-secondary); border-color:var(--fill-tertiary); box-shadow: var(--shadow-sm);}
 .list-item .title{font-size:15px; font-weight:700; letter-spacing:-.01em; color: var(--text-primary); transition: color var(--duration-normal);}
 .list-item .price{font-size:15px; font-weight:800; color:var(--primary-blue); transition: color var(--duration-normal);}
-
-/* --- PERUBAHAN: Menambahkan style khusus untuk hover/klik di dark mode --- */
 body.dark-mode .list-item:hover .price,
 body.dark-mode .list-item:active .price {
   color: var(--text-primary);
@@ -248,7 +246,18 @@ body.dark-mode .list-item:active .price {
 #viewPreorder .card-grid[data-rail]{ display:grid; grid-template-columns:1fr; gap:var(--card-gap) }
 #viewPreorder .card{ background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-large); padding:18px; transition:background-color var(--duration-normal), border-color var(--duration-normal), transform var(--duration-fast), box-shadow var(--duration-fast); }
 #viewPreorder .card.clickable{cursor:pointer}
-#viewPreorder .card.clickable:hover{transform:translateY(-4px); background:var(--fill-secondary); border-color:var(--fill-tertiary); box-shadow: var(--shadow-sm);}
+/* --- PERUBAHAN: Memperbaiki warna KARTU PRE-ORDER saat diklik di dark mode --- */
+#viewPreorder .card.clickable:hover {
+  transform: translateY(-4px); 
+  background: var(--fill-secondary);
+}
+body.dark-mode #viewPreorder .card.clickable:hover,
+body.dark-mode #viewPreorder .card.expanded {
+  background-color: var(--fill-primary); /* Latar tidak berubah agar tulisan jelas */
+  border-color: var(--primary-blue);
+  box-shadow: var(--shadow-glow);
+}
+
 #viewPreorder .card-header{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:start}
 #viewPreorder .card-name{font-size:16px; font-weight:800; letter-spacing:-.01em}
 #viewPreorder .card-product{ font-size:14px; color:var(--text-secondary); }
