@@ -60,8 +60,11 @@
             <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
           </div>
         </div>
+        <div class="meta-row">
+          <h2>Hasil Pencarian</h2>
+          <div id="countInfo"></div>
+        </div>
       </div>
-      <div id="countInfo"></div>
       <section id="list-container" class="list-container" aria-live="polite"></section>
       <section id="error" class="err" style="display:none"></section>
     </section>
@@ -94,16 +97,19 @@
               <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server..." />
             </div>
         </div>
-          <div class="status-row">
-            <select class="status-select" id="poStatus" aria-label="Filter status">
-              <option value="all">Semua Status</option>
-              <option value="success">Success</option>
-              <option value="progress">Progress</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Gagal</option>
-            </select>
-          </div>
-          <div class="meta" id="poTotal"></div>
+        <div class="status-row">
+          <select class="status-select" id="poStatus" aria-label="Filter status">
+            <option value="all">Semua Status</option>
+            <option value="success">Success</option>
+            <option value="progress">Progress</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Gagal</option>
+          </select>
+        </div>
+        <div class="meta-row">
+            <h2>Daftar Pesanan</h2>
+            <div id="poTotal" class="meta"></div>
+        </div>
       </div>
       <div class="container">
         <main class="card-grid" id="poList" aria-live="polite"></main>
