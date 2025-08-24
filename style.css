@@ -313,3 +313,37 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 .menu.open .menu-btn:nth-child(3){transition-delay:.08s}
 .menu.open .menu-btn:nth-child(4){transition-delay:.11s}
 .menu.open .menu-btn:nth-child(5){transition-delay:.14s}
+
+/* === ROLLBACK LOOK (balik ke feel lama, non-destruktif) === */
+
+/* Ikon & hover lebih kalem (tanpa glow/zoom) */
+.icon { stroke-width: initial; border-radius: 0; }
+.icon-btn:hover .icon { transform: none !important; filter: none !important; }
+.icon-btn:active .icon { transform: none !important; }
+
+/* Transisi section sederhana (seperti semula) */
+.view-section { transition: none !important; }
+
+/* Menu: hilangkan efek stagger */
+.menu.open .menu-btn { transition-delay: 0s !important; }
+
+/* List & Card: hilangkan lift/shadow saat hover */
+.list-item:hover {
+  transform: none !important;
+  background: var(--fill-primary) !important;
+  border-color: var(--separator) !important;
+  box-shadow: none !important;
+}
+#viewPreorder .card.clickable:hover {
+  transform: none !important;
+  background: var(--fill-primary) !important;
+  box-shadow: none !important;
+}
+
+/* Grid responsif kembali rasa lama (andalkan media queries yang sudah ada) */
+@container (min-width: 600px) { 
+  #viewCatalog .list-container[data-rail] { grid-template-columns: 1fr !important; }
+}
+@container (min-width: 1024px) {
+  #viewCatalog .list-container[data-rail] { grid-template-columns: 1fr !important; }
+}
