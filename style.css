@@ -233,23 +233,39 @@ body.dark-mode .select-native {
 .search-input::placeholder { color: var(--text-tertiary); opacity: 1; }
 
 /* ================== KATALOG & PRE-ORDER CARDS ================== */
+
+/* Final Counter Style - Center & Tighter Space */
 #countInfo[data-rail],
-#viewPreorder .meta[data-rail] {
+#poTotal[data-rail] { /* Menggunakan #poTotal agar lebih spesifik */
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 700;
   text-align: center;
-  margin-top: var(--sp-fib-4);
-  max-width: var(--maxw);
+  
+  /* Mengatur jarak agar lebih sempit dan konsisten */
+  margin-top: var(--sp-fib-4);    /* Jarak dari atas (13px) */
+  margin-bottom: var(--sp-fib-5); /* Jarak ke konten di bawah (21px) */
+
+  /* Logika untuk centering */
+  max-width: var(--maxw); 
   margin-left: auto;
   margin-right: auto;
 }
 
-.list-container[data-rail] { 
+/* Final List Container Style - No Extra Padding */
+.list-container[data-rail],
+#viewPreorder .card-grid[data-rail] { 
   display: grid; 
+  gap: var(--sp-fib-5);
+}
+
+.list-container[data-rail] {
   grid-template-columns: 1fr; 
   gap: var(--sp-fib-4);
-  padding-top: var(--sp-fib-5); /* Added padding to create space from the counter */
+}
+
+#viewPreorder .card-grid[data-rail] {
+  grid-template-columns: 1fr; 
 }
 
 /* This is the new button style for list items */
@@ -264,12 +280,6 @@ body.dark-mode .select-native {
 .list-item .title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; pointer-events: none; }
 .list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); pointer-events: none; }
 
-#viewPreorder .card-grid[data-rail] { 
-  display: grid; 
-  grid-template-columns: 1fr; 
-  gap: var(--sp-fib-5);
-  padding-top: var(--sp-fib-5); /* Added padding to create space from the counter */
-}
 #viewPreorder .card {
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-5);
   transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
@@ -321,11 +331,11 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 
 /* ================== RESPONSIVE BREAKPOINTS ================== */
 @media (min-width: 769px) {
-  #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(2, 1fr); gap: var(--sp-fib-5); }
-  #viewPreorder .card-grid[data-rail] { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: var(--sp-fib-5); }
+  .list-container[data-rail] { grid-template-columns: repeat(2, 1fr); gap: var(--sp-fib-5); }
+  #viewPreorder .card-grid[data-rail] { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
 }
 @media (min-width: 1024px) {
-  #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(3, 1fr); }
+  .list-container[data-rail] { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ================== PAYMENT MODAL STYLES (MINIMALIST) ================== */
