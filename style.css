@@ -1,45 +1,65 @@
 /* ================== DESIGN TOKENS & SETUP ================== */
 :root{
-  /* Palette (Core Brand Color Maintained) */
-  --primary-blue:#5C80BC; --primary-blue-rgb:92,128,188;
+  /* --- PEROMBAKAN TOTAL WARNA BERDASARKAN FLAT UI COLORS --- */
   
-  /* --- PERUBAHAN: Menggunakan warna status dari Flat UI Colors --- */
+  /* Palette (Core Brand Color Maintained) */
+  --primary-blue: #3498db; /* PETER RIVER - Digunakan sebagai warna utama/fokus */
+  --primary-blue-rgb: 52, 152, 219;
+
+  /* Status Colors */
   --status-success: #2ecc71; /* EMERALD */
   --status-progress: #3498db; /* PETER RIVER */
   --status-pending: #f1c40f;  /* SUN FLOWER */
   --status-failed: #e74c3c;   /* ALIZARIN */
-  --status-text-dark: #2c3e50; /* MIDNIGHT BLUE */
-
-  /* Neutral Palette (Apple-inspired) */
-  --bg:#f5f5f7;
-  --text-primary:#1d1d1f; --text-secondary:#6e6e73; --text-tertiary:#86868b;
-  --fill-primary:#fff; --fill-secondary:#f2f2f4; --fill-tertiary:#ebebee;
-  --separator:#d1d1d6;
   
-  /* Layout & Spacing (4px Grid) */
+  /* Neutral Palette - LIGHT MODE */
+  --bg: #ecf0f1; /* CLOUDS - Latar belakang utama */
+  --fill-primary: #ffffff; /* CLOUDS - Warna dasar untuk kartu, input, dll. */
+  --fill-secondary: rgba(189, 195, 199, 0.3); /* SILVER - Transparan untuk hover */
+  --fill-tertiary: #bdc3c7; /* SILVER */
+  
+  --text-primary: #2c3e50; /* MIDNIGHT BLUE - Teks paling gelap */
+  --text-secondary: #7f8c8d; /* ASBESTOS - Teks abu-abu */
+  --text-tertiary: #95a5a6; /* CONCRETE - Teks abu-abu lebih terang */
+
+  --separator: #bdc3c7; /* SILVER - Untuk garis pemisah/border */
+  
+  /* Layout & Spacing (Unchanged) */
   --maxw:1200px;
   --rail-pad:24px;
   --sp-4:4px; --sp-8:8px; --sp-12:12px; --sp-16:16px; --sp-24:24px; --sp-32:32px; --sp-48:48px;
 
-  /* Controls & Sizing */
+  /* Controls & Sizing (Unchanged) */
   --control-h:52px;
   --head-pad-y:12px;
   --head-gap-bottom:12px; 
   
-  /* Radius & Shadows */
+  /* Radius & Shadows (Unchanged) */
   --radius-large:18px; --radius-medium:14px; --radius-small:10px;
   --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-glow: 0 0 0 3px rgba(var(--primary-blue-rgb),.2);
   
-  /* Motion */
+  /* Motion (Unchanged) */
   --duration-fast: .18s; --duration-normal: .28s;
   --ease-out-quint: cubic-bezier(.22,.68,0,1.08);
 }
 
 /* Dark Mode Tokens */
 body.dark-mode{
-  --bg:#000; --text-primary:#f5f5f7; --text-secondary:#8e8e93; --text-tertiary:#636366;
-  --fill-primary:#1c1c1e; --fill-secondary:#2c2c2e; --fill-tertiary:#3a3a3c; --separator:#38383a;
+  /* --- PEROMBAKAN TOTAL WARNA BERDASARKAN FLAT UI COLORS --- */
+  
+  /* Neutral Palette - DARK MODE */
+  --bg: #2c3e50; /* MIDNIGHT BLUE - Latar belakang utama */
+  --fill-primary: #34495e; /* WET ASPHALT - Warna dasar untuk kartu, input, dll. */
+  --fill-secondary: #7f8c8d; /* ASBESTOS - Untuk hover */
+  --fill-tertiary: #95a5a6; /* CONCRETE */
+
+  --text-primary: #ecf0f1; /* CLOUDS - Teks paling terang */
+  --text-secondary: #bdc3c7; /* SILVER - Teks abu-abu */
+  --text-tertiary: #95a5a6; /* CONCRETE - Teks abu-abu lebih gelap */
+
+  --separator: #7f8c8d; /* ASBESTOS - Untuk garis pemisah/border */
+
   --shadow-sm: 0 4px 12px rgba(0,0,0,0.2);
 }
 
@@ -60,7 +80,7 @@ p { font-size: clamp(16px, 2vw, 18px); color: var(--text-secondary); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
-.noscript-warning { padding: 16px; background: var(--warning-yellow); color: #000; text-align: center; font-weight: 700; }
+.noscript-warning { padding: 16px; background: #f1c40f; color: #2c3e50; text-align: center; font-weight: 700; }
 
 /* ================== PAGE VIEW & SCROLL ANIMATION ================== */
 .view-section { display: none; animation: fadeIn var(--duration-normal) var(--ease-out-quint); }
@@ -84,12 +104,12 @@ header p{margin:4px 0 0;}
 .po-head.head-block, .cat-head.head-block {
   position: sticky; top: 0; z-index: 10;
   padding: var(--head-pad-y) 0;
-  background: rgba(245,245,247,.8);
+  background: rgba(236, 240, 241, 0.8); /* CLOUDS Transparan */
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   transition: background-color var(--duration-normal);
 }
 body.dark-mode .po-head.head-block, 
-body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
+body.dark-mode .cat-head.head-block { background: rgba(44, 62, 80, 0.75); } /* MIDNIGHT BLUE Transparan */
 
 .menu{
   position:absolute; z-index:100; right:0;
@@ -174,7 +194,7 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 
 .select-native, .status-select { width:100%; height:var(--control-h); padding:0 var(--sp-16); background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-medium); font-size:16px; color:var(--text-primary); outline:none; appearance:none; transition:border-color var(--duration-fast), box-shadow var(--duration-fast), background-color var(--duration-normal), color var(--duration-normal); font-weight:700; }
 .select-native:focus-visible, .status-select:focus-visible { border-color:var(--primary-blue); box-shadow:var(--shadow-glow); }
-.select-native{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2386868b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; }
+.select-native{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; }
 
 .search-row[data-rail], .status-row[data-rail]{ margin-top:var(--sp-12); }
 .search-wrap {
@@ -231,9 +251,8 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 #viewPreorder .card-product{ font-size:14px; color:var(--text-secondary); }
 #viewPreorder .card-date{font-size:12px; color:var(--text-tertiary); margin-top:8px; grid-column:1/-1}
 #viewPreorder .status-badge{ display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:9999px; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.04em; border:1px solid transparent; transition: background-color var(--duration-normal), border-color var(--duration-normal), color var(--duration-normal); }
-#viewPreorder .status-badge::before{content:''; width:6px; height:6px; border-radius:50%; background-color: currentColor; transition: background-color var(--duration-normal);}
+#viewPreorder .status-badge::before{content:''; width:6px; height:6px; border-radius:50%; background-color: currentColor;}
 
-/* --- PERUBAHAN: Menggunakan warna status dari Flat UI Colors --- */
 /* Light Mode Status Badges */
 #viewPreorder .status-badge.success  { color: #27ae60; background-color: rgba(46, 204, 113, 0.15); }
 #viewPreorder .status-badge.progress { color: #2980b9; background-color: rgba(52, 152, 219, 0.15); }
@@ -243,7 +262,7 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 /* Dark Mode Status Badges */
 body.dark-mode #viewPreorder .status-badge.success  { background-color: var(--status-success); color: #fff; }
 body.dark-mode #viewPreorder .status-badge.progress { background-color: var(--status-progress); color: #fff; }
-body.dark-mode #viewPreorder .status-badge.pending  { background-color: var(--status-pending); color: var(--status-text-dark); }
+body.dark-mode #viewPreorder .status-badge.pending  { background-color: var(--status-pending); color: var(--text-primary); }
 body.dark-mode #viewPreorder .status-badge.failed   { background-color: var(--status-failed); color: #fff; }
 
 #viewPreorder .card-details{max-height:0; overflow:hidden; opacity:0; transition:max-height .35s, opacity .25s, margin-top .25s, padding-top .25s, border-color var(--duration-normal); margin-top:0}
@@ -263,10 +282,10 @@ body.dark-mode #viewPreorder .status-badge.failed   { background-color: var(--st
 
 /* ================== UTILITY & STATES ================== */
 .empty{border:1px dashed var(--separator); border-radius:var(--radius-large); padding:56px; text-align:center; color:var(--text-secondary); font-size:16px; grid-column:1/-1; transition: border-color var(--duration-normal), color var(--duration-normal);}
-.err{ border:1px solid var(--error-red); background:rgba(231, 76, 60, 0.1); color:var(--status-failed); border-radius:var(--radius-medium); padding:16px; text-align:center; font-weight:700; }
+.err{ border:1px solid var(--status-failed); background:rgba(231, 76, 60, 0.1); color:var(--status-failed); border-radius:var(--radius-medium); padding:16px; text-align:center; font-weight:700; }
 .skeleton{ position: relative; overflow: hidden; background-color: var(--fill-secondary); }
-.skeleton::after{ content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer 1.5s infinite; }
-body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, transparent, rgba(0,0,0,0.2), transparent); }
+.skeleton::after{ content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, transparent, rgba(149, 165, 166, 0.2), transparent); animation: shimmer 1.5s infinite; }
+body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, transparent, rgba(127, 140, 141, 0.2), transparent); }
 .skeleton-text{ display: block; background-color: var(--fill-tertiary); border-radius: 4px; height: 16px; }
 .skeleton-badge{ width: 90px; height: 28px; background-color: var(--fill-tertiary); border-radius: 999px; }
 @keyframes shimmer { 100% {transform: translateX(100%);} }
