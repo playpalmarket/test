@@ -22,7 +22,7 @@
   
   /* Radius & Shadows */
   --radius-large:18px; --radius-medium:14px; --radius-small:10px;
-  --shadow-sm: 0 4px 12px rgba(0,0,0,0.08); /* Shadow sedikit lebih jelas untuk background solid */
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-glow: 0 0 0 3px rgba(var(--primary-blue-rgb),.2);
   
   /* Motion */
@@ -109,17 +109,14 @@ body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
 .menu-btn:hover{background:var(--fill-secondary)}
 .menu-divider{height:1px;background:var(--separator);margin:var(--sp-8) 0}
 
-/* ================== CONTROLS & FORMS ================== */
-
-/* --- PERUBAHAN: Grid disederhanakan menjadi 2 kolom --- */
+/* ================== CONTROLS & FORMS (FINAL PRECISION FIX) ================== */
+/* --- PERUBAHAN: Mengubah layout dari Grid menjadi Flexbox untuk perataan sempurna --- */
 .topbar-grid{ 
-  display:grid; 
-  grid-template-columns:minmax(0,1fr) auto; 
-  gap:var(--sp-12); 
-  align-items:center; 
+  display: flex; 
+  align-items: center; 
+  gap: var(--sp-12); 
 }
 
-/* --- PERUBAHAN: Ditambahkan style untuk grup tombol --- */
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -150,7 +147,11 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 .burger.active span:nth-child(2){ transform: scaleX(0); opacity: 0; }
 .burger.active span:nth-child(3){ transform: translateY(-4.9px) rotate(-45deg); }
 
-.custom-select-wrapper{position:relative}
+/* --- PERUBAHAN: Menambahkan flex-grow agar dropdown mengisi ruang --- */
+.custom-select-wrapper{
+  position:relative;
+  flex-grow: 1;
+}
 .custom-select-btn{ width:100%; height:var(--control-h); padding:var(--sp-12) var(--sp-16); background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-medium); color:var(--text-primary); font-size:16px; font-weight:700; text-align:left; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color var(--duration-fast), box-shadow var(--duration-fast); }
 .custom-select-btn:focus-visible{border-color:var(--primary-blue); box-shadow:var(--shadow-glow); outline:none}
 .custom-select-btn .icon { width: 16px; height: 16px; }
