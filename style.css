@@ -228,7 +228,16 @@ body.dark-mode .select-native {
 .search-input::placeholder { color: var(--text-tertiary); opacity: 1; }
 
 /* ================== KATALOG & PRE-ORDER CARDS ================== */
-#countInfo[data-rail] { color: var(--text-secondary); font-size: 14px; font-weight: 700; margin-top: var(--sp-fib-3); text-align: right; }
+#countInfo[data-rail],
+#viewPreorder .meta[data-rail] {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: var(--sp-fib-4);
+  width: 100%;
+  text-align: center; /* Mengatur posisi ke tengah */
+}
+
 .list-container[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); }
 
 /* This is the new button style for list items */
@@ -243,7 +252,6 @@ body.dark-mode .select-native {
 .list-item .title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; pointer-events: none; }
 .list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); pointer-events: none; }
 
-#viewPreorder .meta[data-rail] { font-size: var(--font-size-h3); color: var(--text-secondary); font-weight: 700; margin-top: var(--sp-fib-4); }
 #viewPreorder .card-grid[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-5); }
 #viewPreorder .card {
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-5);
