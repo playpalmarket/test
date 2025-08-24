@@ -18,7 +18,8 @@
   /* Controls & Sizing */
   --control-h:52px;
   --head-pad-y:12px;
-  --head-gap-bottom:16px;
+  /* --- PERUBAHAN: Menyeragamkan jarak bawah header menjadi 12px --- */
+  --head-gap-bottom:12px; 
   
   /* Radius & Shadows */
   --radius-large:18px; --radius-medium:14px; --radius-small:10px;
@@ -110,7 +111,6 @@ body.dark-mode .cat-head.head-block { background: rgba(0,0,0,.75); }
 .menu-divider{height:1px;background:var(--separator);margin:var(--sp-8) 0}
 
 /* ================== CONTROLS & FORMS (FINAL PRECISION FIX) ================== */
-/* --- PERUBAHAN: Mengubah layout dari Grid menjadi Flexbox untuk perataan sempurna --- */
 .topbar-grid{ 
   display: flex; 
   align-items: center; 
@@ -147,12 +147,14 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 .burger.active span:nth-child(2){ transform: scaleX(0); opacity: 0; }
 .burger.active span:nth-child(3){ transform: translateY(-4.9px) rotate(-45deg); }
 
-/* --- PERUBAHAN: Menambahkan flex-grow agar dropdown mengisi ruang --- */
 .custom-select-wrapper{
   position:relative;
   flex-grow: 1;
 }
-.custom-select-btn{ width:100%; height:var(--control-h); padding:var(--sp-12) var(--sp-16); background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-medium); color:var(--text-primary); font-size:16px; font-weight:700; text-align:left; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color var(--duration-fast), box-shadow var(--duration-fast); }
+.custom-select-btn{ 
+  width:100%; height:var(--control-h); padding:var(--sp-12) var(--sp-16); background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-medium); color:var(--text-primary); font-size:16px; font-weight:700; text-align:left; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color var(--duration-fast), box-shadow var(--duration-fast);
+  line-height: 1;
+}
 .custom-select-btn:focus-visible{border-color:var(--primary-blue); box-shadow:var(--shadow-glow); outline:none}
 .custom-select-btn .icon { width: 16px; height: 16px; }
 .custom-select-wrapper.open .custom-select-btn svg{transform:rotate(180deg)}
