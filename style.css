@@ -9,11 +9,10 @@
   --status-progress: #3498db; /* PETER RIVER */
   --status-pending: #f1c40f;  /* SUN FLOWER */
   --status-failed: #e74c3c;   /* ALIZARIN */
-  --status-text-dark: #2c3e50; /* MIDNIGHT BLUE */
-
+  
   /* Neutral Palette - LIGHT MODE */
   --bg: #ecf0f1; /* CLOUDS - Latar belakang utama */
-  --fill-primary: #ffffff; /* CLOUDS - Warna dasar untuk kartu, input, dll. */
+  --fill-primary: #ffffff; /* Putih Solid */
   --fill-secondary: rgba(189, 195, 199, 0.3); /* SILVER - Transparan untuk hover */
   --fill-tertiary: #bdc3c7; /* SILVER */
   
@@ -23,22 +22,22 @@
 
   --separator: #bdc3c7; /* SILVER - Untuk garis pemisah/border */
   
-  /* Layout & Spacing (Unchanged) */
+  /* Layout & Spacing */
   --maxw:1200px;
   --rail-pad:24px;
   --sp-4:4px; --sp-8:8px; --sp-12:12px; --sp-16:16px; --sp-24:24px; --sp-32:32px; --sp-48:48px;
 
-  /* Controls & Sizing (Unchanged) */
+  /* Controls & Sizing */
   --control-h:52px;
   --head-pad-y:12px;
   --head-gap-bottom:12px; 
   
-  /* Radius & Shadows (Unchanged) */
+  /* Radius & Shadows */
   --radius-large:18px; --radius-medium:14px; --radius-small:10px;
   --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-glow: 0 0 0 3px rgba(var(--primary-blue-rgb),.2);
   
-  /* Motion (Unchanged) */
+  /* Motion */
   --duration-fast: .18s; --duration-normal: .28s;
   --ease-out-quint: cubic-bezier(.22,.68,0,1.08);
 }
@@ -246,7 +245,6 @@ body.dark-mode .list-item:active .price {
 #viewPreorder .card-grid[data-rail]{ display:grid; grid-template-columns:1fr; gap:var(--card-gap) }
 #viewPreorder .card{ background:var(--fill-primary); border:1px solid var(--separator); border-radius:var(--radius-large); padding:18px; transition:background-color var(--duration-normal), border-color var(--duration-normal), transform var(--duration-fast), box-shadow var(--duration-fast); }
 #viewPreorder .card.clickable{cursor:pointer}
-/* --- PERUBAHAN: Memperbaiki warna KARTU PRE-ORDER saat diklik di dark mode --- */
 #viewPreorder .card.clickable:hover {
   transform: translateY(-4px); 
   background: var(--fill-secondary);
