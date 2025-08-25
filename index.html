@@ -2,102 +2,165 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
+  <!-- Aksesibel: biarkan zoom aktif. Jika mau anti-zoom, pakai baris kedua. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>PlayPal.ID - Dashboard</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/lucide@latest" defer></script>
-  <script src="script.js" defer></script>
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" /> -->
+
+  <title>PlayPal.ID</title>
+  <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app-container">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <img src="logo.png" alt="PlayPal.ID Logo" class="logo">
-        <h1>PlayPal.ID</h1>
-      </div>
-      <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-mode="katalog">
-          <i data-lucide="layout-grid"></i>
-          <span>Katalog</span>
-        </a>
-        <a href="#" class="nav-item" data-mode="preorder">
-          <i data-lucide="send"></i>
-          <span>Lacak Pre-Order</span>
-        </a>
-        <a href="https://saweria.co/playpal" target="_blank" rel="noopener" class="nav-item">
-          <i data-lucide="gem"></i>
-          <span>Donasi</span>
-        </a>
+  <!-- ====== Header / App Bar ====== -->
+  <header class="appbar" data-rail>
+    <div class="appbar__inner">
+      <a class="brand" href="#home" aria-label="PlayPal Home">
+        <img src="logo.jpeg" alt="" class="brand__logo" />
+        <span class="brand__name">PlayPal</span>
+      </a>
+
+      <nav class="nav-desktop" aria-label="Utama">
+        <a href="#viewCatalog" class="nav-link">Katalog</a>
+        <a href="#viewPreorder" class="nav-link">Pre-Order</a>
+        <a href="#viewFilms" class="nav-link">Film</a>
       </nav>
-    </aside>
 
-    <main class="main-content">
-      <div class="top-bar">
-        <button id="menu-toggle" class="menu-toggle-btn" aria-label="Buka menu">
-          <i data-lucide="menu"></i>
+      <div class="appbar__actions">
+        <button id="modeToggle" class="icon-btn" aria-label="Toggle tema">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79Z"/></svg>
         </button>
-        <span id="page-title" class="page-title">Katalog</span>
+        <button id="burger" class="burger" aria-label="Buka menu" aria-expanded="false" aria-controls="mobileNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== Mobile Nav ====== -->
+  <aside id="mobileNav" class="mobile-nav" hidden>
+    <nav class="mobile-nav__panel" aria-label="Menu seluler">
+      <a href="#viewCatalog" class="mobile-link">Katalog</a>
+      <a href="#viewPreorder" class="mobile-link">Pre-Order</a>
+      <a href="#viewFilms" class="mobile-link">Film</a>
+    </nav>
+  </aside>
+
+  <main id="home">
+    <!-- ====== Bless-like Hero ====== -->
+    <section class="bless-hero reveal-on-scroll" data-rail>
+      <div class="bless-hero__inner">
+        <h1 class="claim">The world’s first shared computer.</h1>
+        <p class="sub">
+          Run. Earn. Contribute. Dashboard minimalis, fokus pada metrik inti untuk keputusan cepat.
+        </p>
+
+        <div class="cta">
+          <a class="btn-primary" href="#" role="button">Download Extension</a>
+          <a class="link-underline" href="#viewPreorder">Lihat Status</a>
+        </div>
       </div>
 
-      <div class="page-content">
-        <section id="viewCatalog" class="view-section active" aria-label="Katalog">
-          <div class="controls-container">
-            <div class="search-wrap">
-              <i data-lucide="search" class="icon"></i>
-              <input id="search" class="search-input" type="search" placeholder="Cari item...">
-            </div>
-            <div id="custom-select-wrapper" class="custom-select-wrapper">
-              <button id="custom-select-btn" class="custom-select-btn" aria-haspopup="listbox">
-                <span id="custom-select-value">Pilih Kategori</span>
-                <i data-lucide="chevron-down" class="icon"></i>
-              </button>
-              <div id="custom-select-options" class="custom-select-options" role="listbox"></div>
-            </div>
-          </div>
-          <div id="countInfo"></div>
-          <section id="list-container" class="list-container" aria-live="polite"></section>
-          <section id="error" class="err" style="display:none"></section>
-        </section>
-
-        <section id="viewPreorder" class="view-section" aria-label="Pre-Order">
-          <div class="controls-container po-controls">
-            <div class="search-wrap">
-              <i data-lucide="search" class="icon"></i>
-              <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID..." />
-            </div>
-            <select class="status-select" id="poSheet">
-              <option value="0">Starlight</option>
-              <option value="1">Umum</option>
-            </select>
-            <select class="status-select" id="poStatus">
-              <option value="all">Semua Status</option>
-              <option value="success">Success</option>
-              <option value="progress">Progress</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Gagal</option>
-            </select>
-          </div>
-          <div class="meta" id="poTotal"></div>
-          <main class="card-grid" id="poList" aria-live="polite"></main>
-          <nav class="pagination" aria-label="Pagination">
-            <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
-            <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
-          </nav>
-        </section>
+      <div class="stats">
+        <article class="stat-card">
+          <div class="stat-label">Node ID</div>
+          <div class="stat-value" data-count="1">pp-node-001</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Today’s Time</div>
+          <div class="stat-value" data-count="13">03:42:15</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Total Time</div>
+          <div class="stat-value" data-count="127">127h</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Completion</div>
+          <div class="stat-value" data-count="82">82%</div>
+        </article>
       </div>
-    </main>
-  </div>
+    </section>
 
-  <div id="paymentModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">...</div>
-  </div>
-  <template id="itemTmpl">...</template>
-  <template id="skeletonItemTmpl">...</template>
-  <template id="skeletonCardTmpl">...</template>
+    <!-- ====== Katalog (placeholder) ====== -->
+    <section id="viewCatalog" class="section" data-rail>
+      <header class="section__head">
+        <h2>Katalog</h2>
+        <p class="muted">Daftar layanan & top-up. Grid kartu modular, cepat discan.</p>
+      </header>
+      <div class="grid-cards">
+        <article class="card">
+          <h3 class="card__title">Weekly Diamond Pass</h3>
+          <p class="card__meta">Mobile Legends</p>
+          <button class="btn-ghost">Lihat Detail</button>
+        </article>
+        <article class="card">
+          <h3 class="card__title">UC Pack</h3>
+          <p class="card__meta">PUBG Mobile</p>
+          <button class="btn-ghost">Lihat Detail</button>
+        </article>
+        <article class="card">
+          <h3 class="card__title">Genesis Crystal</h3>
+          <p class="card__meta">Genshin Impact</p>
+          <button class="btn-ghost">Lihat Detail</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ====== Pre-Order (placeholder) ====== -->
+    <section id="viewPreorder" class="section" data-rail>
+      <header class="section__head">
+        <h2>Pre-Order</h2>
+        <p class="muted">Pantau progres pesanan: dibuat, diproses, selesai.</p>
+      </header>
+      <div class="grid-cards">
+        <article class="card">
+          <div class="status-dot is-pending"></div>
+          <h3 class="card__title">WDP – 2x</h3>
+          <p class="card__meta">Status: Pending</p>
+        </article>
+        <article class="card">
+          <div class="status-dot is-running"></div>
+          <h3 class="card__title">UC – 700</h3>
+          <p class="card__meta">Status: Sedang Diproses</p>
+        </article>
+        <article class="card">
+          <div class="status-dot is-done"></div>
+          <h3 class="card__title">Crystal – 3280</h3>
+          <p class="card__meta">Status: Selesai</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ====== Film (placeholder) ====== -->
+    <section id="viewFilms" class="section" data-rail>
+      <header class="section__head">
+        <h2>Film</h2>
+        <p class="muted">Koleksi film digital — tampil seragam dengan kartu.</p>
+      </header>
+      <div class="grid-cards">
+        <article class="card">
+          <h3 class="card__title">Oppenheimer</h3>
+          <p class="card__meta">HDR, 4K</p>
+          <button class="btn-ghost">Tonton</button>
+        </article>
+        <article class="card">
+          <h3 class="card__title">Dune Part Two</h3>
+          <p class="card__meta">HDR, 4K</p>
+          <button class="btn-ghost">Tonton</button>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot" data-rail>
+    <p class="muted">© <span id="y"></span> PlayPal.ID — Google × Apple Fusion, flat premium.</p>
+  </footer>
+
+  <script src="menu.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
