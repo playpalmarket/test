@@ -58,9 +58,12 @@
   const carouselTrack=document.getElementById('carouselTrack');
   const carouselPrev=document.getElementById('carouselPrev');
   const carouselNext=document.getElementById('carouselNext');
-  const accountTitle=document.getElementById('accountTitle');
+  const accountPrice=document.getElementById('accountPrice');
   const accountStatus=document.getElementById('accountStatus');
   const accountDescription=document.getElementById('accountDescription');
+  const buyAccountBtn = document.getElementById('buyAccountBtn');
+  const offerAccountBtn = document.getElementById('offerAccountBtn');
+
 
   // ========= MENU ITEMS =========
   const MENU_ITEMS = [
@@ -236,7 +239,7 @@
   
   function updateWaLink(option, fee, total) {
       const { catLabel, title, price } = currentSelectedItem;
-      const text = `${WA_GREETING}\n› Tipe: Katalog\n› Game: ${catLabel}\n› Item: ${title}\n› Pembayaran: ${option.name}\n› Harga: ${toIDR(price)}\n› Fee: ${toIDR(fee)}\n› Total: ${toIDR(total)}`;
+      const text = `${WA_GREETING}\n› Tipe: ${catLabel}\n› Item: ${title}\n› Pembayaran: ${option.name}\n› Harga: ${toIDR(price)}\n› Fee: ${toIDR(fee)}\n› Total: ${toIDR(total)}`;
       continueToWaBtn.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
   }
 
@@ -283,26 +286,33 @@
   const poSearch=document.getElementById('poSearch');const poStatus=document.getElementById('poStatus');const poSheet=document.getElementById('poSheet');const poList=document.getElementById('poList');const poPrev=document.getElementById('poPrev');const poNext=document.getElementById('poNext');const poTotal=document.getElementById('poTotal');const poState={initialized:false,allData:[],currentPage:1,perPage:15,displayMode:'detailed'};const normalizeStatus=(raw)=>{const s=String(raw||'').trim().toLowerCase();if(['success','selesai','berhasil','done'].includes(s))return'success';if(['progress','proses','diproses','processing'].includes(s))return'progress';if(['failed','gagal','dibatalkan','cancel','error'].includes(s))return'failed';return'pending';};const poFilterData=()=>{const q=poSearch.value.trim().toLowerCase();const statusFilter=poStatus.value;return poState.allData.filter(item=>{if(poState.displayMode==='detailed'){const product=(item[3]||'').toLowerCase();const nickname=(item[5]||'').toLowerCase();const idGift=(item[7]||'').toLowerCase();const match=product.includes(q)||nickname.includes(q)||idGift.includes(q);const status=normalizeStatus(item[6]);return match&&(statusFilter==='all'||status===statusFilter);}else{const orderNum=(item[0]||'').toLowerCase();const product=(item[1]||'').toLowerCase();const match=orderNum.includes(q)||product.includes(q);const status=normalizeStatus(item[2]);return match&&(statusFilter==='all'||status===statusFilter);}});};const poUpdatePagination=(cur,total)=>{poPrev.disabled=cur<=1;poNext.disabled=cur>=total;};const poRender=()=>{const filtered=poFilterData();const totalItems=poState.allData.length;poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);const start=(poState.currentPage-1)*poState.perPage;const pageData=filtered.slice(start,start+poState.perPage);poList.innerHTML='';if(pageData.length===0){poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`;poUpdatePagination(0,0);return;}const frag=document.createDocumentFragment();pageData.forEach(item=>{const card=document.createElement('article');if(poState.displayMode==='detailed'){const tglOrder=item[0];const estPengiriman=item[1];const product=item[3];const bulan=item[4];const name=item[5];const status=item[6];const statusClass=normalizeStatus(status);const estDeliveryText=estPengiriman?`Estimasi Pengiriman: ${estPengiriman} 20:00 WIB`:'';const details=[{label:'TGL ORDER',value:tglOrder},{label:'BULAN',value:bulan}];const detailsHtml=details.filter(d=>d.value&&String(d.value).trim()!=='').map(d=>`<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');card.className=`card ${detailsHtml?'clickable':''}`;card.innerHTML=`<div class="card-header"><div><div class="card-name">${name||'Tanpa Nama'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>${estDeliveryText?`<div class="card-date">${estDeliveryText}</div>`:''}${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;if(detailsHtml)card.addEventListener('click',()=>card.classList.toggle('expanded'));}else{const orderNum=item[0];const product=item[1];const status=item[2];const statusClass=normalizeStatus(status);card.className='card';card.innerHTML=`<div class="card-header"><div><div class="card-name">${orderNum||'Tanpa Nomor'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>`;}frag.appendChild(card);});poList.appendChild(frag);poUpdatePagination(poState.currentPage,totalPages);};const poSortByStatus=(data,mode)=>{const order={'progress':1,'pending':2,'success':3,'failed':4};const statusIndex=(mode==='detailed')?6:2;return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);};async function poFetch(sheetName){poTotal.textContent='Memuat data...';showSkeleton(poList,skeletonCardTmpl,5);poState.displayMode=(sheetName===SHEETS.preorder.name1)?'detailed':'simple';try{const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});if(!res.ok)throw new Error(`Network response was not ok: ${res.statusText}`);const text=await res.text();let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));if(rows.length<2){poState.allData=[];return;}rows.shift();const dataRows=rows.filter(row=>row&&(row[0]||'').trim()!=='');poState.allData=poSortByStatus(dataRows,poState.displayMode);}catch(e){poState.allData=[];poTotal.textContent='Gagal memuat data.';console.error('Fetch Pre-Order failed:',e);}finally{poState.currentPage=1;poRender();}}
   function poInit(){const rebound=()=>{poState.currentPage=1;poRender();};poSearch.addEventListener('input',rebound);poStatus.addEventListener('change',rebound);poSheet.addEventListener('change',e=>{const selectedValue=e.target.value;const sheetToFetch=selectedValue==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(sheetToFetch);});document.getElementById('poPrev').addEventListener('click',()=>{if(poState.currentPage>1){poState.currentPage--;poRender();window.scrollTo({top:0,behavior:'smooth'});}});document.getElementById('poNext').addEventListener('click',()=>{poState.currentPage++;poRender();window.scrollTo({top:0,behavior:'smooth'});});const initialSheet=poSheet.value==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(initialSheet);poState.initialized=true;}
 
-  // ========= AKUN GAME LOGIC =========
-  const accState = { initialized: false, data: [], currentIndex: 0 };
+  // ========= AKUN GAME LOGIC (FINAL REVISION) =========
+  const accState = { initialized: false, data: [], currentIndex: 0, currentAccount: null };
   
+  // FINAL PARSER: Handles merged title cells and full multiline descriptions
   async function parseAccountsSheet(text) {
+    console.log("Parsing CSV Data...");
     const rows = text.trim().split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()));
     const accounts = [];
-    for (let i = 0; i < rows.length; i += 3) {
-      if (!rows[i] || !rows[i+1] || !rows[i+2]) continue;
+    
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.every(cell => !cell)) continue; // Skip empty rows
 
-      const titleRow = rows[i];
-      const imageRow = rows[i+1];
-      const descRow = rows[i+2];
-
-      const title = titleRow.slice(0, 6).find(cell => cell) || 'Tanpa Judul';
-      const status = titleRow[6] || 'Tersedia';
-      const images = imageRow.slice(0, 6).filter(cell => cell && (cell.endsWith('.jpg') || cell.endsWith('.png') || cell.endsWith('.webp')));
-      const description = descRow.slice(0, 6).find(cell => cell) || 'Tidak ada deskripsi.';
+      const images = row.slice(0, 6).filter(cell => cell && cell.startsWith('http'));
       
       if (images.length > 0) {
-        accounts.push({ title, status, images, description });
+        const title = row.slice(0, 6).find(cell => cell && !cell.startsWith('http')) || 'Tanpa Judul';
+        const status = row[6] || 'Tersedia';
+        const price = Number(row[7]) || 0;
+        
+        const descriptionRow = rows[i + 1];
+        const description = descriptionRow ? descriptionRow.slice(0, 6).filter(cell => cell).join('\n') || 'Tidak ada deskripsi.' : 'Tidak ada deskripsi.';
+        
+        const accountData = { title, status, images, description, price };
+        accounts.push(accountData);
+        console.log("Successfully parsed account:", accountData);
+        i++; 
       }
     }
     return accounts;
@@ -326,13 +336,17 @@
 
   function renderAccount(index) {
     const account = accState.data[index];
+    accState.currentAccount = account; // Store current account for button actions
+
     if (!account) {
       accountDisplay.style.display = 'none';
       accountEmpty.style.display = 'block';
       return;
     }
+    
+    accountDisplay.classList.remove('expanded');
 
-    accountTitle.textContent = account.title;
+    accountPrice.textContent = toIDR(account.price);
     accountDescription.textContent = account.description;
     accountStatus.textContent = account.status;
     accountStatus.className = 'account-status-badge';
@@ -345,6 +359,7 @@
       const img = document.createElement('img');
       img.src = src;
       img.alt = `Gambar untuk ${account.title}`;
+      img.loading = 'lazy';
       slide.appendChild(img);
       carouselTrack.appendChild(slide);
     });
@@ -357,6 +372,7 @@
   }
 
   function updateCarousel() {
+    if (accountSelect.value === "") return;
     const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
     carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
     carouselPrev.disabled = accState.currentIndex === 0;
@@ -364,32 +380,40 @@
   }
   
   function initCarousel() {
-    carouselPrev.addEventListener('click', () => {
+    carouselPrev.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (accState.currentIndex > 0) {
         accState.currentIndex--;
         updateCarousel();
       }
     });
 
-    carouselNext.addEventListener('click', () => {
-      const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
+    carouselNext.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      if (accountSelect.value === "") return;
+      const totalSlides = accState.data[accountSelect.value].images.length;
       if (accState.currentIndex < totalSlides - 1) {
         accState.currentIndex++;
         updateCarousel();
       }
     });
 
-    // Swipe functionality
     let touchStartX = 0; let touchEndX = 0;
-    carouselTrack.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, { passive: true });
+    carouselTrack.addEventListener('touchstart', e => {
+      e.stopPropagation();
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
     carouselTrack.addEventListener('touchend', e => {
+        e.stopPropagation();
         touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX < touchStartX - 50) carouselNext.click(); // Swipe left
-        if (touchEndX > touchStartX + 50) carouselPrev.click(); // Swipe right
+        if (touchEndX < touchStartX - 50) carouselNext.click();
+        if (touchEndX > touchStartX + 50) carouselPrev.click();
     }, { passive: true });
   }
 
   async function accountsInit() {
+    if(accState.initialized) return;
     accountError.style.display = 'none';
     try {
       const res = await fetch(sheetUrlCSV(SHEETS.accounts.name), { cache: 'no-store' });
@@ -406,13 +430,38 @@
     }
     
     accountSelect.addEventListener('change', e => {
-      if (e.target.value) renderAccount(parseInt(e.target.value, 10));
-      else {
+      if (e.target.value !== "") {
+        renderAccount(parseInt(e.target.value, 10));
+      } else {
         accountDisplay.style.display = 'none';
         accountEmpty.style.display = 'block';
+        accState.currentAccount = null;
       }
     });
     
+    accountDisplay.addEventListener('click', () => {
+        accountDisplay.classList.toggle('expanded');
+    });
+
+    buyAccountBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (accState.currentAccount) {
+            openPaymentModal({
+                title: accState.currentAccount.title,
+                price: accState.currentAccount.price,
+                catLabel: 'Akun Game' 
+            });
+        }
+    });
+
+    offerAccountBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (accState.currentAccount) {
+            const text = `Halo, saya tertarik untuk menawar Akun Game: ${accState.currentAccount.title}`;
+            window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+        }
+    });
+
     initCarousel();
     accState.initialized = true;
   }
