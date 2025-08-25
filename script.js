@@ -58,7 +58,7 @@
   const carouselTrack=document.getElementById('carouselTrack');
   const carouselPrev=document.getElementById('carouselPrev');
   const carouselNext=document.getElementById('carouselNext');
-  const accountPrice=document.getElementById('accountPrice'); // Changed from accountTitle
+  const accountPrice=document.getElementById('accountPrice');
   const accountStatus=document.getElementById('accountStatus');
   const accountDescription=document.getElementById('accountDescription');
 
@@ -286,25 +286,31 @@
   // ========= AKUN GAME LOGIC (REVISED) =========
   const accState = { initialized: false, data: [], currentIndex: 0 };
   
-  // REVISED PARSER: Now includes price from Column H
+  // FINAL PARSER: Handles merged title cells and full multiline descriptions
   async function parseAccountsSheet(text) {
     const rows = text.trim().split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()));
     const accounts = [];
     
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
+      if (!row) continue;
+
+      // Find images in the current row to identify it as a starting row for an account
       const images = row.slice(0, 6).filter(cell => cell && (cell.includes('.jpg') || cell.includes('.png') || cell.includes('.webp')));
       
       if (images.length > 0) {
-        const title = row[2] || 'Tanpa Judul'; // Asumsi judul di kolom C
-        const status = row[6] || 'Tersedia'; // Status di kolom G
-        const price = Number(row[7]) || 0; // HARGA di kolom H
+        // Find title by searching for the first non-URL, non-empty text in columns A-F
+        const title = row.slice(0, 6).find(cell => cell && !cell.startsWith('http')) || 'Tanpa Judul';
         
+        const status = row[6] || 'Tersedia'; // Status in column G
+        const price = Number(row[7]) || 0; // Price in column H
+        
+        // Description is in the next row, join all non-empty cells from A-F
         const descriptionRow = rows[i + 1];
-        const description = descriptionRow ? (descriptionRow.slice(0, 6).find(cell => cell) || 'Tidak ada deskripsi.') : 'Tidak ada deskripsi.';
+        const description = descriptionRow ? (descriptionRow.slice(0, 6).filter(cell => cell).join('\n')) : 'Tidak ada deskripsi.';
         
         accounts.push({ title, status, images, description, price });
-        i++; 
+        i++; // Skip the description row for the next iteration
       }
     }
     return accounts;
@@ -336,7 +342,7 @@
     
     accountDisplay.classList.remove('expanded');
 
-    accountPrice.textContent = toIDR(account.price); // Display formatted price
+    accountPrice.textContent = toIDR(account.price);
     accountDescription.textContent = account.description;
     accountStatus.textContent = account.status;
     accountStatus.className = 'account-status-badge';
@@ -362,7 +368,7 @@
   }
 
   function updateCarousel() {
-    if (!accountSelect.value) return;
+    if (accountSelect.value === "") return;
     const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
     carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
     carouselPrev.disabled = accState.currentIndex === 0;
@@ -380,7 +386,7 @@
 
     carouselNext.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      if (!accountSelect.value) return;
+      if (accountSelect.value === "") return;
       const totalSlides = accState.data[accountSelect.value].images.length;
       if (accState.currentIndex < totalSlides - 1) {
         accState.currentIndex++;
