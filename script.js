@@ -289,31 +289,33 @@
   // ========= AKUN GAME LOGIC (FINAL REVISION) =========
   const accState = { initialized: false, data: [], currentIndex: 0, currentAccount: null };
   
-  // FINAL PARSER: Handles merged title cells and full multiline descriptions
+  // FINAL PARSER: Handles Google's unique CSV export for adjacent cells.
   async function parseAccountsSheet(text) {
-    console.log("Parsing CSV Data...");
     const rows = text.trim().split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()));
     const accounts = [];
     
     for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row || row.every(cell => !cell)) continue; // Skip empty rows
+        const row = rows[i];
+        if (!row || row.every(cell => !cell)) continue;
 
-      const images = row.slice(0, 6).filter(cell => cell && cell.startsWith('http'));
-      
-      if (images.length > 0) {
-        const title = row.slice(0, 6).find(cell => cell && !cell.startsWith('http')) || 'Tanpa Judul';
-        const status = row[6] || 'Tersedia';
-        const price = Number(row[7]) || 0;
-        
-        const descriptionRow = rows[i + 1];
-        const description = descriptionRow ? descriptionRow.slice(0, 6).filter(cell => cell).join('\n') || 'Tidak ada deskripsi.' : 'Tidak ada deskripsi.';
-        
-        const accountData = { title, status, images, description, price };
-        accounts.push(accountData);
-        console.log("Successfully parsed account:", accountData);
-        i++; 
-      }
+        // Check for a URL in the first cell to identify an account row.
+        const firstCell = row[0] || "";
+        if (firstCell.startsWith('http')) {
+             // Google merges adjacent image URLs with a comma. We need to split them back.
+            const images = firstCell.split(',').map(url => url.trim()).filter(Boolean);
+            
+            // Due to the merge, the title, status, and price columns shift.
+            const title = row[2] || 'Tanpa Judul'; // Title is in the 3rd column (index 2)
+            const status = row[6] || 'Tersedia'; // Status is in the 7th column (index 6)
+            const price = Number(row[7]) || 0;  // Price is in the 8th column (index 7)
+
+            const descriptionRow = rows[i + 1];
+            const description = descriptionRow ? (descriptionRow[1] || 'Tidak ada deskripsi.') : 'Tidak ada deskripsi.';
+            
+            const accountData = { title, status, images, description, price };
+            accounts.push(accountData);
+            i++; 
+        }
     }
     return accounts;
   }
@@ -336,7 +338,7 @@
 
   function renderAccount(index) {
     const account = accState.data[index];
-    accState.currentAccount = account; // Store current account for button actions
+    accState.currentAccount = account; 
 
     if (!account) {
       accountDisplay.style.display = 'none';
@@ -439,7 +441,8 @@
       }
     });
     
-    accountDisplay.addEventListener('click', () => {
+    accountDisplay.addEventListener('click', (e) => {
+        if(e.target.classList.contains('action-btn')) return;
         accountDisplay.classList.toggle('expanded');
     });
 
