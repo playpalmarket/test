@@ -66,7 +66,6 @@
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
     
-    // Sticky header background
     let headerHeight = document.querySelector('.site-header')?.offsetHeight || 89;
     window.addEventListener('scroll', () => {
       document.body.classList.toggle('scrolled-past-header', window.scrollY > headerHeight);
@@ -236,12 +235,10 @@
   // ========= INITIALIZATION =========
   function init() {
     prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // Anti-Zoom
     document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => { const now = Date.now(); if (now - lastTouchEnd <= 300) e.preventDefault(); lastTouchEnd = now; }, false);
 
-    // Event Listeners
     burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
     burgerPO?.addEventListener('click',()=>toggleMenu('po'));
     themeToggleBtns.forEach(btn => btn?.addEventListener('click', toggleTheme));
@@ -253,11 +250,9 @@
     let debounceTimer;
     searchEl.addEventListener('input',e=>{ clearTimeout(debounceTimer); debounceTimer=setTimeout(()=>{ query=e.target.value.trim().toLowerCase(); renderList(); }, 340); });
     
-    // Modal Listeners
     closeModalBtn.addEventListener('click', closePaymentModal);
     paymentModal.addEventListener('click', (e) => { if (e.target === paymentModal) closePaymentModal(); });
     
-    // Debug Listeners
     window.addEventListener('keydown', e => {
         if (e.ctrlKey && e.key === 'g') {
             e.preventDefault();
@@ -269,7 +264,6 @@
         }
     });
 
-    // Initial calls
     renderMenu(menuCat);
     renderMenu(menuPO);
     initTheme();
