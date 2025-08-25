@@ -286,36 +286,27 @@
   const poSearch=document.getElementById('poSearch');const poStatus=document.getElementById('poStatus');const poSheet=document.getElementById('poSheet');const poList=document.getElementById('poList');const poPrev=document.getElementById('poPrev');const poNext=document.getElementById('poNext');const poTotal=document.getElementById('poTotal');const poState={initialized:false,allData:[],currentPage:1,perPage:15,displayMode:'detailed'};const normalizeStatus=(raw)=>{const s=String(raw||'').trim().toLowerCase();if(['success','selesai','berhasil','done'].includes(s))return'success';if(['progress','proses','diproses','processing'].includes(s))return'progress';if(['failed','gagal','dibatalkan','cancel','error'].includes(s))return'failed';return'pending';};const poFilterData=()=>{const q=poSearch.value.trim().toLowerCase();const statusFilter=poStatus.value;return poState.allData.filter(item=>{if(poState.displayMode==='detailed'){const product=(item[3]||'').toLowerCase();const nickname=(item[5]||'').toLowerCase();const idGift=(item[7]||'').toLowerCase();const match=product.includes(q)||nickname.includes(q)||idGift.includes(q);const status=normalizeStatus(item[6]);return match&&(statusFilter==='all'||status===statusFilter);}else{const orderNum=(item[0]||'').toLowerCase();const product=(item[1]||'').toLowerCase();const match=orderNum.includes(q)||product.includes(q);const status=normalizeStatus(item[2]);return match&&(statusFilter==='all'||status===statusFilter);}});};const poUpdatePagination=(cur,total)=>{poPrev.disabled=cur<=1;poNext.disabled=cur>=total;};const poRender=()=>{const filtered=poFilterData();const totalItems=poState.allData.length;poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);const start=(poState.currentPage-1)*poState.perPage;const pageData=filtered.slice(start,start+poState.perPage);poList.innerHTML='';if(pageData.length===0){poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`;poUpdatePagination(0,0);return;}const frag=document.createDocumentFragment();pageData.forEach(item=>{const card=document.createElement('article');if(poState.displayMode==='detailed'){const tglOrder=item[0];const estPengiriman=item[1];const product=item[3];const bulan=item[4];const name=item[5];const status=item[6];const statusClass=normalizeStatus(status);const estDeliveryText=estPengiriman?`Estimasi Pengiriman: ${estPengiriman} 20:00 WIB`:'';const details=[{label:'TGL ORDER',value:tglOrder},{label:'BULAN',value:bulan}];const detailsHtml=details.filter(d=>d.value&&String(d.value).trim()!=='').map(d=>`<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');card.className=`card ${detailsHtml?'clickable':''}`;card.innerHTML=`<div class="card-header"><div><div class="card-name">${name||'Tanpa Nama'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>${estDeliveryText?`<div class="card-date">${estDeliveryText}</div>`:''}${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;if(detailsHtml)card.addEventListener('click',()=>card.classList.toggle('expanded'));}else{const orderNum=item[0];const product=item[1];const status=item[2];const statusClass=normalizeStatus(status);card.className='card';card.innerHTML=`<div class="card-header"><div><div class="card-name">${orderNum||'Tanpa Nomor'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>`;}frag.appendChild(card);});poList.appendChild(frag);poUpdatePagination(poState.currentPage,totalPages);};const poSortByStatus=(data,mode)=>{const order={'progress':1,'pending':2,'success':3,'failed':4};const statusIndex=(mode==='detailed')?6:2;return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);};async function poFetch(sheetName){poTotal.textContent='Memuat data...';showSkeleton(poList,skeletonCardTmpl,5);poState.displayMode=(sheetName===SHEETS.preorder.name1)?'detailed':'simple';try{const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});if(!res.ok)throw new Error(`Network response was not ok: ${res.statusText}`);const text=await res.text();let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));if(rows.length<2){poState.allData=[];return;}rows.shift();const dataRows=rows.filter(row=>row&&(row[0]||'').trim()!=='');poState.allData=poSortByStatus(dataRows,poState.displayMode);}catch(e){poState.allData=[];poTotal.textContent='Gagal memuat data.';console.error('Fetch Pre-Order failed:',e);}finally{poState.currentPage=1;poRender();}}
   function poInit(){const rebound=()=>{poState.currentPage=1;poRender();};poSearch.addEventListener('input',rebound);poStatus.addEventListener('change',rebound);poSheet.addEventListener('change',e=>{const selectedValue=e.target.value;const sheetToFetch=selectedValue==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(sheetToFetch);});document.getElementById('poPrev').addEventListener('click',()=>{if(poState.currentPage>1){poState.currentPage--;poRender();window.scrollTo({top:0,behavior:'smooth'});}});document.getElementById('poNext').addEventListener('click',()=>{poState.currentPage++;poRender();window.scrollTo({top:0,behavior:'smooth'});});const initialSheet=poSheet.value==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(initialSheet);poState.initialized=true;}
 
-  // ========= AKUN GAME LOGIC (FINAL REVISION) =========
+  // ========= AKUN GAME LOGIC (FINAL & DEFINITIVE) =========
   const accState = { initialized: false, data: [], currentIndex: 0, currentAccount: null };
   
-  // FINAL PARSER: Handles Google's unique CSV export for adjacent cells.
+  // FINAL PARSER: Reads the new "one row per account" structure.
   async function parseAccountsSheet(text) {
     const rows = text.trim().split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()));
+    rows.shift(); // Remove header row
     const accounts = [];
     
-    for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || row.every(cell => !cell)) continue;
+    for (const row of rows) {
+        // Skip if the row is empty or doesn't have a title
+        if (!row || !row[0]) continue;
 
-        // Check for a URL in the first cell to identify an account row.
-        const firstCell = row[0] || "";
-        if (firstCell.startsWith('http')) {
-             // Google merges adjacent image URLs with a comma. We need to split them back.
-            const images = firstCell.split(',').map(url => url.trim()).filter(Boolean);
-            
-            // Due to the merge, the title, status, and price columns shift.
-            const title = row[2] || 'Tanpa Judul'; // Title is in the 3rd column (index 2)
-            const status = row[6] || 'Tersedia'; // Status is in the 7th column (index 6)
-            const price = Number(row[7]) || 0;  // Price is in the 8th column (index 7)
-
-            const descriptionRow = rows[i + 1];
-            const description = descriptionRow ? (descriptionRow[1] || 'Tidak ada deskripsi.') : 'Tidak ada deskripsi.';
-            
-            const accountData = { title, status, images, description, price };
-            accounts.push(accountData);
-            i++; 
-        }
+        const accountData = {
+            title: row[0] || "Tanpa Judul",
+            price: Number(row[1]) || 0,
+            status: row[2] || "Tersedia",
+            description: row[3] || "Tidak ada deskripsi.",
+            images: (row[4] || "").split(',').map(url => url.trim()).filter(Boolean)
+        };
+        accounts.push(accountData);
     }
     return accounts;
   }
@@ -355,16 +346,28 @@
     accountStatus.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
     
     carouselTrack.innerHTML = '';
-    account.images.forEach(src => {
-      const slide = document.createElement('div');
-      slide.className = 'carousel-slide';
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = `Gambar untuk ${account.title}`;
-      img.loading = 'lazy';
-      slide.appendChild(img);
-      carouselTrack.appendChild(slide);
-    });
+    if (account.images.length > 0) {
+        account.images.forEach(src => {
+            const slide = document.createElement('div');
+            slide.className = 'carousel-slide';
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = `Gambar untuk ${account.title}`;
+            img.loading = 'lazy';
+            slide.appendChild(img);
+            carouselTrack.appendChild(slide);
+        });
+    } else {
+        // Placeholder if no images
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'no-image-placeholder';
+        placeholder.textContent = 'Gambar tidak tersedia';
+        slide.appendChild(placeholder);
+        carouselTrack.appendChild(slide);
+    }
+
 
     accState.currentIndex = 0;
     updateCarousel();
@@ -377,8 +380,8 @@
     if (accountSelect.value === "") return;
     const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
     carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
-    carouselPrev.disabled = accState.currentIndex === 0;
-    carouselNext.disabled = accState.currentIndex >= totalSlides - 1;
+    carouselPrev.disabled = totalSlides <= 1;
+    carouselNext.disabled = totalSlides <= 1 || accState.currentIndex >= totalSlides - 1;
   }
   
   function initCarousel() {
@@ -442,7 +445,7 @@
     });
     
     accountDisplay.addEventListener('click', (e) => {
-        if(e.target.classList.contains('action-btn')) return;
+        if(e.target.classList.contains('action-btn') || e.target.closest('.action-btn')) return;
         accountDisplay.classList.toggle('expanded');
     });
 
