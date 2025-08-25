@@ -105,8 +105,8 @@ p { font-size: var(--font-size-body); color: var(--text-secondary); line-height:
 .noscript-warning { padding: var(--sp-fib-4); background: var(--warning); color: var(--dark-base); text-align: center; font-weight: 700; }
 
 /* ================== PAGE VIEW & SCROLL ANIMATION ================== */
-.view-section { display: none; animation: fadeIn var(--duration-smooth) var(--ease-natural); }
-.view-section.active { display: block; }
+.view-section { display: none; }
+.view-section.active { display: block; animation: fadeIn var(--duration-smooth) var(--ease-natural); }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(var(--sp-fib-5)); } to { opacity: 1; transform: translateY(0); } }
 
 .reveal-on-scroll { opacity: 0; transform: translateY(var(--sp-fib-6)); transition: opacity var(--duration-smooth) var(--ease-natural), transform var(--duration-smooth) var(--ease-natural); }
@@ -297,13 +297,18 @@ body.dark-mode .select-native {
 
 
 /* ================== AKUN GAME VIEW (UPDATED) ================== */
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-fib-6);
+}
+
 .account-display-card {
-  margin-top: var(--sp-fib-5);
   background: var(--surface-primary);
   border: 1px solid var(--separator);
   border-radius: var(--radius-fib-large);
   box-shadow: var(--shadow-sm);
-  overflow: hidden; /* Clips the content to the rounded corners */
+  overflow: hidden;
   cursor: pointer;
   transition: transform var(--duration-fast), box-shadow var(--duration-fast);
 }
@@ -316,8 +321,7 @@ body.dark-mode .select-native {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: var(--radius-fib-large) var(--radius-fib-large) 0 0;
-  -webkit-user-select: none; user-select: none; /* Prevent image selection on drag */
+  -webkit-user-select: none; user-select: none;
   cursor: grab;
 }
 .carousel-container:active { cursor: grabbing; }
@@ -335,7 +339,7 @@ body.dark-mode .select-native {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  background-color: var(--surface-secondary); /* Placeholder color */
+  background-color: var(--surface-secondary);
 }
 .carousel-btn {
   position: absolute;
@@ -386,7 +390,7 @@ body.dark-mode .select-native {
   flex-shrink: 0;
   display: inline-block;
   padding: var(--sp-fib-2) var(--sp-fib-4);
-  border-radius: 999px;
+  border-radius: 9999px;
   font-size: var(--font-size-caption);
   font-weight: 900;
   text-transform: uppercase;
@@ -418,7 +422,7 @@ body.dark-mode .select-native {
   border-top: 1px solid var(--separator);
 }
 
-.account-description-container p {
+.account-description {
   margin: 0;
   white-space: pre-wrap; /* Preserve newlines from Google Sheet */
 }
