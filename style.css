@@ -74,8 +74,8 @@ body.dark-mode {
 html, body { 
   height: 100%;
   /* --- TAMBAHAN ANTI-ZOOM & ANTI-GESER --- */
-  overflow: hidden;
   touch-action: manipulation;
+  overflow-x: hidden;
 }
 body {
   margin: 0;
