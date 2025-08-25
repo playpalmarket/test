@@ -1,11 +1,7 @@
 (function(){
   // ========= CONFIG =========
   const SHEET_ID='1B0XPR4uSvRzy9LfzWDjNjwAyMZVtJs6_Kk_r2fh7dTw';
-  const SHEETS={
-    katalog:{name:'Sheet3'},
-    preorder:{name1:'Sheet1',name2:'Sheet2'},
-    mlbb:{name: 'Sheet5'} // Diubah sesuai permintaan
-  };
+  const SHEETS={katalog:{name:'Sheet3'},preorder:{name1:'Sheet1',name2:'Sheet2'},accounts:{name:'Sheet5'}};
   const WA_NUMBER='6285877001999';
   const WA_GREETING='*Detail pesanan:*';
   let DATA=[],CATS=[],activeCat='',query='';
@@ -22,6 +18,7 @@
   // ========= ELEMENTS =========
   const viewCatalog=document.getElementById('viewCatalog');
   const viewPreorder=document.getElementById('viewPreorder');
+  const viewAccounts=document.getElementById('viewAccounts');
   const listEl=document.getElementById('list-container');
   const searchEl=document.getElementById('search');
   const countInfoEl=document.getElementById('countInfo');
@@ -35,26 +32,14 @@
   const customSelectOptions=document.getElementById('custom-select-options');
   const burgerCat=document.getElementById('burgerCat');
   const burgerPO=document.getElementById('burgerPO');
+  const burgerAcc=document.getElementById('burgerAcc');
   const menuCat=document.getElementById('menuCat');
   const menuPO=document.getElementById('menuPO');
+  const menuAcc=document.getElementById('menuAcc');
   const themeToggleBtn = document.getElementById('theme-toggle-btn');
   const themeToggleBtnPO = document.getElementById('theme-toggle-btn-po');
+  const themeToggleBtnAcc = document.getElementById('theme-toggle-btn-acc');
   
-  const viewMlbb = document.getElementById('viewMlbb');
-  const burgerMlbb = document.getElementById('burgerMlbb');
-  const menuMlbb = document.getElementById('menuMlbb');
-  const themeToggleBtnMlbb = document.getElementById('theme-toggle-btn-mlbb');
-  const mlbbList = document.getElementById('mlbbList');
-  const mlbbTotal = document.getElementById('mlbbTotal');
-  const errBoxMlbb = document.getElementById('errorMlbb');
-  const mlbbCardTmpl = document.getElementById('mlbbCardTmpl');
-
-  // MLBB Detail Modal Elements
-  const mlbbDetailModal = document.getElementById('mlbbDetailModal');
-  const closeMlbbModalBtn = document.getElementById('closeMlbbModalBtn');
-  const modalMlbbImage = document.getElementById('modalMlbbImage');
-  const modalMlbbDesc = document.getElementById('modalMlbbDesc');
-
   // Payment Modal Elements
   const paymentModal = document.getElementById('paymentModal');
   const closeModalBtn = document.getElementById('closeModalBtn');
@@ -65,11 +50,23 @@
   const modalTotal = document.getElementById('modalTotal');
   const continueToWaBtn = document.getElementById('continueToWaBtn');
 
+  // Akun Game Elements
+  const accountSelect=document.getElementById('accountSelect');
+  const accountDisplay=document.getElementById('accountDisplay');
+  const accountEmpty=document.getElementById('accountEmpty');
+  const accountError=document.getElementById('accountError');
+  const carouselTrack=document.getElementById('carouselTrack');
+  const carouselPrev=document.getElementById('carouselPrev');
+  const carouselNext=document.getElementById('carouselNext');
+  const accountTitle=document.getElementById('accountTitle');
+  const accountStatus=document.getElementById('accountStatus');
+  const accountDescription=document.getElementById('accountDescription');
+
   // ========= MENU ITEMS =========
   const MENU_ITEMS = [
     { label:'Katalog', mode:'katalog' },
     { label:'Lacak Pre‑Order', mode:'preorder' },
-    { label:'Akun MLBB', mode:'mlbb' },
+    { label:'Akun Game', mode:'accounts' },
     { divider:true },
     { label:'Donasi (Saweria)', href:'https://saweria.co/playpal' },
     { divider:true },
@@ -131,13 +128,16 @@
   }
 
   function closeAllMenus(){
-    [burgerCat,burgerPO,burgerMlbb].forEach(b=>b?.classList.remove('active'));
-    [menuCat,menuPO,menuMlbb].forEach(m=>m?.classList.remove('open'));
+    [burgerCat,burgerPO,burgerAcc].forEach(b=>b?.classList.remove('active'));
+    [menuCat,menuPO,menuAcc].forEach(m=>m?.classList.remove('open'));
   }
 
   function toggleMenu(which){
-    const btn = which === 'cat' ? burgerCat : (which === 'po' ? burgerPO : burgerMlbb);
-    const menu = which === 'cat' ? menuCat : (which === 'po' ? menuPO : menuMlbb);
+    let btn, menu;
+    if (which === 'cat') { btn = burgerCat; menu = menuCat; }
+    else if (which === 'po') { btn = burgerPO; menu = menuPO; }
+    else { btn = burgerAcc; menu = menuAcc; }
+    
     const isOpen = menu.classList.contains('open');
     closeAllMenus();
     if (!isOpen) { btn?.classList.add('active'); menu?.classList.add('open'); }
@@ -145,20 +145,22 @@
 
   function setMode(nextMode){
     const currentActive = document.querySelector('.view-section.active');
-    const nextViewMap = {
-      'katalog': 'viewCatalog',
-      'preorder': 'viewPreorder',
-      'mlbb': 'viewMlbb'
-    };
-    const nextView = document.getElementById(nextViewMap[nextMode]);
-    if (!nextView || currentActive === nextView) { closeAllMenus(); return; }
+    let nextView;
+
+    if (nextMode === 'katalog') nextView = viewCatalog;
+    else if (nextMode === 'preorder') nextView = viewPreorder;
+    else if (nextMode === 'accounts') nextView = viewAccounts;
+    else return;
+
+    if (currentActive === nextView) { closeAllMenus(); return; }
     
     currentActive.classList.remove('active');
     nextView.classList.add('active');
 
     closeAllMenus();
     if (nextMode === 'preorder' && !poState.initialized) poInit();
-    if (nextMode === 'mlbb' && !mlbbState.initialized) loadMlbbAccounts();
+    if (nextMode === 'accounts' && !accState.initialized) accountsInit();
+
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
   
@@ -277,168 +279,154 @@
     }, 200); // Match CSS transition duration
   }
 
-  // ===================================
-  // ========= AKUN MLBB LOGIC =========
-  // ===================================
-  const mlbbState = { initialized: false, allData: [] };
-
-  function parseMlbbAccounts(txt) {
-    const m = txt.match(/\{.*\}/s);
-    if (!m) throw new Error('Invalid GViz response.');
-    const obj = JSON.parse(m[0]);
-    const table = obj.table || {}, rows = table.rows || [], cols = table.cols || [];
-    const accounts = [];
-
-    for (const r of rows) {
-      const c = r.c || [];
-      const screenshots = [];
-      // Loop per 2 kolom (gambar & deskripsi)
-      for (let i = 0; i < cols.length; i += 2) {
-        const imgUrl = c[i]?.v || '';
-        const description = c[i + 1]?.v || '';
-        if (String(imgUrl).trim() !== '') {
-          screenshots.push({ img: imgUrl, desc: description });
-        }
-      }
-      if (screenshots.length > 0) {
-        accounts.push({ screenshots });
-      }
-    }
-    return accounts;
-  }
-
-  function openMlbbDetailModal(img, desc) {
-      modalMlbbImage.src = img;
-      modalMlbbDesc.textContent = desc || 'Tidak ada deskripsi.';
-      mlbbDetailModal.style.display = 'flex';
-      setTimeout(() => mlbbDetailModal.classList.add('visible'), 10);
-  }
-
-  function closeMlbbDetailModal() {
-      mlbbDetailModal.classList.remove('visible');
-      setTimeout(() => {
-        mlbbDetailModal.style.display = 'none';
-      }, 200);
-  }
-
-  function renderMlbbAccounts() {
-      mlbbList.innerHTML = '';
-      mlbbTotal.textContent = `${mlbbState.allData.length} akun tersedia`;
-
-      if (mlbbState.allData.length === 0) {
-          mlbbList.innerHTML = `<div class="empty">Belum ada akun yang tersedia.</div>`;
-          return;
-      }
-
-      const frag = document.createDocumentFragment();
-      mlbbState.allData.forEach(account => {
-          const clone = mlbbCardTmpl.content.cloneNode(true);
-          const card = clone.querySelector('.card');
-          const wrapper = clone.querySelector('.slider-wrapper');
-          const dotsContainer = clone.querySelector('.slider-dots');
-          
-          account.screenshots.forEach((ss, index) => {
-              // Buat Gambar
-              const imgEl = document.createElement('img');
-              imgEl.src = ss.img;
-              imgEl.alt = `Gambar Akun ${index + 1}`;
-              imgEl.loading = 'lazy';
-              imgEl.addEventListener('click', () => openMlbbDetailModal(ss.img, ss.desc));
-              wrapper.appendChild(imgEl);
-
-              // Buat Titik Indikator
-              const dot = document.createElement('span');
-              dot.className = 'slider-dot';
-              if (index === 0) dot.classList.add('active');
-              dot.dataset.index = index;
-              dotsContainer.appendChild(dot);
-          });
-          
-          frag.appendChild(clone);
-
-          // Inisialisasi Slider untuk kartu ini
-          let currentIndex = 0;
-          const images = wrapper.querySelectorAll('img');
-          const dots = dotsContainer.querySelectorAll('.slider-dot');
-          const prevBtn = card.querySelector('.prev');
-          const nextBtn = card.querySelector('.next');
-          const totalImages = images.length;
-
-          if (totalImages <= 1) {
-              prevBtn.style.display = 'none';
-              nextBtn.style.display = 'none';
-              dotsContainer.style.display = 'none';
-              card.querySelector('.card-product').style.display = 'none';
-          }
-
-          function updateSlider() {
-              wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-              dots.forEach(d => d.classList.remove('active'));
-              dots[currentIndex].classList.add('active');
-          }
-
-          prevBtn.addEventListener('click', () => {
-              currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalImages - 1;
-              updateSlider();
-          });
-
-          nextBtn.addEventListener('click', () => {
-              currentIndex = (currentIndex < totalImages - 1) ? currentIndex + 1 : 0;
-              updateSlider();
-          });
-          
-          dots.forEach(dot => {
-             dot.addEventListener('click', (e) => {
-                currentIndex = parseInt(e.target.dataset.index);
-                updateSlider();
-             });
-          });
-      });
-      mlbbList.appendChild(frag);
-  }
-
-  async function loadMlbbAccounts() {
-      if (mlbbState.initialized) return;
-      mlbbState.initialized = true;
-      try {
-          errBoxMlbb.style.display = 'none';
-          showSkeleton(mlbbList, skeletonCardTmpl, 3);
-          const res = await fetch(sheetUrlJSON(SHEETS.mlbb.name), { cache: 'no-store' });
-          if (!res.ok) throw new Error(`Network response error: ${res.statusText}`);
-          const txt = await res.text();
-          mlbbState.allData = parseMlbbAccounts(txt);
-          renderMlbbAccounts();
-      } catch (err) {
-          console.error("Fetch Akun MLBB failed:", err);
-          mlbbList.innerHTML = '';
-          errBoxMlbb.style.display = 'block';
-          errBoxMlbb.textContent = `Gagal memuat data akun. Coba lagi nanti.`;
-          mlbbTotal.textContent = '';
-      }
-  }
-
   // ========= PRE-ORDER LOGIC =========
   const poSearch=document.getElementById('poSearch');const poStatus=document.getElementById('poStatus');const poSheet=document.getElementById('poSheet');const poList=document.getElementById('poList');const poPrev=document.getElementById('poPrev');const poNext=document.getElementById('poNext');const poTotal=document.getElementById('poTotal');const poState={initialized:false,allData:[],currentPage:1,perPage:15,displayMode:'detailed'};const normalizeStatus=(raw)=>{const s=String(raw||'').trim().toLowerCase();if(['success','selesai','berhasil','done'].includes(s))return'success';if(['progress','proses','diproses','processing'].includes(s))return'progress';if(['failed','gagal','dibatalkan','cancel','error'].includes(s))return'failed';return'pending';};const poFilterData=()=>{const q=poSearch.value.trim().toLowerCase();const statusFilter=poStatus.value;return poState.allData.filter(item=>{if(poState.displayMode==='detailed'){const product=(item[3]||'').toLowerCase();const nickname=(item[5]||'').toLowerCase();const idGift=(item[7]||'').toLowerCase();const match=product.includes(q)||nickname.includes(q)||idGift.includes(q);const status=normalizeStatus(item[6]);return match&&(statusFilter==='all'||status===statusFilter);}else{const orderNum=(item[0]||'').toLowerCase();const product=(item[1]||'').toLowerCase();const match=orderNum.includes(q)||product.includes(q);const status=normalizeStatus(item[2]);return match&&(statusFilter==='all'||status===statusFilter);}});};const poUpdatePagination=(cur,total)=>{poPrev.disabled=cur<=1;poNext.disabled=cur>=total;};const poRender=()=>{const filtered=poFilterData();const totalItems=poState.allData.length;poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);const start=(poState.currentPage-1)*poState.perPage;const pageData=filtered.slice(start,start+poState.perPage);poList.innerHTML='';if(pageData.length===0){poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`;poUpdatePagination(0,0);return;}const frag=document.createDocumentFragment();pageData.forEach(item=>{const card=document.createElement('article');if(poState.displayMode==='detailed'){const tglOrder=item[0];const estPengiriman=item[1];const product=item[3];const bulan=item[4];const name=item[5];const status=item[6];const statusClass=normalizeStatus(status);const estDeliveryText=estPengiriman?`Estimasi Pengiriman: ${estPengiriman} 20:00 WIB`:'';const details=[{label:'TGL ORDER',value:tglOrder},{label:'BULAN',value:bulan}];const detailsHtml=details.filter(d=>d.value&&String(d.value).trim()!=='').map(d=>`<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');card.className=`card ${detailsHtml?'clickable':''}`;card.innerHTML=`<div class="card-header"><div><div class="card-name">${name||'Tanpa Nama'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>${estDeliveryText?`<div class="card-date">${estDeliveryText}</div>`:''}${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;if(detailsHtml)card.addEventListener('click',()=>card.classList.toggle('expanded'));}else{const orderNum=item[0];const product=item[1];const status=item[2];const statusClass=normalizeStatus(status);card.className='card';card.innerHTML=`<div class="card-header"><div><div class="card-name">${orderNum||'Tanpa Nomor'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>`;}frag.appendChild(card);});poList.appendChild(frag);poUpdatePagination(poState.currentPage,totalPages);};const poSortByStatus=(data,mode)=>{const order={'progress':1,'pending':2,'success':3,'failed':4};const statusIndex=(mode==='detailed')?6:2;return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);};async function poFetch(sheetName){poTotal.textContent='Memuat data...';showSkeleton(poList,skeletonCardTmpl,5);poState.displayMode=(sheetName===SHEETS.preorder.name1)?'detailed':'simple';try{const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});if(!res.ok)throw new Error(`Network response was not ok: ${res.statusText}`);const text=await res.text();let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));if(rows.length<2){poState.allData=[];return;}rows.shift();const dataRows=rows.filter(row=>row&&(row[0]||'').trim()!=='');poState.allData=poSortByStatus(dataRows,poState.displayMode);}catch(e){poState.allData=[];poTotal.textContent='Gagal memuat data.';console.error('Fetch Pre-Order failed:',e);}finally{poState.currentPage=1;poRender();}}
   function poInit(){const rebound=()=>{poState.currentPage=1;poRender();};poSearch.addEventListener('input',rebound);poStatus.addEventListener('change',rebound);poSheet.addEventListener('change',e=>{const selectedValue=e.target.value;const sheetToFetch=selectedValue==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(sheetToFetch);});document.getElementById('poPrev').addEventListener('click',()=>{if(poState.currentPage>1){poState.currentPage--;poRender();window.scrollTo({top:0,behavior:'smooth'});}});document.getElementById('poNext').addEventListener('click',()=>{poState.currentPage++;poRender();window.scrollTo({top:0,behavior:'smooth'});});const initialSheet=poSheet.value==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(initialSheet);poState.initialized=true;}
 
+  // ========= AKUN GAME LOGIC =========
+  const accState = { initialized: false, data: [], currentIndex: 0 };
+  
+  async function parseAccountsSheet(text) {
+    const rows = text.trim().split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()));
+    const accounts = [];
+    for (let i = 0; i < rows.length; i += 3) {
+      if (!rows[i] || !rows[i+1] || !rows[i+2]) continue;
+
+      const titleRow = rows[i];
+      const imageRow = rows[i+1];
+      const descRow = rows[i+2];
+
+      const title = titleRow.slice(0, 6).find(cell => cell) || 'Tanpa Judul';
+      const status = titleRow[6] || 'Tersedia';
+      const images = imageRow.slice(0, 6).filter(cell => cell && (cell.endsWith('.jpg') || cell.endsWith('.png') || cell.endsWith('.webp')));
+      const description = descRow.slice(0, 6).find(cell => cell) || 'Tidak ada deskripsi.';
+      
+      if (images.length > 0) {
+        accounts.push({ title, status, images, description });
+      }
+    }
+    return accounts;
+  }
+  
+  function populateAccountSelect() {
+    accountSelect.innerHTML = '<option value="">Pilih Akun</option>';
+    if (accState.data.length === 0) {
+      accountSelect.innerHTML = '<option value="">Tidak ada akun</option>';
+      accountEmpty.textContent = 'Tidak ada akun yang tersedia saat ini.';
+      accountEmpty.style.display = 'block';
+      return;
+    }
+    accState.data.forEach((acc, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = acc.title;
+      accountSelect.appendChild(option);
+    });
+  }
+
+  function renderAccount(index) {
+    const account = accState.data[index];
+    if (!account) {
+      accountDisplay.style.display = 'none';
+      accountEmpty.style.display = 'block';
+      return;
+    }
+
+    accountTitle.textContent = account.title;
+    accountDescription.textContent = account.description;
+    accountStatus.textContent = account.status;
+    accountStatus.className = 'account-status-badge';
+    accountStatus.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
+    
+    carouselTrack.innerHTML = '';
+    account.images.forEach(src => {
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = `Gambar untuk ${account.title}`;
+      slide.appendChild(img);
+      carouselTrack.appendChild(slide);
+    });
+
+    accState.currentIndex = 0;
+    updateCarousel();
+
+    accountEmpty.style.display = 'none';
+    accountDisplay.style.display = 'block';
+  }
+
+  function updateCarousel() {
+    const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
+    carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
+    carouselPrev.disabled = accState.currentIndex === 0;
+    carouselNext.disabled = accState.currentIndex >= totalSlides - 1;
+  }
+  
+  function initCarousel() {
+    carouselPrev.addEventListener('click', () => {
+      if (accState.currentIndex > 0) {
+        accState.currentIndex--;
+        updateCarousel();
+      }
+    });
+
+    carouselNext.addEventListener('click', () => {
+      const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
+      if (accState.currentIndex < totalSlides - 1) {
+        accState.currentIndex++;
+        updateCarousel();
+      }
+    });
+
+    // Swipe functionality
+    let touchStartX = 0; let touchEndX = 0;
+    carouselTrack.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, { passive: true });
+    carouselTrack.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchEndX < touchStartX - 50) carouselNext.click(); // Swipe left
+        if (touchEndX > touchStartX + 50) carouselPrev.click(); // Swipe right
+    }, { passive: true });
+  }
+
+  async function accountsInit() {
+    accountError.style.display = 'none';
+    try {
+      const res = await fetch(sheetUrlCSV(SHEETS.accounts.name), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
+      const text = await res.text();
+      accState.data = await parseAccountsSheet(text);
+      populateAccountSelect();
+    } catch (err) {
+      console.error("Fetch Akun Game failed:", err);
+      accountError.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
+      accountError.style.display = 'block';
+      accountEmpty.style.display = 'none';
+      accountSelect.innerHTML = '<option value="">Gagal memuat</option>';
+    }
+    
+    accountSelect.addEventListener('change', e => {
+      if (e.target.value) renderAccount(parseInt(e.target.value, 10));
+      else {
+        accountDisplay.style.display = 'none';
+        accountEmpty.style.display = 'block';
+      }
+    });
+    
+    initCarousel();
+    accState.initialized = true;
+  }
+
   // ========= INITIALIZATION =========
   function init() {
     /* --- TAMBAHAN ANTI-COPY --- */
-    // Mencegah klik kanan
     document.addEventListener('contextmenu', event => event.preventDefault());
-    // Mencegah aksi copy (Ctrl+C, dll)
     document.addEventListener('copy', event => event.preventDefault());
 
 
     /* --- TAMBAHAN ANTI-ZOOM --- */
-    // Mencegah gestur zoom di iOS/Safari
-    document.addEventListener('gesturestart', function (e) {
-      e.preventDefault();
-    });
-    // Anti-Zoom untuk double-tap & multi-touch
-    document.addEventListener('touchstart', (event) => {
-      if (event.touches.length > 1) { event.preventDefault(); }
-    }, { passive: false });
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+    document.addEventListener('touchstart', (event) => { if (event.touches.length > 1) event.preventDefault(); }, { passive: false });
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (event) => {
       const now = (new Date()).getTime();
@@ -447,20 +435,16 @@
     }, false);
 
 
-    // Event Listeners (kode asli)
+    // Event Listeners
     burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
     burgerPO?.addEventListener('click',()=>toggleMenu('po'));
-    burgerMlbb?.addEventListener('click',()=>toggleMenu('mlbb'));
+    burgerAcc?.addEventListener('click',()=>toggleMenu('acc'));
     themeToggleBtn?.addEventListener('click', toggleTheme);
     themeToggleBtnPO?.addEventListener('click', toggleTheme);
-    themeToggleBtnMlbb?.addEventListener('click', toggleTheme);
+    themeToggleBtnAcc?.addEventListener('click', toggleTheme);
     
     document.addEventListener('click',(e)=>{ 
-      const isOutsideMenu = !(
-          menuCat?.contains(e.target) || burgerCat?.contains(e.target) || 
-          menuPO?.contains(e.target) || burgerPO?.contains(e.target) ||
-          menuMlbb?.contains(e.target) || burgerMlbb?.contains(e.target)
-      );
+      const isOutsideMenu = !(menuCat?.contains(e.target) || burgerCat?.contains(e.target) || menuPO?.contains(e.target) || burgerPO?.contains(e.target) || menuAcc?.contains(e.target) || burgerAcc?.contains(e.target));
       if(isOutsideMenu) closeAllMenus(); 
     });
     
@@ -478,22 +462,13 @@
     // Modal Listeners
     closeModalBtn.addEventListener('click', closePaymentModal);
     paymentModal.addEventListener('click', (e) => {
-        if (e.target === paymentModal) {
-            closePaymentModal();
-        }
-    });
-
-    closeMlbbModalBtn.addEventListener('click', closeMlbbDetailModal);
-    mlbbDetailModal.addEventListener('click', (e) => {
-        if (e.target === mlbbDetailModal) {
-            closeMlbbDetailModal();
-        }
+        if (e.target === paymentModal) closePaymentModal();
     });
 
     // Initial calls
     renderMenu(menuCat);
     renderMenu(menuPO);
-    renderMenu(menuMlbb);
+    renderMenu(menuAcc);
     initTheme();
     loadCatalog();
     initScrollAnimations();
