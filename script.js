@@ -289,15 +289,7 @@
   // ========= AKUN GAME LOGIC (FINAL & DEFINITIVE) =========
   const accState = { initialized: false, data: [], currentIndex: 0, currentAccount: null };
   
-  /**
-   * A robust CSV parser that handles multiline fields.
-   * This function correctly splits the CSV text into rows,
-   * even when a cell (like the description) contains newline characters.
-   * @param {string} text The raw CSV text from the fetch response.
-   * @returns {string[][]} An array of arrays representing the rows and columns.
-   */
   function robustCsvParser(text) {
-    // Normalize line endings
     const normalizedText = text.trim().replace(/\r\n/g, '\n');
     const rows = [];
     let currentRow = [];
@@ -309,10 +301,9 @@
         
         if (inQuotedField) {
             if (char === '"') {
-                // Check for escaped quote ("")
                 if (i + 1 < normalizedText.length && normalizedText[i + 1] === '"') {
                     currentField += '"';
-                    i++; // Skip next quote
+                    i++;
                 } else {
                     inQuotedField = false;
                 }
@@ -335,7 +326,6 @@
             }
         }
     }
-    // Add the last field and row
     currentRow.push(currentField);
     rows.push(currentRow);
 
@@ -344,11 +334,10 @@
 
   async function parseAccountsSheet(text) {
     const rows = robustCsvParser(text);
-    rows.shift(); // Remove header row
+    rows.shift();
     const accounts = [];
     
     for (const row of rows) {
-        // Skip if the row is empty or doesn't have a title in the first column
         if (!row || row.length < 5 || !row[0]) continue;
 
         const accountData = {
@@ -364,22 +353,66 @@
   }
   
   function populateAccountSelect() {
-    accountSelect.innerHTML = '<option value="">Pilih Akun</option>';
+    accountSelect.innerHTML = '<option value="all">Semua Akun</option>'; 
+    
     if (accState.data.length === 0) {
-      accountSelect.innerHTML = '<option value="">Tidak ada akun</option>';
-      accountEmpty.textContent = 'Tidak ada akun yang tersedia saat ini.';
-      accountEmpty.style.display = 'block';
-      return;
+        accountEmpty.textContent = 'Tidak ada akun yang tersedia saat ini.';
+        accountEmpty.style.display = 'block';
+        accountSelect.innerHTML = '<option value="">Tidak ada akun</option>';
+        return;
     }
+    
     accState.data.forEach((acc, index) => {
-      const option = document.createElement('option');
-      option.value = index;
-      option.textContent = acc.title;
-      accountSelect.appendChild(option);
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = acc.title;
+        accountSelect.appendChild(option);
+    });
+  }
+
+  function renderAllAccounts() {
+    const container = document.getElementById('allAccountsContainer');
+    container.innerHTML = '';
+    
+    accountDisplay.style.display = 'none'; 
+    accountEmpty.style.display = 'none';
+    container.style.display = 'grid';
+
+    if (accState.data.length === 0) {
+        accountEmpty.style.display = 'block';
+        return;
+    }
+
+    accState.data.forEach((acc, index) => {
+        const isAvailable = acc.status.toLowerCase() === 'tersedia';
+        const firstImage = acc.images[0] || '';
+
+        const card = document.createElement('div');
+        card.className = `summary-card ${!isAvailable ? 'sold' : ''}`;
+        
+        card.innerHTML = `
+            <div class="summary-card-image" style="background-image: url('${firstImage}')">
+                <span class="summary-card-status">${acc.status}</span>
+            </div>
+            <div class="summary-card-body">
+                <h3 class="summary-card-title">${acc.title}</h3>
+                <p class="summary-card-price">${toIDR(acc.price)}</p>
+            </div>
+        `;
+        
+        card.addEventListener('click', () => {
+            accountSelect.value = index;
+            renderAccount(index);
+        });
+
+        container.appendChild(card);
     });
   }
 
   function renderAccount(index) {
+    const allContainer = document.getElementById('allAccountsContainer');
+    allContainer.style.display = 'none';
+
     const account = accState.data[index];
     accState.currentAccount = account; 
 
@@ -410,7 +443,6 @@
             carouselTrack.appendChild(slide);
         });
     } else {
-        // Placeholder if no images
         const slide = document.createElement('div');
         slide.className = 'carousel-slide';
         const placeholder = document.createElement('div');
@@ -421,7 +453,6 @@
         carouselTrack.appendChild(slide);
     }
 
-
     accState.currentIndex = 0;
     updateCarousel();
 
@@ -430,13 +461,11 @@
   }
 
   function updateCarousel() {
-    if (accountSelect.value === "") return;
-    const account = accState.data[accountSelect.value];
-    if (!account) return;
-    const totalSlides = account.images.length || 0;
+    if (!accState.currentAccount) return;
+    const totalSlides = accState.currentAccount.images.length || 0;
     carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
-    carouselPrev.disabled = totalSlides <= 1;
-    carouselNext.disabled = totalSlides <= 1 || accState.currentIndex >= totalSlides - 1;
+    carouselPrev.disabled = accState.currentIndex === 0;
+    carouselNext.disabled = accState.currentIndex >= totalSlides - 1;
   }
   
   function initCarousel() {
@@ -450,8 +479,8 @@
 
     carouselNext.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      if (accountSelect.value === "") return;
-      const totalSlides = accState.data[accountSelect.value].images.length;
+      if (!accState.currentAccount) return;
+      const totalSlides = accState.currentAccount.images.length;
       if (accState.currentIndex < totalSlides - 1) {
         accState.currentIndex++;
         updateCarousel();
@@ -474,36 +503,37 @@
 
   async function accountsInit() {
     if(accState.initialized) return;
+    
     accountError.style.display = 'none';
-    try {
-      const res = await fetch(sheetUrlCSV(SHEETS.accounts.name), { cache: 'no-store' });
-      if (!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
-      const text = await res.text();
-      accState.data = await parseAccountsSheet(text);
-      populateAccountSelect();
+    accountDisplay.style.display = 'none';
+    accountEmpty.style.display = 'none';
 
-      // Perbaikan: Otomatis tampilkan akun pertama jika ada
-      if (accState.data.length > 0) {
-        accountSelect.value = '0'; // Secara otomatis pilih item pertama di dropdown
-        renderAccount(0);         // Panggil fungsi untuk menampilkannya
-      }
+    try {
+        const res = await fetch(sheetUrlCSV(SHEETS.accounts.name), { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
+        const text = await res.text();
+        accState.data = await parseAccountsSheet(text);
+        
+        populateAccountSelect();
+        renderAllAccounts();
 
     } catch (err) {
-      console.error("Fetch Akun Game failed:", err);
-      accountError.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
-      accountError.style.display = 'block';
-      accountEmpty.style.display = 'none';
-      accountSelect.innerHTML = '<option value="">Gagal memuat</option>';
+        console.error("Fetch Akun Game failed:", err);
+        accountError.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
+        accountError.style.display = 'block';
+        accountSelect.innerHTML = '<option value="">Gagal memuat</option>';
     }
     
     accountSelect.addEventListener('change', e => {
-      if (e.target.value !== "") {
-        renderAccount(parseInt(e.target.value, 10));
-      } else {
-        accountDisplay.style.display = 'none';
-        accountEmpty.style.display = 'block';
-        accState.currentAccount = null;
-      }
+        if (e.target.value === "all") {
+            renderAllAccounts();
+        } else if (e.target.value !== "") {
+            renderAccount(parseInt(e.target.value, 10));
+        } else {
+            document.getElementById('allAccountsContainer').style.display = 'none';
+            accountDisplay.style.display = 'none';
+            accountEmpty.style.display = 'block';
+        }
     });
     
     accountDisplay.addEventListener('click', (e) => {
@@ -539,18 +569,6 @@
     /* --- TAMBAHAN ANTI-COPY --- */
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', event => event.preventDefault());
-
-
-    /* --- TAMBAHAN ANTI-ZOOM --- */
-    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-    document.addEventListener('touchstart', (event) => { if (event.touches.length > 1) event.preventDefault(); }, { passive: false });
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (event) => {
-      const now = (new Date()).getTime();
-      if (now - lastTouchEnd <= 300) { event.preventDefault(); }
-      lastTouchEnd = now;
-    }, false);
-
 
     // Event Listeners
     burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
