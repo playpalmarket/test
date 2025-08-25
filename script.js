@@ -289,15 +289,67 @@
   // ========= AKUN GAME LOGIC (FINAL & DEFINITIVE) =========
   const accState = { initialized: false, data: [], currentIndex: 0, currentAccount: null };
   
-  // FINAL PARSER: Reads the new "one row per account" structure.
+  /**
+   * A robust CSV parser that handles multiline fields.
+   * This function correctly splits the CSV text into rows,
+   * even when a cell (like the description) contains newline characters.
+   * @param {string} text The raw CSV text from the fetch response.
+   * @returns {string[][]} An array of arrays representing the rows and columns.
+   */
+  function robustCsvParser(text) {
+    // Normalize line endings
+    const normalizedText = text.trim().replace(/\r\n/g, '\n');
+    const rows = [];
+    let currentRow = [];
+    let currentField = '';
+    let inQuotedField = false;
+
+    for (let i = 0; i < normalizedText.length; i++) {
+        const char = normalizedText[i];
+        
+        if (inQuotedField) {
+            if (char === '"') {
+                // Check for escaped quote ("")
+                if (i + 1 < normalizedText.length && normalizedText[i + 1] === '"') {
+                    currentField += '"';
+                    i++; // Skip next quote
+                } else {
+                    inQuotedField = false;
+                }
+            } else {
+                currentField += char;
+            }
+        } else {
+            if (char === '"') {
+                inQuotedField = true;
+            } else if (char === ',') {
+                currentRow.push(currentField);
+                currentField = '';
+            } else if (char === '\n') {
+                currentRow.push(currentField);
+                rows.push(currentRow);
+                currentRow = [];
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+    }
+    // Add the last field and row
+    currentRow.push(currentField);
+    rows.push(currentRow);
+
+    return rows;
+  }
+
   async function parseAccountsSheet(text) {
-    const rows = text.trim().split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()));
+    const rows = robustCsvParser(text);
     rows.shift(); // Remove header row
     const accounts = [];
     
     for (const row of rows) {
-        // Skip if the row is empty or doesn't have a title
-        if (!row || !row[0]) continue;
+        // Skip if the row is empty or doesn't have a title in the first column
+        if (!row || row.length < 5 || !row[0]) continue;
 
         const accountData = {
             title: row[0] || "Tanpa Judul",
@@ -346,7 +398,7 @@
     accountStatus.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
     
     carouselTrack.innerHTML = '';
-    if (account.images.length > 0) {
+    if (account.images && account.images.length > 0) {
         account.images.forEach(src => {
             const slide = document.createElement('div');
             slide.className = 'carousel-slide';
@@ -363,6 +415,7 @@
         slide.className = 'carousel-slide';
         const placeholder = document.createElement('div');
         placeholder.className = 'no-image-placeholder';
+        placeholder.style.cssText = "display:flex; align-items:center; justify-content:center; height:100%; aspect-ratio:16/9; background-color: var(--surface-secondary); color: var(--text-tertiary);";
         placeholder.textContent = 'Gambar tidak tersedia';
         slide.appendChild(placeholder);
         carouselTrack.appendChild(slide);
@@ -378,7 +431,9 @@
 
   function updateCarousel() {
     if (accountSelect.value === "") return;
-    const totalSlides = accState.data[accountSelect.value]?.images.length || 0;
+    const account = accState.data[accountSelect.value];
+    if (!account) return;
+    const totalSlides = account.images.length || 0;
     carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
     carouselPrev.disabled = totalSlides <= 1;
     carouselNext.disabled = totalSlides <= 1 || accState.currentIndex >= totalSlides - 1;
