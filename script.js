@@ -279,50 +279,32 @@
   const poSearch=document.getElementById('poSearch');const poStatus=document.getElementById('poStatus');const poSheet=document.getElementById('poSheet');const poList=document.getElementById('poList');const poPrev=document.getElementById('poPrev');const poNext=document.getElementById('poNext');const poTotal=document.getElementById('poTotal');const poState={initialized:false,allData:[],currentPage:1,perPage:15,displayMode:'detailed'};const normalizeStatus=(raw)=>{const s=String(raw||'').trim().toLowerCase();if(['success','selesai','berhasil','done'].includes(s))return'success';if(['progress','proses','diproses','processing'].includes(s))return'progress';if(['failed','gagal','dibatalkan','cancel','error'].includes(s))return'failed';return'pending';};const poFilterData=()=>{const q=poSearch.value.trim().toLowerCase();const statusFilter=poStatus.value;return poState.allData.filter(item=>{if(poState.displayMode==='detailed'){const product=(item[3]||'').toLowerCase();const nickname=(item[5]||'').toLowerCase();const idGift=(item[7]||'').toLowerCase();const match=product.includes(q)||nickname.includes(q)||idGift.includes(q);const status=normalizeStatus(item[6]);return match&&(statusFilter==='all'||status===statusFilter);}else{const orderNum=(item[0]||'').toLowerCase();const product=(item[1]||'').toLowerCase();const match=orderNum.includes(q)||product.includes(q);const status=normalizeStatus(item[2]);return match&&(statusFilter==='all'||status===statusFilter);}});};const poUpdatePagination=(cur,total)=>{poPrev.disabled=cur<=1;poNext.disabled=cur>=total;};const poRender=()=>{const filtered=poFilterData();const totalItems=poState.allData.length;poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);const start=(poState.currentPage-1)*poState.perPage;const pageData=filtered.slice(start,start+poState.perPage);poList.innerHTML='';if(pageData.length===0){poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`;poUpdatePagination(0,0);return;}const frag=document.createDocumentFragment();pageData.forEach(item=>{const card=document.createElement('article');if(poState.displayMode==='detailed'){const tglOrder=item[0];const estPengiriman=item[1];const product=item[3];const bulan=item[4];const name=item[5];const status=item[6];const statusClass=normalizeStatus(status);const estDeliveryText=estPengiriman?`Estimasi Pengiriman: ${estPengiriman} 20:00 WIB`:'';const details=[{label:'TGL ORDER',value:tglOrder},{label:'BULAN',value:bulan}];const detailsHtml=details.filter(d=>d.value&&String(d.value).trim()!=='').map(d=>`<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');card.className=`card ${detailsHtml?'clickable':''}`;card.innerHTML=`<div class="card-header"><div><div class="card-name">${name||'Tanpa Nama'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>${estDeliveryText?`<div class="card-date">${estDeliveryText}</div>`:''}${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;if(detailsHtml)card.addEventListener('click',()=>card.classList.toggle('expanded'));}else{const orderNum=item[0];const product=item[1];const status=item[2];const statusClass=normalizeStatus(status);card.className='card';card.innerHTML=`<div class="card-header"><div><div class="card-name">${orderNum||'Tanpa Nomor'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>`;}frag.appendChild(card);});poList.appendChild(frag);poUpdatePagination(poState.currentPage,totalPages);};const poSortByStatus=(data,mode)=>{const order={'progress':1,'pending':2,'success':3,'failed':4};const statusIndex=(mode==='detailed')?6:2;return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);};async function poFetch(sheetName){poTotal.textContent='Memuat data...';showSkeleton(poList,skeletonCardTmpl,5);poState.displayMode=(sheetName===SHEETS.preorder.name1)?'detailed':'simple';try{const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});if(!res.ok)throw new Error(`Network response was not ok: ${res.statusText}`);const text=await res.text();let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));if(rows.length<2){poState.allData=[];return;}rows.shift();const dataRows=rows.filter(row=>row&&(row[0]||'').trim()!=='');poState.allData=poSortByStatus(dataRows,poState.displayMode);}catch(e){poState.allData=[];poTotal.textContent='Gagal memuat data.';console.error('Fetch Pre-Order failed:',e);}finally{poState.currentPage=1;poRender();}}
   function poInit(){const rebound=()=>{poState.currentPage=1;poRender();};poSearch.addEventListener('input',rebound);poStatus.addEventListener('change',rebound);poSheet.addEventListener('change',e=>{const selectedValue=e.target.value;const sheetToFetch=selectedValue==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(sheetToFetch);});document.getElementById('poPrev').addEventListener('click',()=>{if(poState.currentPage>1){poState.currentPage--;poRender();window.scrollTo({top:0,behavior:'smooth'});}});document.getElementById('poNext').addEventListener('click',()=>{poState.currentPage++;poRender();window.scrollTo({top:0,behavior:'smooth'});});const initialSheet=poSheet.value==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(initialSheet);poState.initialized=true;}
 
-  // ========= AKUN GAME LOGIC (FINAL REVISION) =========
+  // ========= AKUN GAME LOGIC (FINAL & DEFINITIVE) =========
   const accState = { initialized: false, data: [] };
 
+  /**
+   * A robust CSV parser that handles multiline fields correctly.
+   * This is the key to fixing the data parsing issues.
+   */
   function robustCsvParser(text) {
-    const normalizedText = text.trim().replace(/\r\n/g, '\n');
-    const rows = [];
-    let currentRow = [];
-    let currentField = '';
-    let inQuotedField = false;
+    const lines = text.trim().replace(/\r\n/g, '\n').split('\n');
+    const result = [];
+    let currentLine = '';
 
-    for (let i = 0; i < normalizedText.length; i++) {
-        const char = normalizedText[i];
-        
-        if (inQuotedField) {
-            if (char === '"') {
-                if (i + 1 < normalizedText.length && normalizedText[i + 1] === '"') {
-                    currentField += '"';
-                    i++;
-                } else {
-                    inQuotedField = false;
-                }
-            } else {
-                currentField += char;
-            }
+    for (const line of lines) {
+        currentLine += line;
+        // A valid CSV row has an even number of quotes.
+        // If it's odd, it means the newline was inside a quoted field.
+        if ((currentLine.match(/"/g) || []).length % 2 === 0) {
+            const columns = currentLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            result.push(columns.map(val => val.replace(/^"|"$/g, '').trim()));
+            currentLine = '';
         } else {
-            if (char === '"') {
-                inQuotedField = true;
-            } else if (char === ',') {
-                currentRow.push(currentField);
-                currentField = '';
-            } else if (char === '\n') {
-                currentRow.push(currentField);
-                rows.push(currentRow);
-                currentRow = [];
-                currentField = '';
-            } else {
-                currentField += char;
-            }
+            // It's a multiline field, add the newline back and continue to the next line.
+            currentLine += '\n';
         }
     }
-    currentRow.push(currentField);
-    rows.push(currentRow);
-
-    return rows;
+    return result;
   }
 
   async function parseAccountsSheet(text) {
@@ -331,6 +313,7 @@
     const accounts = [];
     
     for (const row of rows) {
+        // Skip if the row is empty or doesn't have a title in the first column
         if (!row || row.length < 5 || !row[0]) continue;
 
         const accountData = {
@@ -363,6 +346,8 @@
       const track = card.querySelector('.carousel-track');
       const prevBtn = card.querySelector('.carousel-btn.prev');
       const nextBtn = card.querySelector('.carousel-btn.next');
+      if(!track || !prevBtn || !nextBtn) return;
+
       const slides = Array.from(track.children);
       const totalSlides = slides.length;
       
@@ -371,7 +356,7 @@
       const updateCarousel = () => {
           track.style.transform = `translateX(-${currentIndex * 100}%)`;
           prevBtn.disabled = currentIndex === 0;
-          nextBtn.disabled = currentIndex === totalSlides - 1;
+          nextBtn.disabled = currentIndex >= totalSlides - 1;
       };
 
       prevBtn.addEventListener('click', (e) => {
@@ -398,6 +383,11 @@
           if (touchEndX < touchStartX - 50) nextBtn.click();
           if (touchEndX > touchStartX + 50) prevBtn.click();
       }, { passive: true });
+      
+      if(totalSlides <= 1) {
+          prevBtn.style.display = 'none';
+          nextBtn.style.display = 'none';
+      }
 
       updateCarousel();
   }
@@ -442,7 +432,7 @@
         setupCarouselForCard(card);
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.action-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-track')) return;
+            if (e.target.closest('.action-btn, .carousel-btn, .carousel-track')) return;
             card.classList.toggle('expanded');
         });
 
@@ -484,11 +474,12 @@
       if (selectedIndex !== "") {
         const cardToScroll = document.getElementById(`account-card-${selectedIndex}`);
         if(cardToScroll) {
-            const topPos = cardToScroll.getBoundingClientRect().top + window.pageYOffset - 80; // 80px offset for sticky header
+            const topPos = cardToScroll.getBoundingClientRect().top + window.pageYOffset - 80;
              window.scrollTo({ top: topPos, behavior: 'smooth' });
         }
       } else {
-         window.scrollTo({ top: accountListContainer.offsetTop - 80, behavior: 'smooth' });
+         const topPos = viewAccounts.querySelector('.head-block').getBoundingClientRect().bottom + window.pageYOffset;
+         window.scrollTo({ top: topPos, behavior: 'smooth' });
       }
     });
     
@@ -548,8 +539,8 @@
     renderMenu(menuPO);
     renderMenu(menuAcc);
     initTheme();
-    // Decide which view to show initially
-    setMode('catalog'); // Set default view to catalog
+    loadCatalog();
+    setMode('katalog'); // DEFAULT VIEW ADALAH KATALOG
     initScrollAnimations();
   }
 
