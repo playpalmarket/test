@@ -73,7 +73,6 @@ body.dark-mode {
 * { box-sizing: border-box; }
 html, body { 
   height: 100%;
-  /* --- TAMBAHAN ANTI-ZOOM & ANTI-GESER --- */
   touch-action: manipulation;
   overflow-x: hidden;
 }
@@ -89,10 +88,9 @@ body {
   transition: background var(--duration-natural) var(--ease-natural), color var(--duration-natural) var(--ease-natural);
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 
-  /* --- TAMBAHAN ANTI-COPY --- */
-  -webkit-user-select: none; /* Safari */
-  -ms-user-select: none; /* IE 10+ */
-  user-select: none; /* Standard syntax */
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 h1 { font-size: var(--font-size-h1); letter-spacing: -.025em; font-weight: 800; }
@@ -177,15 +175,14 @@ body.dark-mode .cat-head.head-block { background: rgba(48, 57, 82, .75); }
 body.dark-mode .icon-sun { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
 body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(90deg) scale(0.5); }
 
-/* Hamburger Menu Premium Presisi */
 .burger span {
-  display: block; width: 21px; /* Fibonacci */
-  height: 3px; /* Presisi 3px */
+  display: block; width: 21px;
+  height: 3px;
   background: var(--text-secondary); border-radius: 2px;
   transition: transform var(--duration-natural) var(--ease-natural), opacity var(--duration-natural);
 }
-.burger span:not(:last-child) { margin-bottom: 5px; /* Presisi 5px */ }
-.burger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); /* 5px gap + 3px height */ }
+.burger span:not(:last-child) { margin-bottom: 5px; }
+.burger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
 .burger.active span:nth-child(2) { transform: scaleX(0); opacity: 0; }
 .burger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
@@ -235,14 +232,13 @@ body.dark-mode .select-native {
 .search-row[data-rail], .status-row[data-rail] { margin-top: var(--sp-fib-4); }
 .search-wrap { position: relative; }
 .search-wrap .icon { position: absolute; left: var(--sp-fib-5); top: 50%; transform: translateY(-50%); color: var(--text-tertiary); pointer-events: none; }
-.search-input { padding: 0 var(--sp-fib-5) 0 55px; } /* Fibonacci padding */
+.search-input { padding: 0 var(--sp-fib-5) 0 55px; }
 .search-input::placeholder { color: var(--text-tertiary); opacity: 1; }
 
 /* ================== KATALOG & PRE-ORDER CARDS ================== */
 #countInfo[data-rail] { color: var(--text-secondary); font-size: 14px; font-weight: 700; margin-top: var(--sp-fib-3); text-align: right; }
 .list-container[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); }
 
-/* This is the new button style for list items */
 .list-item {
   display: flex; justify-content: space-between; align-items: center; padding: var(--sp-fib-5);
   background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-medium);
@@ -303,7 +299,7 @@ body.dark-mode .select-native {
   border: 1px solid var(--separator);
   border-radius: var(--radius-fib-large);
   box-shadow: var(--shadow-sm);
-  overflow: hidden; /* Clips the content to the rounded corners */
+  overflow: hidden;
   cursor: pointer;
   transition: transform var(--duration-fast), box-shadow var(--duration-fast);
 }
@@ -317,7 +313,7 @@ body.dark-mode .select-native {
   width: 100%;
   overflow: hidden;
   border-radius: var(--radius-fib-large) var(--radius-fib-large) 0 0;
-  -webkit-user-select: none; user-select: none; /* Prevent image selection on drag */
+  -webkit-user-select: none; user-select: none;
   cursor: grab;
 }
 .carousel-container:active { cursor: grabbing; }
@@ -335,7 +331,7 @@ body.dark-mode .select-native {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  background-color: var(--surface-secondary); /* Placeholder color */
+  background-color: var(--surface-secondary);
 }
 .carousel-btn {
   position: absolute;
@@ -420,7 +416,7 @@ body.dark-mode .select-native {
 
 .account-description-container p {
   margin: 0;
-  white-space: pre-wrap; /* Preserve newlines from Google Sheet */
+  white-space: pre-wrap;
 }
 
 .account-actions {
@@ -495,12 +491,10 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 .modal-content {
   background: var(--surface-primary);
-  /* MENGURANGI PADDING UTAMA */
   padding: var(--sp-fib-5);
   border-radius: var(--radius-fib-large);
   box-shadow: 0 8px 34px rgba(0,0,0,0.15);
   width: 100%;
-  /* MEMPERKECIL LEBAR MAKSIMUM */
   max-width: 380px;
   transform: scale(0.95);
   transition: transform var(--duration-natural) var(--ease-natural);
@@ -513,12 +507,10 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--separator);
-  /* MENGURANGI JARAK HEADER */
   padding-bottom: var(--sp-fib-4);
   margin-bottom: var(--sp-fib-4);
 }
 .modal-header h2 {
-  /* MEMPERKECIL FONT JUDUL */
   font-size: 18px;
   margin: 0;
 }
@@ -533,7 +525,6 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   padding: 0;
 }
 .item-recap {
-  /* MENGURANGI JARAK & FONT REKAP */
   margin-bottom: var(--sp-fib-4);
   font-size: 14px;
 }
@@ -541,7 +532,6 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 .payment-options {
   display: flex;
   flex-direction: column;
-  /* MENGURANGI JARAK ANTAR OPSI */
   gap: var(--sp-fib-3);
 }
 .payment-option {
@@ -552,7 +542,6 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 .payment-option label {
   display: block;
-  /* MENGURANGI PADDING OPSI */
   padding: var(--sp-fib-4);
   border: 1px solid var(--separator);
   border-radius: var(--radius-fib-small);
@@ -571,7 +560,6 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
   box-shadow: 0 0 0 2px var(--brand-blue);
 }
 .price-details {
-  /* MENGURANGI JARAK & FONT DETAIL HARGA */
   margin-top: var(--sp-fib-4);
   padding-top: var(--sp-fib-4);
   border-top: 1px solid var(--separator);
@@ -596,4 +584,72 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 .wa-button:hover {
   transform: scale(1.02);
+}
+
+/* ================== AKUN GAME - TAMPILAN GALERI ================== */
+.all-accounts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-fib-5);
+  margin-top: var(--sp-fib-5);
+}
+
+.summary-card {
+  background: var(--surface-primary);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-fib-medium);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-natural), box-shadow var(--duration-natural) var(--ease-natural);
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 21px rgba(48, 57, 82, 0.12);
+}
+
+.summary-card.sold {
+  opacity: 0.6;
+}
+
+.summary-card-image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--sp-fib-3);
+  background-color: var(--surface-secondary); /* Warna placeholder */
+}
+
+.summary-card-status {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  padding: var(--sp-fib-2) var(--sp-fib-4);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.summary-card-body {
+  padding: var(--sp-fib-4);
+}
+
+.summary-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 var(--sp-fib-2) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-card-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--brand-blue);
+  margin: 0;
 }
