@@ -296,7 +296,7 @@ body.dark-mode .select-native {
 #viewPreorder .pagination-btn:disabled { opacity: .4; cursor: not-allowed; }
 
 
-/* ================== AKUN GAME VIEW ================== */
+/* ================== AKUN GAME VIEW (UPDATED) ================== */
 .account-display-card {
   margin-top: var(--sp-fib-5);
   background: var(--surface-primary);
@@ -304,7 +304,14 @@ body.dark-mode .select-native {
   border-radius: var(--radius-fib-large);
   box-shadow: var(--shadow-sm);
   overflow: hidden; /* Clips the content to the rounded corners */
+  cursor: pointer;
+  transition: transform var(--duration-fast), box-shadow var(--duration-fast);
 }
+.account-display-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 21px rgba(48, 57, 82, 0.12);
+}
+
 .carousel-container {
   position: relative;
   width: 100%;
@@ -359,15 +366,15 @@ body.dark-mode .select-native {
 .account-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; /* Changed to center for better alignment */
   gap: var(--sp-fib-4);
-  margin-bottom: var(--sp-fib-3);
 }
-.account-header h2 {
+.account-price {
   font-size: var(--font-size-h2);
   margin: 0;
   font-weight: 800;
   letter-spacing: -.02em;
+  color: var(--brand-blue);
 }
 .account-status-badge {
   flex-shrink: 0;
@@ -390,8 +397,24 @@ body.dark-mode .select-native {
   background-color: var(--surface-secondary);
   border-color: var(--separator);
 }
-.account-details p {
+.account-description-container {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height var(--duration-natural) var(--ease-natural), opacity var(--duration-fast), margin-top var(--duration-natural), padding-top var(--duration-natural);
+  margin-top: 0;
+}
+.account-display-card.expanded .account-description-container {
+  max-height: 1000px; /* Large value */
+  opacity: 1;
+  margin-top: var(--sp-fib-5);
+  padding-top: var(--sp-fib-5);
+  border-top: 1px solid var(--separator);
+}
+
+.account-description-container p {
   margin: 0;
+  white-space: pre-wrap; /* Preserve newlines from Google Sheet */
 }
 
 /* ================== UTILITY & STATES ================== */
