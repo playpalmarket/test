@@ -3,7 +3,7 @@
    ========================================================================== */
 
 :root {
-  /* философия: Google (clean, functional) × Apple (premium, elegant) */
+  /* filosofia: Google (clean, functional) × Apple (premium, elegant) */
   /* prinsip: Semua elemen mengikuti deret Fibonacci / Golden Ratio (1:1.618) */
 
   /* 1. PALET WARNA & IDENTITAS */
@@ -71,7 +71,12 @@ body.dark-mode {
 
 /* ================== GLOBAL RESET & BASE STYLES ================== */
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { 
+  height: 100%;
+  /* --- TAMBAHAN ANTI-ZOOM & ANTI-GESER --- */
+  overflow: hidden;
+  touch-action: manipulation;
+}
 body {
   margin: 0;
   background: var(--bg-primary);
@@ -83,6 +88,11 @@ body {
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   transition: background var(--duration-natural) var(--ease-natural), color var(--duration-natural) var(--ease-natural);
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+
+  /* --- TAMBAHAN ANTI-COPY --- */
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none; /* Standard syntax */
 }
 
 h1 { font-size: var(--font-size-h1); letter-spacing: -.025em; font-weight: 800; }
