@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf--8" />
+  <meta charset="utf-8" />
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>PlayPal.ID</title>
+  <title>PlayPal.ID - Dashboard</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
 
@@ -32,11 +32,11 @@
         <h1>PlayPal.ID</h1>
       </div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" onclick="setMode('katalog'); return false;">
+        <a href="#" class="nav-item active" data-mode="katalog">
           <i data-lucide="layout-grid"></i>
           <span>Katalog</span>
         </a>
-        <a href="#" class="nav-item" onclick="setMode('preorder'); return false;">
+        <a href="#" class="nav-item" data-mode="preorder">
           <i data-lucide="send"></i>
           <span>Lacak Pre-Order</span>
         </a>
@@ -53,8 +53,7 @@
     <main class="main-content">
 
       <section id="viewCatalog" class="view-section active" aria-label="Katalog">
-        <div class="head-block cat-head" data-rail>
-          <div class="topbar" data-rail>
+        <div class="head-block">
             <div class="topbar-grid">
               <div class="search-wrap">
                 <i data-lucide="search" class="icon"></i>
@@ -68,17 +67,15 @@
                 <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
               </div>
             </div>
-          </div>
         </div>
-        <div id="countInfo" data-rail></div>
-        <section id="list-container" class="list-container" aria-live="polite" data-rail></section>
-        <section id="error" class="err" style="display:none" data-rail></section>
+        <div id="countInfo"></div>
+        <section id="list-container" class="list-container" aria-live="polite"></section>
+        <section id="error" class="err" style="display:none"></section>
       </section>
 
       <section id="viewPreorder" class="view-section" aria-label="Pre-Order">
-        <div class="head-block po-head" data-rail>
-          <div class="topbar" data-rail>
-            <div class="topbar-grid">
+        <div class="head-block">
+            <div class="topbar-grid po-grid">
               <div class="search-wrap">
                 <i data-lucide="search" class="icon"></i>
                 <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server..." />
@@ -95,22 +92,19 @@
                 <option value="failed">Gagal</option>
               </select>
             </div>
-          </div>
-          <div class="meta" id="poTotal" data-rail></div>
+          <div class="meta" id="poTotal"></div>
         </div>
-        <div class="container">
-          <main class="card-grid" id="poList" aria-live="polite" data-rail></main>
-          <nav class="pagination" aria-label="Pagination" data-rail>
-            <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
-            <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
-          </nav>
-        </div>
+        <main class="card-grid" id="poList" aria-live="polite"></main>
+        <nav class="pagination" aria-label="Pagination">
+          <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
+          <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
+        </nav>
       </section>
     </main>
 
   </div>
 
-  <template id="itemTmpl"><a class="list-item"><span class="title"></span><span class="price"></span></a></template>
+  <template id="itemTmpl"><button type="button" class="list-item"><span class="title"></span><span class="price"></span></button></template>
   <template id="skeletonItemTmpl"><div class="list-item skeleton"><span class="skeleton-text" style="width: 60%;"></span><span class="skeleton-text" style="width: 25%;"></span></div></template>
   <template id="skeletonCardTmpl"><div class="card skeleton"><div class="card-header"><div><div class="skeleton-text" style="width: 50%; height: 18px; margin-bottom: 8px;"></div><div class="skeleton-text" style="width: 75%; height: 14px;"></div></div><div class="skeleton-badge"></div></div><div class="skeleton-text" style="width: 65%; height: 12px; margin-top: 10px;"></div></div></template>
   
@@ -125,8 +119,7 @@
           <p><strong>Item:</strong> <span id="modalItemName"></span></p>
           <p><strong>Harga:</strong> <span id="modalItemPrice"></span></p>
         </div>
-        <div id="paymentOptions" class="payment-options">
-          </div>
+        <div id="paymentOptions" class="payment-options"></div>
         <div class="price-details">
           <p>Fee: <span id="modalFee"></span></p>
           <p><strong>Total: <span id="modalTotal"></span></strong></p>
