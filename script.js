@@ -51,18 +51,11 @@
   const continueToWaBtn = document.getElementById('continueToWaBtn');
 
   // Akun Game Elements
-  const accountSelect=document.getElementById('accountSelect');
-  const accountDisplay=document.getElementById('accountDisplay');
-  const accountEmpty=document.getElementById('accountEmpty');
-  const accountError=document.getElementById('accountError');
-  const carouselTrack=document.getElementById('carouselTrack');
-  const carouselPrev=document.getElementById('carouselPrev');
-  const carouselNext=document.getElementById('carouselNext');
-  const accountPrice=document.getElementById('accountPrice');
-  const accountStatus=document.getElementById('accountStatus');
-  const accountDescription=document.getElementById('accountDescription');
-  const buyAccountBtn = document.getElementById('buyAccountBtn');
-  const offerAccountBtn = document.getElementById('offerAccountBtn');
+  const accountSelect = document.getElementById('accountSelect');
+  const accountListContainer = document.getElementById('accountListContainer');
+  const accountEmpty = document.getElementById('accountEmpty');
+  const accountError = document.getElementById('accountError');
+  const accountCardTmpl = document.getElementById('accountCardTmpl');
 
 
   // ========= MENU ITEMS =========
@@ -157,8 +150,8 @@
 
     if (currentActive === nextView) { closeAllMenus(); return; }
     
-    currentActive.classList.remove('active');
-    nextView.classList.add('active');
+    if(currentActive) currentActive.classList.remove('active');
+    if(nextView) nextView.classList.add('active');
 
     closeAllMenus();
     if (nextMode === 'preorder' && !poState.initialized) poInit();
@@ -286,18 +279,10 @@
   const poSearch=document.getElementById('poSearch');const poStatus=document.getElementById('poStatus');const poSheet=document.getElementById('poSheet');const poList=document.getElementById('poList');const poPrev=document.getElementById('poPrev');const poNext=document.getElementById('poNext');const poTotal=document.getElementById('poTotal');const poState={initialized:false,allData:[],currentPage:1,perPage:15,displayMode:'detailed'};const normalizeStatus=(raw)=>{const s=String(raw||'').trim().toLowerCase();if(['success','selesai','berhasil','done'].includes(s))return'success';if(['progress','proses','diproses','processing'].includes(s))return'progress';if(['failed','gagal','dibatalkan','cancel','error'].includes(s))return'failed';return'pending';};const poFilterData=()=>{const q=poSearch.value.trim().toLowerCase();const statusFilter=poStatus.value;return poState.allData.filter(item=>{if(poState.displayMode==='detailed'){const product=(item[3]||'').toLowerCase();const nickname=(item[5]||'').toLowerCase();const idGift=(item[7]||'').toLowerCase();const match=product.includes(q)||nickname.includes(q)||idGift.includes(q);const status=normalizeStatus(item[6]);return match&&(statusFilter==='all'||status===statusFilter);}else{const orderNum=(item[0]||'').toLowerCase();const product=(item[1]||'').toLowerCase();const match=orderNum.includes(q)||product.includes(q);const status=normalizeStatus(item[2]);return match&&(statusFilter==='all'||status===statusFilter);}});};const poUpdatePagination=(cur,total)=>{poPrev.disabled=cur<=1;poNext.disabled=cur>=total;};const poRender=()=>{const filtered=poFilterData();const totalItems=poState.allData.length;poTotal.textContent=`${totalItems} total pesanan${filtered.length!==totalItems?`, ${filtered.length} ditemukan`:''}`;const totalPages=Math.max(1,Math.ceil(filtered.length/poState.perPage));poState.currentPage=Math.min(Math.max(1,poState.currentPage),totalPages);const start=(poState.currentPage-1)*poState.perPage;const pageData=filtered.slice(start,start+poState.perPage);poList.innerHTML='';if(pageData.length===0){poList.innerHTML=`<div class="empty">Tidak Ada Hasil Ditemukan</div>`;poUpdatePagination(0,0);return;}const frag=document.createDocumentFragment();pageData.forEach(item=>{const card=document.createElement('article');if(poState.displayMode==='detailed'){const tglOrder=item[0];const estPengiriman=item[1];const product=item[3];const bulan=item[4];const name=item[5];const status=item[6];const statusClass=normalizeStatus(status);const estDeliveryText=estPengiriman?`Estimasi Pengiriman: ${estPengiriman} 20:00 WIB`:'';const details=[{label:'TGL ORDER',value:tglOrder},{label:'BULAN',value:bulan}];const detailsHtml=details.filter(d=>d.value&&String(d.value).trim()!=='').map(d=>`<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');card.className=`card ${detailsHtml?'clickable':''}`;card.innerHTML=`<div class="card-header"><div><div class="card-name">${name||'Tanpa Nama'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>${estDeliveryText?`<div class="card-date">${estDeliveryText}</div>`:''}${detailsHtml?`<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>`:''}`;if(detailsHtml)card.addEventListener('click',()=>card.classList.toggle('expanded'));}else{const orderNum=item[0];const product=item[1];const status=item[2];const statusClass=normalizeStatus(status);card.className='card';card.innerHTML=`<div class="card-header"><div><div class="card-name">${orderNum||'Tanpa Nomor'}</div><div class="card-product">${product||'N/A'}</div></div><div class="status-badge ${statusClass}">${(status||'Pending').toUpperCase()}</div></div>`;}frag.appendChild(card);});poList.appendChild(frag);poUpdatePagination(poState.currentPage,totalPages);};const poSortByStatus=(data,mode)=>{const order={'progress':1,'pending':2,'success':3,'failed':4};const statusIndex=(mode==='detailed')?6:2;return data.sort((a,b)=>order[normalizeStatus(a[statusIndex])]-order[normalizeStatus(b[statusIndex])]);};async function poFetch(sheetName){poTotal.textContent='Memuat data...';showSkeleton(poList,skeletonCardTmpl,5);poState.displayMode=(sheetName===SHEETS.preorder.name1)?'detailed':'simple';try{const res=await fetch(sheetUrlCSV(sheetName),{cache:'no-store'});if(!res.ok)throw new Error(`Network response was not ok: ${res.statusText}`);const text=await res.text();let rows=text.trim().split('\n').map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()));if(rows.length<2){poState.allData=[];return;}rows.shift();const dataRows=rows.filter(row=>row&&(row[0]||'').trim()!=='');poState.allData=poSortByStatus(dataRows,poState.displayMode);}catch(e){poState.allData=[];poTotal.textContent='Gagal memuat data.';console.error('Fetch Pre-Order failed:',e);}finally{poState.currentPage=1;poRender();}}
   function poInit(){const rebound=()=>{poState.currentPage=1;poRender();};poSearch.addEventListener('input',rebound);poStatus.addEventListener('change',rebound);poSheet.addEventListener('change',e=>{const selectedValue=e.target.value;const sheetToFetch=selectedValue==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(sheetToFetch);});document.getElementById('poPrev').addEventListener('click',()=>{if(poState.currentPage>1){poState.currentPage--;poRender();window.scrollTo({top:0,behavior:'smooth'});}});document.getElementById('poNext').addEventListener('click',()=>{poState.currentPage++;poRender();window.scrollTo({top:0,behavior:'smooth'});});const initialSheet=poSheet.value==='0'?SHEETS.preorder.name1:SHEETS.preorder.name2;poFetch(initialSheet);poState.initialized=true;}
 
-  // ========= AKUN GAME LOGIC (FINAL & DEFINITIVE) =========
-  const accState = { initialized: false, data: [], currentIndex: 0, currentAccount: null };
-  
-  /**
-   * A robust CSV parser that handles multiline fields.
-   * This function correctly splits the CSV text into rows,
-   * even when a cell (like the description) contains newline characters.
-   * @param {string} text The raw CSV text from the fetch response.
-   * @returns {string[][]} An array of arrays representing the rows and columns.
-   */
+  // ========= AKUN GAME LOGIC (FINAL REVISION) =========
+  const accState = { initialized: false, data: [] };
+
   function robustCsvParser(text) {
-    // Normalize line endings
     const normalizedText = text.trim().replace(/\r\n/g, '\n');
     const rows = [];
     let currentRow = [];
@@ -309,10 +294,9 @@
         
         if (inQuotedField) {
             if (char === '"') {
-                // Check for escaped quote ("")
                 if (i + 1 < normalizedText.length && normalizedText[i + 1] === '"') {
                     currentField += '"';
-                    i++; // Skip next quote
+                    i++;
                 } else {
                     inQuotedField = false;
                 }
@@ -335,7 +319,6 @@
             }
         }
     }
-    // Add the last field and row
     currentRow.push(currentField);
     rows.push(currentRow);
 
@@ -348,7 +331,6 @@
     const accounts = [];
     
     for (const row of rows) {
-        // Skip if the row is empty or doesn't have a title in the first column
         if (!row || row.length < 5 || !row[0]) continue;
 
         const accountData = {
@@ -364,10 +346,8 @@
   }
   
   function populateAccountSelect() {
-    accountSelect.innerHTML = '<option value="">Pilih Akun</option>';
+    accountSelect.innerHTML = '<option value="">Tampilkan Semua Akun</option>';
     if (accState.data.length === 0) {
-      accountSelect.innerHTML = '<option value="">Tidak ada akun</option>';
-      accountEmpty.textContent = 'Tidak ada akun yang tersedia saat ini.';
       accountEmpty.style.display = 'block';
       return;
     }
@@ -379,151 +359,139 @@
     });
   }
 
-  function renderAccount(index) {
-    const account = accState.data[index];
-    accState.currentAccount = account; 
+  function setupCarouselForCard(card) {
+      const track = card.querySelector('.carousel-track');
+      const prevBtn = card.querySelector('.carousel-btn.prev');
+      const nextBtn = card.querySelector('.carousel-btn.next');
+      const slides = Array.from(track.children);
+      const totalSlides = slides.length;
+      
+      let currentIndex = 0;
 
-    if (!account) {
-      accountDisplay.style.display = 'none';
-      accountEmpty.style.display = 'block';
-      return;
-    }
-    
-    accountDisplay.classList.remove('expanded');
+      const updateCarousel = () => {
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+          prevBtn.disabled = currentIndex === 0;
+          nextBtn.disabled = currentIndex === totalSlides - 1;
+      };
 
-    accountPrice.textContent = toIDR(account.price);
-    accountDescription.textContent = account.description;
-    accountStatus.textContent = account.status;
-    accountStatus.className = 'account-status-badge';
-    accountStatus.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
-    
-    carouselTrack.innerHTML = '';
-    if (account.images && account.images.length > 0) {
-        account.images.forEach(src => {
-            const slide = document.createElement('div');
-            slide.className = 'carousel-slide';
-            const img = document.createElement('img');
-            img.src = src;
-            img.alt = `Gambar untuk ${account.title}`;
-            img.loading = 'lazy';
-            slide.appendChild(img);
-            carouselTrack.appendChild(slide);
+      prevBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentIndex > 0) {
+              currentIndex--;
+              updateCarousel();
+          }
+      });
+
+      nextBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentIndex < totalSlides - 1) {
+              currentIndex++;
+              updateCarousel();
+          }
+      });
+
+      let touchStartX = 0;
+      track.addEventListener('touchstart', e => { e.stopPropagation(); touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      track.addEventListener('touchend', e => {
+          e.stopPropagation();
+          const touchEndX = e.changedTouches[0].screenX;
+          if (touchEndX < touchStartX - 50) nextBtn.click();
+          if (touchEndX > touchStartX + 50) prevBtn.click();
+      }, { passive: true });
+
+      updateCarousel();
+  }
+
+  function renderAllAccounts() {
+      accountListContainer.innerHTML = '';
+      if (accState.data.length === 0) {
+          accountEmpty.style.display = 'block';
+          return;
+      }
+      accountEmpty.style.display = 'none';
+      
+      accState.data.forEach((account, index) => {
+          const card = accountCardTmpl.content.cloneNode(true).firstElementChild;
+          card.id = `account-card-${index}`;
+
+          card.querySelector('.account-price').textContent = toIDR(account.price);
+          card.querySelector('.account-description').textContent = account.description;
+          const statusBadge = card.querySelector('.account-status-badge');
+          statusBadge.textContent = account.status;
+          statusBadge.className = 'account-status-badge';
+          statusBadge.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
+          
+          const track = card.querySelector('.carousel-track');
+          if (account.images && account.images.length > 0) {
+              account.images.forEach(src => {
+                  const slide = document.createElement('div');
+                  slide.className = 'carousel-slide';
+                  const img = document.createElement('img');
+                  img.src = src;
+                  img.alt = `Gambar untuk ${account.title}`;
+                  img.loading = 'lazy';
+                  slide.appendChild(img);
+                  track.appendChild(slide);
+              });
+          } else {
+              const slide = document.createElement('div');
+              slide.className = 'carousel-slide';
+              slide.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%; aspect-ratio:16/9; background-color: var(--surface-secondary); color: var(--text-tertiary);">Gambar tidak tersedia</div>`;
+              track.appendChild(slide);
+        }
+        setupCarouselForCard(card);
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.action-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-track')) return;
+            card.classList.toggle('expanded');
         });
-    } else {
-        // Placeholder if no images
-        const slide = document.createElement('div');
-        slide.className = 'carousel-slide';
-        const placeholder = document.createElement('div');
-        placeholder.className = 'no-image-placeholder';
-        placeholder.style.cssText = "display:flex; align-items:center; justify-content:center; height:100%; aspect-ratio:16/9; background-color: var(--surface-secondary); color: var(--text-tertiary);";
-        placeholder.textContent = 'Gambar tidak tersedia';
-        slide.appendChild(placeholder);
-        carouselTrack.appendChild(slide);
-    }
 
+        card.querySelector('.action-btn.buy').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPaymentModal({ title: account.title, price: account.price, catLabel: 'Akun Game' });
+        });
 
-    accState.currentIndex = 0;
-    updateCarousel();
+        card.querySelector('.action-btn.offer').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const text = `Halo, saya tertarik untuk menawar Akun Game: ${account.title}`;
+            window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+        });
 
-    accountEmpty.style.display = 'none';
-    accountDisplay.style.display = 'block';
-  }
-
-  function updateCarousel() {
-    if (accountSelect.value === "") return;
-    const account = accState.data[accountSelect.value];
-    if (!account) return;
-    const totalSlides = account.images.length || 0;
-    carouselTrack.style.transform = `translateX(-${accState.currentIndex * 100}%)`;
-    carouselPrev.disabled = totalSlides <= 1;
-    carouselNext.disabled = totalSlides <= 1 || accState.currentIndex >= totalSlides - 1;
-  }
-  
-  function initCarousel() {
-    carouselPrev.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (accState.currentIndex > 0) {
-        accState.currentIndex--;
-        updateCarousel();
-      }
-    });
-
-    carouselNext.addEventListener('click', (e) => {
-      e.stopPropagation(); 
-      if (accountSelect.value === "") return;
-      const totalSlides = accState.data[accountSelect.value].images.length;
-      if (accState.currentIndex < totalSlides - 1) {
-        accState.currentIndex++;
-        updateCarousel();
-      }
-    });
-
-    let touchStartX = 0; let touchEndX = 0;
-    carouselTrack.addEventListener('touchstart', e => {
-      e.stopPropagation();
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-    
-    carouselTrack.addEventListener('touchend', e => {
-        e.stopPropagation();
-        touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX < touchStartX - 50) carouselNext.click();
-        if (touchEndX > touchStartX + 50) carouselPrev.click();
-    }, { passive: true });
+        accountListContainer.appendChild(card);
+      });
   }
 
   async function accountsInit() {
     if(accState.initialized) return;
     accountError.style.display = 'none';
+    showSkeleton(accountListContainer, skeletonCardTmpl, 3);
     try {
       const res = await fetch(sheetUrlCSV(SHEETS.accounts.name), { cache: 'no-store' });
       if (!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`);
       const text = await res.text();
       accState.data = await parseAccountsSheet(text);
       populateAccountSelect();
+      renderAllAccounts();
     } catch (err) {
       console.error("Fetch Akun Game failed:", err);
       accountError.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
       accountError.style.display = 'block';
-      accountEmpty.style.display = 'none';
-      accountSelect.innerHTML = '<option value="">Gagal memuat</option>';
+      accountListContainer.innerHTML = '';
     }
     
     accountSelect.addEventListener('change', e => {
-      if (e.target.value !== "") {
-        renderAccount(parseInt(e.target.value, 10));
+      const selectedIndex = e.target.value;
+      if (selectedIndex !== "") {
+        const cardToScroll = document.getElementById(`account-card-${selectedIndex}`);
+        if(cardToScroll) {
+            const topPos = cardToScroll.getBoundingClientRect().top + window.pageYOffset - 80; // 80px offset for sticky header
+             window.scrollTo({ top: topPos, behavior: 'smooth' });
+        }
       } else {
-        accountDisplay.style.display = 'none';
-        accountEmpty.style.display = 'block';
-        accState.currentAccount = null;
+         window.scrollTo({ top: accountListContainer.offsetTop - 80, behavior: 'smooth' });
       }
     });
     
-    accountDisplay.addEventListener('click', (e) => {
-        if(e.target.classList.contains('action-btn') || e.target.closest('.action-btn')) return;
-        accountDisplay.classList.toggle('expanded');
-    });
-
-    buyAccountBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (accState.currentAccount) {
-            openPaymentModal({
-                title: accState.currentAccount.title,
-                price: accState.currentAccount.price,
-                catLabel: 'Akun Game' 
-            });
-        }
-    });
-
-    offerAccountBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (accState.currentAccount) {
-            const text = `Halo, saya tertarik untuk menawar Akun Game: ${accState.currentAccount.title}`;
-            window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-        }
-    });
-
-    initCarousel();
     accState.initialized = true;
   }
 
@@ -580,7 +548,8 @@
     renderMenu(menuPO);
     renderMenu(menuAcc);
     initTheme();
-    loadCatalog();
+    // Decide which view to show initially
+    setMode('catalog'); // Set default view to catalog
     initScrollAnimations();
   }
 
