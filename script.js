@@ -481,6 +481,13 @@
       const text = await res.text();
       accState.data = await parseAccountsSheet(text);
       populateAccountSelect();
+
+      // Perbaikan: Otomatis tampilkan akun pertama jika ada
+      if (accState.data.length > 0) {
+        accountSelect.value = '0'; // Secara otomatis pilih item pertama di dropdown
+        renderAccount(0);         // Panggil fungsi untuk menampilkannya
+      }
+
     } catch (err) {
       console.error("Fetch Akun Game failed:", err);
       accountError.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
