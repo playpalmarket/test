@@ -1,37 +1,82 @@
-// Simple mobile menu controller (independen dari framework)
-(() => {
-  const burger = document.getElementById('burger');
-  const sheet  = document.getElementById('mobileNav');
+// menu.js
+(function (global) {
+  // Menu: Film gratis + Donasi (Saweria)
+  const MENU_ITEMS = [
+    { id:'toKatalog',  label:'Katalog',         type:'route', value:'katalog' },
+    { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
+    { id:'toAccounts', label:'Akun Game',       type:'route', value:'accounts' },
+    { divider:true },
+    { id:'film',    label:'Tonton Film (Gratis)',  type:'route', value:'film' },
+    { id:'donasi',  label:'Donasi (Saweria)',      type:'link',  href:'https://saweria.co/playpal' },
+    { id:'ebook',   label:'E‑book',        type:'link', href:'#' },
+    { id:'assets',  label:'Asset Editing', type:'link', href:'#' }
+  ];
 
-  if (!burger || !sheet) return;
+  function renderMenu(container, items, onRoute, closeAll) {
+    if (!container) return;
+    container.innerHTML = '';
+    items.forEach(item => {
+      if (item.divider) {
+        const d = document.createElement('div');
+        d.className = 'menu-divider';
+        container.appendChild(d);
+        return;
+      }
+      const btn = document.createElement('button');
+      btn.className = 'menu-btn';
+      btn.type = 'button';
+      btn.textContent = item.label;
+      if (item.type === 'route') {
+        btn.addEventListener('click', () => { onRoute?.(item.value); closeAll(); });
+      } else {
+        btn.addEventListener('click', () => { window.open(item.href, '_blank', 'noopener'); closeAll(); });
+      }
+      container.appendChild(btn);
+    });
+  }
 
-  const open = () => {
-    sheet.hidden = false;
-    burger.classList.add('active');
-    burger.setAttribute('aria-expanded', 'true');
-    // trap basic focus
-    const first = sheet.querySelector('a,button');
-    first && first.focus();
-  };
-  const close = () => {
-    sheet.hidden = true;
-    burger.classList.remove('active');
-    burger.setAttribute('aria-expanded', 'false');
-    burger.focus();
-  };
+  function init({ burgerCat, burgerPO, burgerAcc, menuCat, menuPO, menuAcc, onRoute }) {
+    const closeAll = () => {
+      [burgerCat, burgerPO, burgerAcc].forEach(b => b && b.classList.remove('active'));
+      [menuCat, menuPO, menuAcc].forEach(m => m && m.classList.remove('open'));
+    };
+    const toggle = (btn, menu) => {
+      const open = menu?.classList.contains('open');
+      closeAll();
+      if (!open) { btn?.classList.add('active'); menu?.classList.add('open'); }
+    };
 
-  burger.addEventListener('click', () => {
-    if (sheet.hidden) open(); else close();
-  });
+    [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+    burgerCat ?.addEventListener('click', () => toggle(burgerCat, menuCat),  { passive:true });
+    burgerPO  ?.addEventListener('click', () => toggle(burgerPO , menuPO ),  { passive:true });
+    burgerAcc ?.addEventListener('click', () => toggle(burgerAcc, menuAcc),  { passive:true });
 
-  sheet.addEventListener('click', (e) => {
-    if (e.target === sheet) close(); // klik backdrop
-  });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !sheet.hidden) close();
-  });
+    document.addEventListener('click', (e) => {
+      const inside =
+        menuCat?.contains(e.target)  || burgerCat?.contains(e.target) ||
+        menuPO ?.contains(e.target)  || burgerPO ?.contains(e.target) ||
+        menuAcc?.contains(e.target) || burgerAcc?.contains(e.target);
+      if (!inside) closeAll();
+    }, { passive:true });
 
-  // Tutup saat navigasi link ditekan
-  sheet.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
-})();
+    return {
+      closeAll,
+      get items(){ return [...MENU_ITEMS]; },
+      set(items){
+        MENU_ITEMS.splice(0, MENU_ITEMS.length, ...items);
+        [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+      },
+      add(item){
+        MENU_ITEMS.push(item);
+        [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+      },
+      insertAt(i,item){
+        MENU_ITEMS.splice(i,0,item);
+        [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
+      }
+    };
+  }
+
+  global.MenuModule = { init };
+})(window);
