@@ -257,7 +257,19 @@
 
   // ========= INITIALIZATION =========
   function init() {
-    // Anti-Zoom for native app feel
+    /* --- TAMBAHAN ANTI-COPY --- */
+    // Mencegah klik kanan
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    // Mencegah aksi copy (Ctrl+C, dll)
+    document.addEventListener('copy', event => event.preventDefault());
+
+
+    /* --- TAMBAHAN ANTI-ZOOM --- */
+    // Mencegah gestur zoom di iOS/Safari
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault();
+    });
+    // Anti-Zoom untuk double-tap & multi-touch
     document.addEventListener('touchstart', (event) => {
       if (event.touches.length > 1) { event.preventDefault(); }
     }, { passive: false });
@@ -268,7 +280,8 @@
       lastTouchEnd = now;
     }, false);
 
-    // Event Listeners
+
+    // Event Listeners (kode asli)
     burgerCat?.addEventListener('click',()=>toggleMenu('cat'));
     burgerPO?.addEventListener('click',()=>toggleMenu('po'));
     themeToggleBtn?.addEventListener('click', toggleTheme);
