@@ -45,7 +45,7 @@
     const viewCatalog = document.getElementById('viewCatalog');
     const viewPreorder = document.getElementById('viewPreorder');
     const viewAccounts = document.getElementById('viewAccounts');
-    const viewFilm = document.getElementById('viewFilm'); // Tambahkan jika belum ada
+    const viewFilm = document.getElementById('viewFilm');
     const listEl = document.getElementById('list-container');
     const searchEl = document.getElementById('search');
     const countInfoEl = document.getElementById('countInfo');
@@ -82,7 +82,9 @@
     const offerAccountBtn = document.getElementById('offerAccountBtn');
 
 
-    // ========= LOGIKA BARU: SIDEBAR MENU & MODE SWITCHER =========
+    // ======================================================================
+    // ========= BAGIAN YANG HILANG: LOGIKA INTI NAVIGASI BARU =========
+    // ======================================================================
     const closeMenu = () => {
       body.classList.remove('sidebar-open');
       hamburgerBtn.setAttribute('aria-expanded', 'false');
@@ -111,13 +113,13 @@
       }
       
       allViews.forEach(view => view.classList.remove('active'));
-      nextView.classList.add('active');
+      if (nextView) {
+        nextView.classList.add('active');
+      }
       
-      // Jalankan fungsi inisialisasi jika view pertama kali dibuka
       if (nextMode === 'preorder' && !poState.initialized) poInit();
       if (nextMode === 'accounts' && !accState.initialized) accountsInit();
 
-      // Update tombol aktif di menu
       document.querySelectorAll('.sidebar-nav .menu-btn').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.mode === nextMode);
       });
@@ -142,7 +144,7 @@
             
             if (item.type === 'route') {
                 btn.dataset.mode = item.value;
-                if (item.value === 'katalog') btn.classList.add('active'); // Set default active
+                if (item.value === 'katalog') btn.classList.add('active');
                 btn.addEventListener('click', () => setMode(item.value));
             } else if (item.type === 'link') {
                 btn.addEventListener('click', () => {
@@ -153,7 +155,6 @@
             sidebarNav.appendChild(btn);
         });
     }
-
 
     // ========= THEME MANAGER (dari kode asli) =========
     function applyTheme(theme) {
@@ -172,9 +173,6 @@
         localStorage.setItem('theme', newTheme);
         applyTheme(newTheme);
     }
-    
-    // ... Salin SEMUA sisa fungsi dari script.js lama Anda ke sini ...
-    // Mulai dari 'UTILS' sampai akhir. Kode tersebut tidak perlu diubah.
     
     // ========= UTILS =========
     const prettyLabel=(raw)=>String(raw||'').trim().replace(/\s+/g,' ');
@@ -305,7 +303,6 @@
     function initCarousel() { carouselPrev.addEventListener('click', (e) => { e.stopPropagation(); if (accState.currentIndex > 0) { accState.currentIndex--; updateCarousel(); } }); carouselNext.addEventListener('click', (e) => { e.stopPropagation(); if (accountSelect.value === "") return; const totalSlides = accState.data[accountSelect.value].images.length; if (accState.currentIndex < totalSlides - 1) { accState.currentIndex++; updateCarousel(); } }); let touchStartX = 0; let touchEndX = 0; carouselTrack.addEventListener('touchstart', e => { e.stopPropagation(); touchStartX = e.changedTouches[0].screenX; }, { passive: true }); carouselTrack.addEventListener('touchend', e => { e.stopPropagation(); touchEndX = e.changedTouches[0].screenX; if (touchEndX < touchStartX - 50) carouselNext.click(); if (touchEndX > touchStartX + 50) carouselPrev.click(); }, { passive: true }); }
     async function accountsInit() { if(accState.initialized) return; accountError.style.display = 'none'; try { const res = await fetch(sheetUrlCSV(SHEETS.accounts.name), { cache: 'no-store' }); if (!res.ok) throw new Error(`Network response was not ok: ${res.statusText}`); const text = await res.text(); accState.data = await parseAccountsSheet(text); populateAccountSelect(); } catch (err) { console.error("Fetch Akun Game failed:", err); accountError.textContent = 'Gagal memuat data akun. Coba lagi nanti.'; accountError.style.display = 'block'; accountEmpty.style.display = 'none'; accountSelect.innerHTML = '<option value="">Gagal memuat</option>'; } accountSelect.addEventListener('change', e => { if (e.target.value !== "") { renderAccount(parseInt(e.target.value, 10)); } else { accountDisplay.style.display = 'none'; accountEmpty.style.display = 'block'; accState.currentAccount = null; } }); accountDisplay.addEventListener('click', (e) => { if(e.target.classList.contains('action-btn') || e.target.closest('.action-btn')) return; accountDisplay.classList.toggle('expanded'); }); buyAccountBtn.addEventListener('click', (e) => { e.stopPropagation(); if (accState.currentAccount) { openPaymentModal({ title: accState.currentAccount.title, price: accState.currentAccount.price, catLabel: 'Akun Game' }); } }); offerAccountBtn.addEventListener('click', (e) => { e.stopPropagation(); if (accState.currentAccount) { const text = `Halo, saya tertarik untuk menawar Akun Game: ${accState.currentAccount.title}`; window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, '_blank', 'noopener'); } }); initCarousel(); accState.initialized = true; }
 
-
     // ========= INITIALIZATION =========
     function init() {
         // Event Listeners Baru
@@ -313,9 +310,9 @@
         appOverlay.addEventListener('click', closeMenu);
 
         // Event Listeners Lama yang relevan
-        themeToggleBtn?.addEventListener('click', toggleTheme);
-        themeToggleBtnPO?.addEventListener('click', toggleTheme);
-        themeToggleBtnAcc?.addEventListener('click', toggleTheme);
+        [themeToggleBtn, themeToggleBtnPO, themeToggleBtnAcc].forEach(btn => {
+            if(btn) btn.addEventListener('click', toggleTheme);
+        });
         
         customSelectBtn.addEventListener('click', () => toggleCustomSelect());
         document.addEventListener('click', (e) => {
@@ -337,7 +334,7 @@
         });
 
         // Initial calls
-        renderNewMenu(); // Panggil fungsi menu baru
+        renderNewMenu();
         initTheme();
         loadCatalog();
     }
