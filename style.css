@@ -179,6 +179,7 @@ body.sidebar-open .hamburger-btn span:nth-child(3) { transform: translateY(-8px)
 /* KONTROL DI DALAM VIEW (Dropdown, Search, etc) */
 .view-controls {
   display: flex;
+  flex-wrap: wrap; /* Agar responsif di layar kecil */
   gap: var(--sp-fib-4);
   margin-bottom: var(--sp-fib-5);
 }
@@ -256,9 +257,6 @@ body.dark-mode .select-native {
 .list-item .price { font-size: 15px; font-weight: 800; color: var(--brand-blue); }
 #poTotal { font-size: 13px; color: var(--text-secondary); font-weight: 700; margin-bottom: var(--sp-fib-4); }
 .card-grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-5); }
-/* Sisa CSS dari kode lama Anda bisa ditempel di sini jika ada yang kurang, tapi ini sudah mencakup hampir semua. */
-
-/* Sisa gaya Anda dari Pre-Order, Akun Game, Modal, dll. */
 .card { background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-5); transition: all var(--duration-natural); }
 .card.clickable:hover { transform: translateY(-5px); box-shadow: var(--shadow-sm); }
 .card-header { display: grid; grid-template-columns: 1fr auto; gap: var(--sp-fib-4); align-items: start; }
@@ -294,7 +292,7 @@ body.dark-mode .select-native {
 .account-details { padding: var(--sp-fib-5); }
 .account-header { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-fib-4); }
 .account-price { font-size: var(--font-size-h2); margin: 0; font-weight: 800; color: var(--brand-blue); }
-.account-status-badge { flex-shrink: 0; display: inline-block; padding: 5px var(--sp-fib-4); border-radius: 999px; font-size: var(--font-size-caption); font-weight: 900; text-transform: uppercase; border: 1px solid transparent; }
+.account-status-badge { flex-shrink: 0; display: inline-block; padding: 5px var(--sp-fib-4); border-radius: 9999px; font-size: var(--font-size-caption); font-weight: 900; text-transform: uppercase; border: 1px solid transparent; }
 .account-status-badge.available { color: #166534; background-color: #DCFCE7; border-color: #86EFAC; }
 .account-status-badge.sold { color: var(--text-secondary); background-color: var(--surface-secondary); border-color: var(--separator); }
 .account-description-container { max-height: 0; overflow: hidden; opacity: 0; transition: all var(--duration-natural); margin-top: 0; }
