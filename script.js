@@ -52,7 +52,7 @@
 
   // Akun Game Elements
   const accountSelect=document.getElementById('accountSelect');
-  const accountDisplay=document.getElementById('accountDisplay'); // Tidak dipakai lagi
+  const accountDisplay=document.getElementById('accountDisplay');
   const accountEmpty=document.getElementById('accountEmpty');
   const accountError=document.getElementById('accountError');
   
@@ -364,7 +364,7 @@
         <div class="account-display-card-content">
             <div class="carousel-container">
                 <div class="carousel-track">
-                    ${accountData.images.map(src => `<div class="carousel-slide"><img src="${src}" alt="Gambar akun" loading="lazy"></div>`).join('') || '<div class="carousel-slide">Gambar tidak tersedia</div>'}
+                    ${accountData.images.map(src => `<div class="carousel-slide"><img src="${src}" alt="Gambar untuk ${accountData.title}" loading="lazy"></div>`).join('') || '<div class="carousel-slide"><p style="text-align:center; padding: 2rem;">Gambar tidak tersedia</p></div>'}
                 </div>
                 ${accountData.images.length > 1 ? `
                 <button class="carousel-btn prev" aria-label="Gambar sebelumnya">
@@ -376,7 +376,7 @@
                 ` : ''}
             </div>
             <div class="account-details">
-                <div id="accountDescriptionContainer" class="account-description-container">
+                <div class="account-description-container">
                     <p class="account-description">${accountData.description}</p>
                     <div class="account-actions">
                         <button type="button" class="action-btn buy">Beli Sekarang</button>
@@ -388,7 +388,7 @@
     `;
     containerElement.innerHTML = detailHTML;
 
-    // --- Logika Carousel & Tombol ---
+    // --- Logika untuk membuat Carousel & Tombol berfungsi ---
     const carouselTrack = containerElement.querySelector('.carousel-track');
     const prevBtn = containerElement.querySelector('.carousel-btn.prev');
     const nextBtn = containerElement.querySelector('.carousel-btn.next');
@@ -396,19 +396,33 @@
     const totalSlides = accountData.images.length;
 
     function updateCarousel() {
-        carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+        if (carouselTrack) {
+            carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
         if (prevBtn) prevBtn.disabled = currentIndex === 0;
         if (nextBtn) nextBtn.disabled = currentIndex >= totalSlides - 1;
     }
 
     if (prevBtn) {
-        prevBtn.addEventListener('click', e => { e.stopPropagation(); if (currentIndex > 0) { currentIndex--; updateCarousel(); }});
+        prevBtn.addEventListener('click', e => { 
+            e.stopPropagation(); 
+            if (currentIndex > 0) { 
+                currentIndex--; 
+                updateCarousel(); 
+            }
+        });
     }
     if (nextBtn) {
-        nextBtn.addEventListener('click', e => { e.stopPropagation(); if (currentIndex < totalSlides - 1) { currentIndex++; updateCarousel(); }});
+        nextBtn.addEventListener('click', e => { 
+            e.stopPropagation(); 
+            if (currentIndex < totalSlides - 1) { 
+                currentIndex++; 
+                updateCarousel(); 
+            }
+        });
     }
 
-    // --- Logika Tombol Beli & Tawar ---
+    // --- Logika untuk Tombol Beli & Tawar ---
     containerElement.querySelector('.action-btn.buy').addEventListener('click', e => {
         e.stopPropagation();
         openPaymentModal({ title: accountData.title, price: accountData.price, catLabel: 'Akun Game' });
@@ -419,13 +433,16 @@
         window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });
     
-    if (totalSlides > 1) updateCarousel();
+    if (totalSlides > 1) {
+        updateCarousel();
+    }
   }
 
   function renderAllAccounts() {
     const container = document.getElementById('allAccountsContainer');
     container.innerHTML = '';
     container.style.display = 'grid';
+    accountEmpty.style.display = 'none';
 
     if (accState.data.length === 0) {
         accountEmpty.style.display = 'block';
@@ -460,21 +477,27 @@
 
         header.addEventListener('click', () => {
             const isExpanded = card.classList.contains('expanded');
-
+            
+            // Tutup semua kartu lain
             container.querySelectorAll('.summary-card.expanded').forEach(openCard => {
-                openCard.classList.remove('expanded');
+                if (openCard !== card) {
+                    openCard.classList.remove('expanded');
+                }
             });
 
-            if (!isExpanded) {
-                card.classList.add('expanded');
-                
-                if (detailsContainer.innerHTML === '') {
-                    renderDetailsIntoCard(acc, detailsContainer);
-                }
-                
-                setTimeout(() => {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 350);
+            // Toggle kartu yang diklik
+            card.classList.toggle('expanded');
+            
+            // Jika kartu dibuka dan detailnya kosong, render detailnya
+            if (card.classList.contains('expanded') && detailsContainer.innerHTML === '') {
+                renderDetailsIntoCard(acc, detailsContainer);
+            }
+
+            // Update dropdown agar sinkron
+            if (card.classList.contains('expanded')) {
+                accountSelect.value = index;
+            } else {
+                accountSelect.value = 'all';
             }
         });
     });
@@ -506,9 +529,11 @@
     accountSelect.addEventListener('change', e => {
         const container = document.getElementById('allAccountsContainer');
         if (e.target.value === "all") {
+            // Tutup semua kartu yang terbuka
             container.querySelectorAll('.summary-card.expanded').forEach(openCard => {
                 openCard.classList.remove('expanded');
             });
+            // Scroll ke atas
             container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else if (e.target.value !== "") {
             const cardIndex = e.target.value;
