@@ -1,12 +1,17 @@
 /* ==========================================================================
-   DESIGN SYSTEM: GOOGLE × APPLE FUSION (FIBONACCI PRECISION)
+   PEROMBAKAN TOTAL - DESAIN BERDASARKAN VIDEO REFERENSI
+   Menggunakan variabel dan filosofi dari kode CSS asli Anda.
    ========================================================================== */
 
+/* Mengimpor variabel dari file asli Anda */
 :root {
-  /* ... (isi :root sama seperti sebelumnya) ... */
+  /* 1. PALET WARNA & IDENTITAS */
   --brand-blue: #5C80BC; --brand-blue-rgb: 92, 128, 188;
   --success: #3dc1d3; --warning: #f5cd79; --error: #c44569;
   --dark-base: #303952;
+
+  /* 2. LIGHT & DARK MODE TOKENS */
+  /* Light Mode (Default) */
   --bg-primary: #f3f3f3;
   --text-primary: #303952;
   --text-secondary: rgba(48, 57, 82, 0.65);
@@ -15,14 +20,18 @@
   --surface-secondary: #e9e9e9;
   --surface-tertiary: #dedede;
   --separator: rgba(48, 57, 82, 0.1);
-  --sp-fib-1: 3px;
-  --sp-fib-2: 5px;
-  --sp-fib-3: 8px;
-  --sp-fib-4: 13px;
-  --sp-fib-5: 21px;
-  --sp-fib-6: 34px;
-  --sp-fib-7: 55px;
-  --sp-fib-8: 89px;
+
+  /* 3. SKALA FIBONACCI (SPACING & LAYOUT) - 8px Grid Harmony */
+  --sp-fib-1: 3px;   /* Basis ikon hamburger */
+  --sp-fib-2: 5px;   /* Basis ikon hamburger */
+  --sp-fib-3: 8px;   /* Base unit */
+  --sp-fib-4: 13px;  /* Small component padding */
+  --sp-fib-5: 21px;  /* Container padding, large gaps */
+  --sp-fib-6: 34px;  /* Section padding, layout spacing */
+  --sp-fib-7: 55px;  /* Major section spacing */
+  --sp-fib-8: 89px;  /* Whitespace premium */
+
+  /* 4. TIPOGRAFI (GOLDEN RATIO TYPOGRAPHY) */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-size-h1: 34px;
   --font-size-h2: 21px;
@@ -30,19 +39,23 @@
   --font-size-h3: 13px;
   --font-size-caption: 10px;
   --line-height: 1.6;
-  --control-h: 48px;
-  --radius-fib-small: 8px;
-  --radius-fib-medium: 13px;
-  --radius-fib-large: 21px;
+
+  /* 5. KOMPONEN & ELEMEN UI */
+  --control-h: 48px; /* Target tinggi kontrol interaktif */
+  --radius-fib-small: 8px;   /* Sesuai --sp-fib-3 */
+  --radius-fib-medium: 13px; /* Sesuai --sp-fib-4 */
+  --radius-fib-large: 21px;  /* Sesuai --sp-fib-5 */
   --shadow-sm: 0 3px 8px rgba(48, 57, 82, 0.08);
   --shadow-focus: 0 0 0 3px rgba(var(--brand-blue-rgb), .25);
+
+  /* 6. ANIMASI & MOTION (FIBONACCI TIMING) */
   --duration-fast: 0.21s;
   --duration-natural: 0.34s;
   --duration-smooth: 0.55s;
   --ease-natural: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ... (semua kode CSS lain sama seperti sebelumnya sampai bagian Akun Game) ... */
+/* Dark Mode Tokens */
 body.dark-mode {
   --bg-primary: #303952;
   --text-primary: #f3f3f3;
@@ -54,82 +67,253 @@ body.dark-mode {
   --separator: #4a4f65;
   --shadow-sm: 0 5px 13px rgba(0, 0, 0, 0.2);
 }
+
+/* ================== GLOBAL RESET & BASE STYLES ================== */
 * { box-sizing: border-box; }
-html, body { 
-  height: 100%;
-  touch-action: manipulation;
-  overflow-x: hidden;
+html {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--duration-natural), color var(--duration-natural);
 }
 body {
   margin: 0;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================== STRUKTUR UTAMA APLIKASI ================== */
+.app-container {
+  background-color: var(--surface-primary);
+  min-height: 100vh;
+  transition: transform var(--duration-natural) var(--ease-natural), border-radius var(--duration-natural) var(--ease-natural);
+  position: relative;
+  z-index: 10;
+}
+.app-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-natural) var(--ease-natural);
+  z-index: 90;
+}
+
+/* ================== HEADER APLIKASI ================== */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-fib-4) var(--sp-fib-5);
+  border-bottom: 1px solid var(--separator);
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, .8);
+  backdrop-filter: blur(21px); -webkit-backdrop-filter: blur(21px);
+  z-index: 50;
+}
+body.dark-mode .app-header {
+  background: rgba(58, 66, 91, .75);
+}
+
+.header-logo {
+  height: 34px; /* Fibonacci */
+  width: auto;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-fib-4);
+}
+.node-status {
+  font-size: 14px;
+  font-weight: 700;
+  padding: var(--sp-fib-3) var(--sp-fib-4);
+  border-radius: var(--radius-fib-medium);
+  border: 1px solid var(--separator);
+  white-space: nowrap;
+}
+.node-status.offline {
+  background-color: #fceded;
+  color: #c44569;
+  border-color: #f7b9c9;
+}
+
+/* ================== TOMBOL HAMBURGER & INTERAKSI MENU ================== */
+.hamburger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--sp-fib-3);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 100;
+  position: relative;
+}
+.hamburger-btn span {
+  display: block;
+  width: 24px;
+  height: 3px;
+  background-color: var(--text-primary);
+  border-radius: 3px;
+  transition: transform var(--duration-natural) var(--ease-natural), opacity var(--duration-natural) var(--ease-natural);
+}
+/* State saat menu terbuka */
+body.sidebar-open .app-container {
+  transform: translateX(280px);
+  border-radius: var(--radius-fib-medium);
+  box-shadow: -13px 0 34px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+body.sidebar-open .app-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+body.sidebar-open .hamburger-btn span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+body.sidebar-open .hamburger-btn span:nth-child(2) {
+  opacity: 0;
+}
+body.sidebar-open .hamburger-btn span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* ================== SIDEBAR MENU ================== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--sp-fib-5);
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+}
+.sidebar-header {
+  margin-bottom: var(--sp-fib-5);
+}
+.sidebar-search {
+  width: 100%;
+  padding: var(--sp-fib-4);
+  border: 1px solid var(--separator);
+  background-color: var(--surface-primary);
+  border-radius: var(--radius-fib-medium);
+  font-size: 16px;
   font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height);
-  letter-spacing: -.01em;
-  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-  transition: background var(--duration-natural) var(--ease-natural), color var(--duration-natural) var(--ease-natural);
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+  color: var(--text-primary);
 }
-h1 { font-size: var(--font-size-h1); letter-spacing: -.025em; font-weight: 800; }
-p { font-size: var(--font-size-body); color: var(--text-secondary); line-height: 1.5; }
+.sidebar-search:focus {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-color: var(--brand-blue);
+}
+.sidebar-nav {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-fib-3);
+  overflow-y: auto;
+}
+.sidebar-nav .menu-btn {
+  width: 100%;
+  padding: var(--sp-fib-4);
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  border-radius: var(--radius-fib-medium);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-fib-4);
+  color: var(--text-secondary);
+}
+.sidebar-nav .menu-btn:hover, .sidebar-nav .menu-btn.active {
+  background-color: rgba(var(--brand-blue-rgb), 0.1);
+  color: var(--brand-blue);
+  font-weight: 700;
+}
+.sidebar-nav .menu-divider {
+  height: 1px;
+  background: var(--separator);
+  margin: var(--sp-fib-4) 0;
+}
+.sidebar-footer {
+  margin-top: var(--sp-fib-5);
+}
+.cta-button {
+  display: block;
+  width: 100%;
+  padding: var(--sp-fib-4);
+  background-color: var(--dark-base);
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: var(--radius-fib-medium);
+  transition: transform 0.2s;
+}
+.cta-button:hover {
+  transform: scale(1.03);
+}
+
+/* ================== KONTEN UTAMA & SECTION VIEW ================== */
+.main-content {
+  padding: 0 var(--sp-fib-5) var(--sp-fib-5);
+}
+.view-section {
+  display: none;
+}
+.view-section.active {
+  display: block;
+  animation: fadeIn 0.5s var(--ease-natural);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(13px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================== GAYA KODE LAMA YANG DISESUAIKAN ================== */
+/* Import semua gaya dari CSS lama Anda di sini, hapus yang bertentangan */
+/* Saya akan salin gaya yang relevan untuk menjaga fungsionalitas */
+
+/* Global & Base */
 .icon { width: 20px; height: 20px; transition: color var(--duration-fast), transform var(--duration-fast); }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
 .noscript-warning { padding: var(--sp-fib-4); background: var(--warning); color: var(--dark-base); text-align: center; font-weight: 700; }
-.view-section { display: none; animation: fadeIn var(--duration-smooth) var(--ease-natural); }
-.view-section.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(var(--sp-fib-5)); } to { opacity: 1; transform: translateY(0); } }
-.reveal-on-scroll { opacity: 0; transform: translateY(var(--sp-fib-6)); transition: opacity var(--duration-smooth) var(--ease-natural), transform var(--duration-smooth) var(--ease-natural); }
-.reveal-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
-.wrap { max-width: 1200px; margin: 0 auto; padding: var(--sp-fib-7) var(--sp-fib-5); }
+
+/* Layout & Spacing (dari kode lama) */
 [data-rail] { padding: 0; margin: 0; width: 100%; }
-header { text-align: center; margin-bottom: var(--sp-fib-7); }
-.logo { height: var(--sp-fib-7); width: auto; }
-header h1 { margin: var(--sp-fib-4) 0 0; }
-header p { margin: var(--sp-fib-2) 0 0; white-space: nowrap; }
 .head-block { margin-bottom: var(--sp-fib-5); }
 .po-head.head-block, .cat-head.head-block {
-  position: sticky; top: 0; z-index: 10;
+  position: sticky; top: 69px; /* Tinggi header baru */ z-index: 10;
   padding: var(--sp-fib-4) 0;
-  background: rgba(243, 243, 243, .8);
+  background: rgba(255, 255, 255, .8);
   backdrop-filter: blur(21px); -webkit-backdrop-filter: blur(21px);
   transition: background var(--duration-natural) var(--ease-natural);
 }
 body.dark-mode .po-head.head-block,
-body.dark-mode .cat-head.head-block { background: rgba(48, 57, 82, .75); }
-.menu {
-  position: absolute; z-index: 100; right: 0;
-  top: calc(var(--control-h) + var(--sp-fib-3));
-  background: var(--surface-primary);
-  border: 1px solid var(--separator);
-  border-radius: var(--radius-fib-medium);
-  display: flex; flex-direction: column; min-width: 210px; overflow: clip;
-  box-shadow: var(--shadow-sm);
-  opacity: 0; transform: translateY(calc(-1 * var(--sp-fib-3))) scale(.98);
-  transition: opacity var(--duration-fast) var(--ease-natural), transform var(--duration-fast) var(--ease-natural);
-  pointer-events: none;
-}
-.menu.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-.menu-btn {
-  padding: var(--sp-fib-4) var(--sp-fib-5); border: 0; background: transparent; text-align: left;
-  color: var(--text-primary); font-weight: 700; font-size: 15px; cursor: pointer; letter-spacing: -.01em;
-  transition: background-color var(--duration-fast);
-}
-.menu-btn:hover { background: var(--surface-secondary); }
-.menu-divider { height: 1px; background: var(--separator); margin: var(--sp-fib-3) 0; }
+body.dark-mode .cat-head.head-block { background: rgba(58, 66, 91, .75); }
+
+/* Controls & Forms (dari kode lama) */
 .topbar-grid { display: flex; align-items: center; gap: var(--sp-fib-4); }
 .topbar-actions { display: flex; align-items: center; gap: var(--sp-fib-4); }
 .icon-btn {
   position: relative; width: var(--control-h); height: var(--control-h); border: 1px solid var(--separator);
   border-radius: var(--radius-fib-small); background: var(--surface-primary);
-  display: grid; place-content: center; cursor: pointer;
-  color: var(--text-secondary);
+  display: grid; place-content: center; cursor: pointer; color: var(--text-secondary);
   transition: all var(--duration-fast) var(--ease-natural);
 }
 .icon-btn:hover { background: var(--surface-secondary); transform: translateY(-3px); color: var(--brand-blue); box-shadow: var(--shadow-sm); }
@@ -143,16 +327,6 @@ body.dark-mode .cat-head.head-block { background: rgba(48, 57, 82, .75); }
 .icon-moon { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
 body.dark-mode .icon-sun { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
 body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(90deg) scale(0.5); }
-.burger span {
-  display: block; width: 21px;
-  height: 3px;
-  background: var(--text-secondary); border-radius: 2px;
-  transition: transform var(--duration-natural) var(--ease-natural), opacity var(--duration-natural);
-}
-.burger span:not(:last-child) { margin-bottom: 5px; }
-.burger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-.burger.active span:nth-child(2) { transform: scaleX(0); opacity: 0; }
-.burger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 .custom-select-wrapper { position: relative; flex-grow: 1; }
 .custom-select-btn {
   width: 100%; height: var(--control-h); padding: var(--sp-fib-4) var(--sp-fib-5);
@@ -193,11 +367,17 @@ body.dark-mode .icon-moon { opacity: 0; transform: translate(-50%, -50%) rotate(
 body.dark-mode .select-native {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23f3f3f3'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
 }
+
 .search-row[data-rail], .status-row[data-rail] { margin-top: var(--sp-fib-4); }
 .search-wrap { position: relative; }
 .search-wrap .icon { position: absolute; left: var(--sp-fib-5); top: 50%; transform: translateY(-50%); color: var(--text-tertiary); pointer-events: none; }
 .search-input { padding: 0 var(--sp-fib-5) 0 55px; }
 .search-input::placeholder { color: var(--text-tertiary); opacity: 1; }
+
+/* ... (Gaya lainnya dari kode lama Anda seperti cards, modal, dll. dapat disalin di sini) ... */
+/* Semua gaya lain dari file CSS lama Anda harusnya bekerja dengan baik, karena struktur internal section tidak diubah. */
+/* Salin sisa style.css Anda yang lama mulai dari 'KATALOG & PRE-ORDER CARDS' dan tempelkan di sini. */
+/* ================== KATALOG & PRE-ORDER CARDS ================== */
 #countInfo[data-rail] { color: var(--text-secondary); font-size: 14px; font-weight: 700; margin-top: var(--sp-fib-3); text-align: right; }
 .list-container[data-rail] { display: grid; grid-template-columns: 1fr; gap: var(--sp-fib-4); }
 .list-item {
@@ -248,174 +428,34 @@ body.dark-mode .select-native {
 }
 #viewPreorder .pagination-btn:hover:not(:disabled) { transform: translateY(-3px); background: var(--surface-secondary); box-shadow: var(--shadow-sm); }
 #viewPreorder .pagination-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-/* ================== AKUN GAME VIEW (UPDATED) ================== */
-.all-accounts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--sp-fib-5);
-  margin-top: var(--sp-fib-5);
-}
-.summary-card {
-  background: var(--surface-primary);
-  border: 1px solid var(--separator);
-  border-radius: var(--radius-fib-medium);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--duration-fast) var(--ease-natural);
-}
-.summary-card-header {
-  cursor: pointer;
-  transition: background-color var(--duration-fast);
-  overflow: hidden;
-  border-radius: var(--radius-fib-medium) var(--radius-fib-medium) 0 0;
-}
-.summary-card:hover .summary-card-header {
-  background: var(--surface-secondary);
-}
-.summary-card.sold {
-  opacity: 0.6;
-}
-.summary-card-image {
-  height: 160px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: var(--sp-fib-3);
-  background-color: var(--surface-secondary);
-}
-.summary-card-status {
-  background: rgba(0,0,0,0.5);
-  color: white;
-  padding: var(--sp-fib-2) var(--sp-fib-4);
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.summary-card-body {
-  padding: var(--sp-fib-4);
-}
-.summary-card-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 var(--sp-fib-2) 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.summary-card-price {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--brand-blue);
-  margin: 0;
-}
-.summary-card-details {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.5s var(--ease-natural), opacity 0.5s var(--ease-natural), padding 0.5s;
-  padding: 0 var(--sp-fib-4);
-}
-.summary-card.expanded .summary-card-details {
-  max-height: 2000px;
-  opacity: 1;
-  padding: 0 var(--sp-fib-4) var(--sp-fib-4) var(--sp-fib-4);
-  border-top: 1px solid var(--separator);
-}
-.account-display-card-content .account-description {
-  white-space: pre-wrap;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-.account-display-card-content .account-details {
-    padding: 0;
-}
-.account-display-card-content .account-description-container {
-    padding-top: var(--sp-fib-5);
-    border-top: 1px solid var(--separator);
-    margin-top: var(--sp-fib-5);
-    max-height: none;
-    opacity: 1;
-}
-.account-display-card-content .carousel-container {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: var(--radius-fib-medium);
-  cursor: grab;
-  margin-bottom: var(--sp-fib-5);
-}
-.account-display-card-content .carousel-container:active { cursor: grabbing; }
-.account-display-card-content .carousel-track {
-  display: flex;
-  transition: transform var(--duration-natural) var(--ease-natural);
-}
-.account-display-card-content .carousel-slide {
-  flex: 0 0 100%;
-  min-width: 100%;
-}
-.account-display-card-content .carousel-slide img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  background-color: var(--surface-secondary);
-}
-.account-display-card-content .carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  background-color: rgba(0,0,0,0.35);
-  border: none;
-  color: white;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color var(--duration-fast), opacity var(--duration-fast);
-  opacity: 0;
-  padding: 0;
-}
-.account-display-card-content .carousel-container:hover .carousel-btn { opacity: 1; }
-.account-display-card-content .carousel-btn.prev { left: var(--sp-fib-4); }
-.account-display-card-content .carousel-btn.next { right: var(--sp-fib-4); }
-.account-display-card-content .carousel-btn:hover { background-color: rgba(0,0,0,0.6); }
-.account-display-card-content .carousel-btn:disabled { opacity: 0.2; cursor: not-allowed; }
-.account-display-card-content .account-actions {
-  display: flex;
-  gap: var(--sp-fib-4);
-  margin-top: var(--sp-fib-5);
-}
-.account-display-card-content .action-btn {
-  flex-grow: 1;
-  padding: var(--sp-fib-4);
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: var(--radius-fib-small);
-  border: none;
-  cursor: pointer;
-  transition: transform var(--duration-fast), opacity var(--duration-fast);
-}
-.account-display-card-content .action-btn:hover {
-  transform: scale(1.03);
-}
-.account-display-card-content .action-btn.buy {
-  background-color: var(--brand-blue);
-  color: #fff;
-}
-.account-display-card-content .action-btn.offer {
-  background-color: var(--surface-secondary);
-  color: var(--text-primary);
-}
-
-/* ... (sisa CSS sama seperti sebelumnya) ... */
+.account-display-card { margin-top: var(--sp-fib-5); background: var(--surface-primary); border: 1px solid var(--separator); border-radius: var(--radius-fib-large); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; transition: transform var(--duration-fast), box-shadow var(--duration-fast); }
+.account-display-card:hover { transform: translateY(-5px); box-shadow: 0 8px 21px rgba(48, 57, 82, 0.12); }
+.carousel-container { position: relative; width: 100%; overflow: hidden; border-radius: var(--radius-fib-large) var(--radius-fib-large) 0 0; -webkit-user-select: none; user-select: none; cursor: grab; }
+.carousel-container:active { cursor: grabbing; }
+.carousel-track { display: flex; transition: transform var(--duration-natural) var(--ease-natural); }
+.carousel-slide { flex: 0 0 100%; min-width: 100%; }
+.carousel-slide img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background-color: var(--surface-secondary); }
+.carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; background-color: rgba(0,0,0,0.35); border: none; color: white; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color var(--duration-fast), opacity var(--duration-fast); opacity: 0; padding: 0; }
+.carousel-btn svg { width: 24px; height: 24px; }
+.carousel-container:hover .carousel-btn { opacity: 1; }
+.carousel-btn.prev { left: var(--sp-fib-4); }
+.carousel-btn.next { right: var(--sp-fib-4); }
+.carousel-btn:hover { background-color: rgba(0,0,0,0.6); }
+.carousel-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.account-details { padding: var(--sp-fib-5); }
+.account-header { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-fib-4); }
+.account-price { font-size: var(--font-size-h2); margin: 0; font-weight: 800; letter-spacing: -.02em; color: var(--brand-blue); }
+.account-status-badge { flex-shrink: 0; display: inline-block; padding: var(--sp-fib-2) var(--sp-fib-4); border-radius: 999px; font-size: var(--font-size-caption); font-weight: 900; text-transform: uppercase; letter-spacing: .05em; border: 1px solid transparent; }
+.account-status-badge.available { color: #166534; background-color: #DCFCE7; border-color: #86EFAC; }
+.account-status-badge.sold { color: var(--text-secondary); background-color: var(--surface-secondary); border-color: var(--separator); }
+.account-description-container { max-height: 0; overflow: hidden; opacity: 0; transition: max-height var(--duration-natural) var(--ease-natural), opacity var(--duration-fast), margin-top var(--duration-natural), padding-top var(--duration-natural); margin-top: 0; }
+.account-display-card.expanded .account-description-container { max-height: 2000px; opacity: 1; margin-top: var(--sp-fib-5); padding-top: var(--sp-fib-5); border-top: 1px solid var(--separator); }
+.account-description-container p { margin: 0; white-space: pre-wrap; }
+.account-actions { display: flex; gap: var(--sp-fib-4); margin-top: var(--sp-fib-5); }
+.action-btn { flex-grow: 1; padding: var(--sp-fib-4); font-size: 15px; font-weight: 700; border-radius: var(--radius-fib-small); border: none; cursor: pointer; transition: transform var(--duration-fast), opacity var(--duration-fast); }
+.action-btn:hover { transform: scale(1.03); }
+.action-btn.buy { background-color: var(--brand-blue); color: #fff; }
+.action-btn.offer { background-color: var(--surface-secondary); color: var(--text-primary); }
 .empty { border: 1px dashed var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-7); text-align: center; color: var(--text-secondary); font-size: var(--font-size-body); grid-column: 1/-1; }
 .err { border: 1px solid var(--error); background: rgba(196, 69, 105, .1); color: var(--error); border-radius: var(--radius-fib-medium); padding: var(--sp-fib-5); text-align: center; font-weight: 700; }
 .skeleton { position: relative; overflow: hidden; background-color: var(--surface-secondary); }
@@ -424,128 +464,25 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 .skeleton-text { display: block; background-color: var(--surface-tertiary); border-radius: 4px; height: 16px; }
 .skeleton-badge { width: 90px; height: 28px; background-color: var(--surface-tertiary); border-radius: 999px; }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
-@media (min-width: 769px) {
-  #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(2, 1fr); gap: var(--sp-fib-5); }
-  #viewPreorder .card-grid[data-rail] { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: var(--sp-fib-5); }
-}
-@media (min-width: 1024px) {
-  #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(3, 1fr); }
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  opacity: 0;
-  transition: opacity var(--duration-fast) var(--ease-natural);
-  pointer-events: none;
-  padding: var(--sp-fib-5);
-}
-.modal-overlay.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-.modal-content {
-  background: var(--surface-primary);
-  padding: var(--sp-fib-5);
-  border-radius: var(--radius-fib-large);
-  box-shadow: 0 8px 34px rgba(0,0,0,0.15);
-  width: 100%;
-  max-width: 380px;
-  transform: scale(0.95);
-  transition: transform var(--duration-natural) var(--ease-natural);
-}
-.modal-overlay.visible .modal-content {
-  transform: scale(1);
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--separator);
-  padding-bottom: var(--sp-fib-4);
-  margin-bottom: var(--sp-fib-4);
-}
-.modal-header h2 {
-  font-size: 18px;
-  margin: 0;
-}
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 34px;
-  font-weight: 300;
-  line-height: 1;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  padding: 0;
-}
-.item-recap {
-  margin-bottom: var(--sp-fib-4);
-  font-size: 14px;
-}
+@media (min-width: 769px) { #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(2, 1fr); gap: var(--sp-fib-5); } #viewPreorder .card-grid[data-rail] { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: var(--sp-fib-5); } }
+@media (min-width: 1024px) { #viewCatalog .list-container[data-rail] { grid-template-columns: repeat(3, 1fr); } }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity var(--duration-fast) var(--ease-natural); pointer-events: none; padding: var(--sp-fib-5); }
+.modal-overlay.visible { opacity: 1; pointer-events: auto; }
+.modal-content { background: var(--surface-primary); padding: var(--sp-fib-5); border-radius: var(--radius-fib-large); box-shadow: 0 8px 34px rgba(0,0,0,0.15); width: 100%; max-width: 380px; transform: scale(0.95); transition: transform var(--duration-natural) var(--ease-natural); }
+.modal-overlay.visible .modal-content { transform: scale(1); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--separator); padding-bottom: var(--sp-fib-4); margin-bottom: var(--sp-fib-4); }
+.modal-header h2 { font-size: 18px; margin: 0; }
+.close-btn { background: none; border: none; font-size: 34px; font-weight: 300; line-height: 1; color: var(--text-tertiary); cursor: pointer; padding: 0; }
+.item-recap { margin-bottom: var(--sp-fib-4); font-size: 14px; }
 .item-recap p { margin: var(--sp-fib-2) 0; color: var(--text-secondary); }
-.payment-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-fib-3);
-}
-.payment-option {
-  display: block;
-}
-.payment-option input {
-  display: none;
-}
-.payment-option label {
-  display: block;
-  padding: var(--sp-fib-4);
-  border: 1px solid var(--separator);
-  border-radius: var(--radius-fib-small);
-  cursor: pointer;
-  transition: all var(--duration-fast);
-  font-size: 15px;
-}
-.payment-option label:hover {
-  background: var(--surface-secondary);
-  border-color: var(--separator);
-}
-.payment-option input:checked + label {
-  border-color: var(--brand-blue);
-  background-color: rgba(var(--brand-blue-rgb), 0.1);
-  font-weight: 700;
-  box-shadow: 0 0 0 2px var(--brand-blue);
-}
-.price-details {
-  margin-top: var(--sp-fib-4);
-  padding-top: var(--sp-fib-4);
-  border-top: 1px solid var(--separator);
-  text-align: right;
-  font-size: 14px;
-}
+.payment-options { display: flex; flex-direction: column; gap: var(--sp-fib-3); }
+.payment-option { display: block; }
+.payment-option input { display: none; }
+.payment-option label { display: block; padding: var(--sp-fib-4); border: 1px solid var(--separator); border-radius: var(--radius-fib-small); cursor: pointer; transition: all var(--duration-fast); font-size: 15px; }
+.payment-option label:hover { background: var(--surface-secondary); border-color: var(--separator); }
+.payment-option input:checked + label { border-color: var(--brand-blue); background-color: rgba(var(--brand-blue-rgb), 0.1); font-weight: 700; box-shadow: 0 0 0 2px var(--brand-blue); }
+.price-details { margin-top: var(--sp-fib-4); padding-top: var(--sp-fib-4); border-top: 1px solid var(--separator); text-align: right; font-size: 14px; }
 .price-details p { margin: var(--sp-fib-2) 0; }
 .price-details strong { font-size: 18px; }
-.wa-button {
-  display: block;
-  width: 100%;
-  text-align: center;
-  background-color: var(--brand-blue);
-  color: #fff;
-  padding: var(--sp-fib-4);
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: var(--radius-fib-small);
-  text-decoration: none;
-  margin-top: var(--sp-fib-5);
-  transition: transform var(--duration-fast);
-}
-.wa-button:hover {
-  transform: scale(1.02);
-}
+.wa-button { display: block; width: 100%; text-align: center; background-color: var(--brand-blue); color: #fff; padding: var(--sp-fib-4); font-size: 16px; font-weight: 700; border-radius: var(--radius-fib-small); text-decoration: none; margin-top: var(--sp-fib-5); transition: transform var(--duration-fast); }
+.wa-button:hover { transform: scale(1.02); }
