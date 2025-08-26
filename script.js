@@ -15,14 +15,35 @@
       { id: 'bank_to_dana', name: 'Bank ke Dana', feeType: 'fixed', value: 500 },
       { id: 'qris', name: 'Qris', feeType: 'percentage', value: 0.01 },
     ],
+    // --- DATA MENU DIPERBARUI DENGAN IKON SVG ---
     menuItems: [
-      { label: 'Katalog', mode: 'katalog' },
-      { label: 'Lacak Pre‑Order', mode: 'preorder' },
-      { label: 'Akun Game', mode: 'accounts' },
+      { 
+        label: 'Katalog', 
+        mode: 'katalog', 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h7.5m3-15H5.25a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V5.25A2.25 2.25 0 0018.75 3z" /></svg>` 
+      },
+      { 
+        label: 'Lacak Pre‑Order', 
+        mode: 'preorder', 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56v4.82m0 0a6 6 0 01-12 0m12 0a6 6 0 01-6 6m0-6v4.82m0 0a6 6 0 01-6-6m6 6a6 6 0 01-6-6m0 0a6 6 0 016-6m-6 6a6 6 0 01-6-6m6 6v-4.82m-6 6a6 6 0 016-6" /></svg>` 
+      },
+      { 
+        label: 'Akun Game', 
+        mode: 'accounts', 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>` 
+      },
       { divider: true },
-      { label: 'Donasi (Saweria)', href: 'https://saweria.co/playpal' },
+      { 
+        label: 'Donasi (Saweria)', 
+        href: 'https://saweria.co/playpal', 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>` 
+      },
       { divider: true },
-      { label: 'Tutup', mode: 'close' },
+      { 
+        label: 'Tutup', 
+        mode: 'close', 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`
+      },
     ],
   };
 
@@ -84,7 +105,7 @@
       po: getElement('themeToggleBtnPo'),
       acc: getElement('themeToggleBtnAcc'),
     },
-    menuOverlay: getElement('menuOverlay'), // <-- DITAMBAHKAN
+    menuOverlay: getElement('menuOverlay'),
     paymentModal: {
       modal: getElement('paymentModal'),
       closeBtn: getElement('closeModalBtn'),
@@ -184,9 +205,10 @@
   function closeAllMenus() {
     Object.values(elements.burgers).forEach((b) => b?.classList.remove('active'));
     Object.values(elements.menus).forEach((m) => m?.classList.remove('open'));
-    elements.menuOverlay?.classList.remove('open'); // <-- DITAMBAHKAN
+    elements.menuOverlay?.classList.remove('open');
   }
 
+  // --- FUNGSI RENDER MENU DIPERBARUI TOTAL ---
   function renderMenu(container) {
     container.innerHTML = '';
     config.menuItems.forEach((item) => {
@@ -199,14 +221,25 @@
 
       const btn = document.createElement('button');
       btn.className = 'menu-btn';
-      btn.textContent = item.label;
+      
+      // Menambahkan ikon dan teks
+      btn.innerHTML = `
+        <span class="menu-btn-icon">${item.icon || ''}</span>
+        <span class="menu-btn-label">${item.label}</span>
+      `;
 
       if (item.href) {
-        btn.addEventListener('click', () => window.open(item.href, '_blank', 'noopener'));
+        btn.addEventListener('click', () => {
+          window.open(item.href, '_blank', 'noopener');
+          closeAllMenus();
+        });
       } else if (item.mode === 'close') {
         btn.addEventListener('click', closeAllMenus);
       } else {
-        btn.addEventListener('click', () => setMode(item.mode));
+        btn.addEventListener('click', () => {
+            setMode(item.mode);
+            closeAllMenus();
+        });
       }
       container.appendChild(btn);
     });
@@ -220,7 +253,7 @@
     if (!isOpen) {
       btn?.classList.add('active');
       menu?.classList.add('open');
-      elements.menuOverlay?.classList.add('open'); // <-- DITAMBAHKAN
+      elements.menuOverlay?.classList.add('open');
     }
   }
 
@@ -882,7 +915,7 @@
       lastTouchEnd = now;
     }, false);
 
-    elements.menuOverlay?.addEventListener('click', closeAllMenus); // <-- DITAMBAHKAN
+    elements.menuOverlay?.addEventListener('click', closeAllMenus); 
 
     elements.burgers.cat?.addEventListener('click', () => toggleMenu('cat'));
     elements.burgers.po?.addEventListener('click', () => toggleMenu('po'));
@@ -890,7 +923,7 @@
     Object.values(elements.themeToggles).forEach((btn) => btn?.addEventListener('click', toggleTheme));
 
     document.addEventListener('click', (e) => {
-      const isOutsideMenu = ![...Object.values(elements.menus), ...Object.values(elements.burgers)]
+      const isOutsideMenu = ![...Object.values(elements.menus), ...Object.values(elements.burgers), elements.menuOverlay]
         .some((el) => el?.contains(e.target));
       if (isOutsideMenu) closeAllMenus();
     });
