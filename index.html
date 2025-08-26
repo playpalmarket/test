@@ -34,7 +34,7 @@
           <div class="topbar-grid">
             <div class="custom-select-wrapper" id="customSelectWrapper">
               <button class="custom-select-btn" id="customSelectBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                <span id="customSelectValue">Pilih Kategori</span>
+                <span id="customSelectValue">Promo Hari Ini</span>
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
               </button>
               <div class="custom-select-options" id="customSelectOptions" role="listbox"></div>
@@ -85,29 +85,6 @@
             <nav class="menu" id="menuPo" aria-label="Menu tampilan (Pre‑Order)"></nav>
           </div>
         </div>
-        <div class="search-row" data-rail>
-          <div class="search-wrap">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-            <input id="preorderSearchInput" type="search" class="search-input" placeholder="Cari nama / ID Server..." />
-          </div>
-        </div>
-        <div class="status-row" data-rail>
-          <select class="status-select" id="preorderStatusSelect" aria-label="Filter status">
-            <option value="all">Semua Status</option>
-            <option value="success">Success</option>
-            <option value="progress">Progress</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Gagal</option>
-          </select>
-        </div>
-        <div id="preorderTotal" class="meta" data-rail></div>
-      </div>
-      <div class="container">
-        <main id="preorderListContainer" class="card-grid" aria-live="polite" data-rail></main>
-        <nav class="pagination" aria-label="Pagination" data-rail>
-          <button id="preorderPrevBtn" class="pagination-btn" disabled>Sebelumnya</button>
-          <button id="preorderNextBtn" class="pagination-btn" disabled>Selanjutnya</button>
-        </nav>
       </div>
     </section>
 
@@ -131,36 +108,6 @@
           </div>
         </div>
       </div>
-      
-      <div id="accountDisplay" class="account-display-card" style="display: none;" data-rail>
-        <div class="carousel-container">
-          <div id="carouselTrack" class="carousel-track"></div>
-          <button id="carouselPrevBtn" class="carousel-btn prev" type="button" aria-label="Gambar sebelumnya">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
-          </button>
-          <button id="carouselNextBtn" class="carousel-btn next" type="button" aria-label="Gambar selanjutnya">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-          </button>
-        </div>
-        <div class="account-details">
-          <div class="account-header">
-            <h2 id="accountPrice" class="account-price"></h2>
-            <span id="accountStatus" class="account-status-badge"></span>
-          </div>
-          <div id="accountDescriptionContainer" class="account-description-container">
-             <p id="accountDescription"></p>
-             <div class="account-actions">
-                <button id="buyAccountBtn" type="button" class="action-btn buy">Beli Sekarang</button>
-                <button id="offerAccountBtn" type="button" class="action-btn offer">Tawar Harga</button>
-             </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="accountEmpty" class="empty" data-rail>
-        Pilih akun dari daftar di atas untuk melihat detail.
-      </div>
-      <section id="accountError" class="err" style="display:none" data-rail></section>
     </section>
   </main>
   
@@ -172,49 +119,6 @@
       <span class="price"></span>
     </button>
   </template>
-
-  <template id="skeletonItemTemplate">
-    <div class="list-item skeleton">
-      <span class="skeleton-text" style="width: 60%;"></span>
-      <span class="skeleton-text" style="width: 25%;"></span>
-    </div>
-  </template>
-
-  <template id="skeletonCardTemplate">
-    <div class="card skeleton">
-      <div class="card-header">
-        <div>
-          <div class="skeleton-text" style="width: 50%; height: 18px; margin-bottom: 8px;"></div>
-          <div class="skeleton-text" style="width: 75%; height: 14px;"></div>
-        </div>
-        <div class="skeleton-badge"></div>
-      </div>
-      <div class="skeleton-text" style="width: 65%; height: 12px; margin-top: 10px;"></div>
-    </div>
-  </template>
-  
-  <div id="paymentModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Pilih Pembayaran</h2>
-        <button id="closeModalBtn" class="close-btn" type="button" aria-label="Tutup">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="item-recap">
-          <p><strong>Item:</strong> <span id="modalItemName"></span></p>
-          <p><strong>Harga:</strong> <span id="modalItemPrice"></span></p>
-        </div>
-        <div id="paymentOptionsContainer" class="payment-options"></div>
-        <div class="price-details">
-          <p>Fee: <span id="modalFee"></span></p>
-          <p><strong>Total: <span id="modalTotal"></span></strong></p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <a id="continueToWaBtn" class="wa-button" href="#" target="_blank" rel="noopener">Lanjutkan ke WhatsApp</a>
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>
