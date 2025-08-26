@@ -2,157 +2,176 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>PlayPal.ID</title>
   <meta name="description" content="Destinasi Utama Para Pecinta Game, Film & Musik">
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  
+
   <link rel="stylesheet" href="style.css">
+  <!-- menu v2 harus di-load sebelum script.js agar navigasi tersedia -->
+  <script src="menu.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
-
-  <aside id="sidebarMenu" class="sidebar">
-    <div class="sidebar-header">
-      <input type="search" class="sidebar-search" placeholder="Cari...">
+  <noscript>
+    <div class="noscript-warning">
+      Website ini membutuhkan JavaScript untuk berfungsi sepenuhnya. Silakan aktifkan JavaScript di browser Anda.
     </div>
-    <nav id="sidebarNav" class="sidebar-nav"></nav>
-    <div class="sidebar-footer">
-      <a href="https://saweria.co/playpal" target="_blank" rel="noopener" class="cta-button">
-        Donasi untuk Kreator
-      </a>
-    </div>
-  </aside>
+  </noscript>
 
-  <div id="appContainer" class="app-container">
-    
-    <header class="app-header">
-      <div class="header-left">
-        <img src="logo.png" alt="PlayPal.ID Logo" class="header-logo">
-      </div>
-      <div class="header-right">
-        <button class="icon-btn" id="theme-toggle-btn" aria-label="Ganti tema">
-          <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
-          <svg class="icon icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+  <!-- ============== HEADER GLOBAL (fixed) ============== -->
+  <header id="app-header" role="banner">
+    <div class="header-content">
+      <img src="logo.png" alt="PlayPal.ID Logo" class="logo-header" />
+      <span class="header-title" id="headerTitle">Katalog</span>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-toggle-btn" aria-label="Ganti tema" type="button">
+          <!-- ikon disembunyikan/ditukar via CSS token yang sudah ada -->
+          <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+          <svg class="icon icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
         </button>
-        <span id="nodeStatus" class="node-status offline">Node Offline</span>
-        <button id="hamburgerBtn" class="hamburger-btn" aria-label="Buka menu" aria-expanded="false">
+
+        <button class="icon-btn burger" id="master-burger" aria-label="Menu" aria-expanded="false" type="button">
           <span></span><span></span><span></span>
         </button>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main id="mainContent" class="main-content">
-      
-        <section id="viewCatalog" class="view-section active" aria-label="Katalog">
-          <div class="view-controls">
-            <div class="custom-select-wrapper" id="custom-select-wrapper">
-              <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
-                <span id="custom-select-value">Pilih Kategori</span>
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
-              </button>
-              <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
-            </div>
-            <div class="search-wrap">
-              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-              <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
-            </div>
-          </div>
-          <div id="countInfo"></div>
-          <section id="list-container" class="list-container" aria-live="polite"></section>
-          <section id="error" class="err" style="display:none"></section>
-        </section>
+  <!-- ============== SIDEBAR (muncul dari kiri, di bawah header) ============== -->
+  <nav id="sidebar-menu" aria-label="Navigasi utama">
+    <div class="sidebar-content" id="sidebarContent">
+      <!-- item menu dirender oleh menu.js -->
+    </div>
+    <div class="sidebar-footer">
+      <button id="komunitas-btn" class="sidebar-action-btn" type="button">Komunitas</button>
+    </div>
+  </nav>
 
-        <section id="viewPreorder" class="view-section" aria-label="Pre-Order">
-          <div class="view-controls stacked">
-             <select class="select-native" id="poSheet" aria-label="Pilih kategori pesanan">
-              <option value="0">Starlight Member</option>
-              <option value="1">Pesanan Umum</option>
-            </select>
-            <div class="search-wrap">
-              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-              <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server..." />
-            </div>
-            <select class="status-select" id="poStatus" aria-label="Filter status">
-              <option value="all">Semua Status</option>
-              <option value="success">Success</option>
-              <option value="progress">Progress</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Gagal</option>
-            </select>
-          </div>
-          <div class="meta" id="poTotal"></div>
-          <div class="container">
-            <main class="card-grid" id="poList" aria-live="polite"></main>
-            <nav class="pagination" aria-label="Pagination">
-              <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
-              <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
-            </nav>
-          </div>
-        </section>
+  <!-- ============== KONTEN ============== -->
+  <main class="wrap" id="appMain">
+    <!-- Header hero lama dihapus sesuai brief (bersih & fokus) -->
 
-        <section id="viewAccounts" class="view-section" aria-label="Akun Game">
-          <div class="view-controls">
-            <select class="select-native" id="accountSelect" aria-label="Pilih Akun Game">
-              <option value="">Memuat akun...</option>
-            </select>
-          </div>
-          <div id="accountDisplay" class="account-display-card" style="display: none;">
-            <div class="carousel-container">
-              <div class="carousel-track" id="carouselTrack"></div>
-              <button id="carouselPrev" class="carousel-btn prev" aria-label="Gambar sebelumnya"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
-              <button id="carouselNext" class="carousel-btn next" aria-label="Gambar selanjutnya"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
-            </div>
-            <div class="account-details">
-              <div class="account-header"><h2 id="accountPrice" class="account-price"></h2><span id="accountStatus" class="account-status-badge"></span></div>
-              <div id="accountDescriptionContainer" class="account-description-container">
-                 <p id="accountDescription"></p>
-                 <div class="account-actions">
-                    <button id="buyAccountBtn" type="button" class="action-btn buy">Beli Sekarang</button>
-                    <button id="offerAccountBtn" type="button" class="action-btn offer">Tawar Harga</button>
-                 </div>
-              </div>
-            </div>
-          </div>
-          <div id="accountEmpty" class="empty">Pilih akun dari daftar di atas untuk melihat detail.</div>
-          <section id="accountError" class="err" style="display:none"></section>
-        </section>
-        
-        <section id="viewFilm" class="view-section" aria-label="Film">
-          <h2>Tonton Film (Gratis)</h2>
-          <p>Fitur ini sedang dalam pengembangan.</p>
-        </section>
-    </main>
-  </div>
-  
-  <div id="appOverlay" class="app-overlay"></div>
-
-  <noscript><div class="noscript-warning">Website ini membutuhkan JavaScript untuk berfungsi sepenuhnya. Silakan aktifkan JavaScript di browser Anda.</div></noscript>
-  
-  <template id="itemTmpl"><a class="list-item"><span class="title"></span><span class="price"></span></a></template>
-  <template id="skeletonItemTmpl"><div class="list-item skeleton"><span class="skeleton-text" style="width: 60%;"></span><span class="skeleton-text" style="width: 25%;"></span></div></template>
-  <template id="skeletonCardTmpl"><div class="card skeleton"><div class="card-header"><div><div class="skeleton-text" style="width: 50%; height: 18px; margin-bottom: 8px;"></div><div class="skeleton-text" style="width: 75%; height: 14px;"></div></div><div class="skeleton-badge"></div></div><div class="skeleton-text" style="width: 65%; height: 12px; margin-top: 10px;"></div></div></template>
-  
-  <div id="paymentModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Pilih Pembayaran</h2>
-        <button id="closeModalBtn" class="close-btn" aria-label="Tutup">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="item-recap">
-          <p><strong>Item:</strong> <span id="modalItemName"></span></p>
-          <p><strong>Harga:</strong> <span id="modalItemPrice"></span></p>
+    <!-- ====== KATALOG ====== -->
+    <section id="viewCatalog" class="view-section active" aria-label="Katalog">
+      <!-- kontrol dari .head-block dipindah ke sini -->
+      <div class="controls-row">
+        <div class="custom-select-wrapper" id="custom-select-wrapper">
+          <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span id="custom-select-value">Pilih Kategori</span>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+          </button>
+          <div class="custom-select-options" id="custom-select-options" role="listbox"></div>
         </div>
-        <div id="paymentOptions" class="payment-options"></div>
-        <div class="price-details"><p>Fee: <span id="modalFee"></span></p><p><strong>Total: <span id="modalTotal"></span></strong></p></div>
+
+        <div class="search-wrap">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <input id="search" class="search-input" type="search" placeholder="Cari item..." aria-label="Cari">
+        </div>
       </div>
-      <div class="modal-footer"><a id="continueToWaBtn" class="wa-button" href="#" target="_blank" rel="noopener">Lanjutkan ke WhatsApp</a></div>
+
+      <div id="countInfo"></div>
+      <section id="list-container" class="list-container" aria-live="polite"></section>
+      <section id="error" class="err" style="display:none"></section>
+    </section>
+
+    <!-- ====== PRE-ORDER ====== -->
+    <section id="viewPreorder" class="view-section" aria-label="Pre-Order">
+      <div class="controls-row">
+        <select class="select-native" id="poSheet" aria-label="Pilih kategori pesanan">
+          <option value="0">Starlight Member</option>
+          <option value="1">Pesanan Umum</option>
+        </select>
+
+        <div class="search-wrap">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <input type="search" class="search-input" id="poSearch" placeholder="Cari nama / ID Server..." />
+        </div>
+
+        <select class="status-select" id="poStatus" aria-label="Filter status">
+          <option value="all">Semua Status</option>
+          <option value="success">Success</option>
+          <option value="progress">Progress</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Gagal</option>
+        </select>
+      </div>
+
+      <div class="meta" id="poTotal"></div>
+      <main class="card-grid" id="poList" aria-live="polite"></main>
+      <nav class="pagination" aria-label="Pagination">
+        <button class="pagination-btn" id="poPrev" disabled>Sebelumnya</button>
+        <button class="pagination-btn" id="poNext" disabled>Selanjutnya</button>
+      </nav>
+    </section>
+
+    <!-- ====== AKUN GAME ====== -->
+    <section id="viewAccounts" class="view-section" aria-label="Akun Game">
+      <div class="controls-row">
+        <select class="select-native" id="accountSelect" aria-label="Pilih Akun Game">
+          <option value="">Memuat akun...</option>
+        </select>
+      </div>
+
+      <!-- Kartu akun (ID & struktur dipertahankan dari versi lama) -->
+      <div id="accountDisplay" class="account-display-card" style="display:none">
+        <div class="carousel-container">
+          <div class="carousel-track" id="carouselTrack"></div>
+          <button id="carouselPrev" class="carousel-btn prev" aria-label="Gambar sebelumnya">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+          </button>
+          <button id="carouselNext" class="carousel-btn next" aria-label="Gambar selanjutnya">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+          </button>
+        </div>
+        <div class="account-details">
+          <div class="account-header">
+            <h2 id="accountPrice" class="account-price"></h2>
+            <span id="accountStatus" class="account-status-badge"></span>
+          </div>
+          <div id="accountDescriptionContainer" class="account-description-container">
+            <p id="accountDescription"></p>
+            <div class="account-actions">
+              <button id="buyAccountBtn" type="button" class="action-btn buy">Beli Sekarang</button>
+              <button id="offerAccountBtn" type="button" class="action-btn offer">Tawar Harga</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="accountEmpty" class="empty" style="display:none"></div>
+      <div id="accountError" class="err" style="display:none"></div>
+    </section>
+  </main>
+
+  <!-- ====== TEMPLATE & MODAL (dipertahankan ID-nya agar script.js bekerja) ====== -->
+  <template id="itemTmpl">
+    <a class="list-item">
+      <span class="title">Item</span>
+      <span class="price">Rp 0</span>
+    </a>
+  </template>
+
+  <template id="skeletonItemTmpl"><div class="skeleton-item"></div></template>
+  <template id="skeletonCardTmpl"><div class="skeleton-card"></div></template>
+
+  <div id="paymentModal" class="payment-modal" style="display:none" aria-hidden="true">
+    <div class="payment-modal__panel">
+      <button id="closeModalBtn" class="icon-btn" aria-label="Tutup">&times;</button>
+      <h3 id="modalItemName"></h3>
+      <p id="modalItemPrice"></p>
+      <div id="paymentOptions"></div>
+      <div class="payment-meta">
+        <div>Fee: <strong id="modalFee"></strong></div>
+        <div>Total: <strong id="modalTotal"></strong></div>
+      </div>
+      <a id="continueToWaBtn" class="action-btn buy" href="#" target="_blank" rel="noopener">Lanjut ke WhatsApp</a>
     </div>
   </div>
-
 </body>
 </html>
