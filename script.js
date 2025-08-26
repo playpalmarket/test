@@ -84,6 +84,7 @@
       po: getElement('themeToggleBtnPo'),
       acc: getElement('themeToggleBtnAcc'),
     },
+    menuOverlay: getElement('menuOverlay'), // <-- DITAMBAHKAN
     paymentModal: {
       modal: getElement('paymentModal'),
       closeBtn: getElement('closeModalBtn'),
@@ -183,6 +184,7 @@
   function closeAllMenus() {
     Object.values(elements.burgers).forEach((b) => b?.classList.remove('active'));
     Object.values(elements.menus).forEach((m) => m?.classList.remove('open'));
+    elements.menuOverlay?.classList.remove('open'); // <-- DITAMBAHKAN
   }
 
   function renderMenu(container) {
@@ -218,6 +220,7 @@
     if (!isOpen) {
       btn?.classList.add('active');
       menu?.classList.add('open');
+      elements.menuOverlay?.classList.add('open'); // <-- DITAMBAHKAN
     }
   }
 
@@ -878,6 +881,8 @@
       if (now - lastTouchEnd <= 300) event.preventDefault();
       lastTouchEnd = now;
     }, false);
+
+    elements.menuOverlay?.addEventListener('click', closeAllMenus); // <-- DITAMBAHKAN
 
     elements.burgers.cat?.addEventListener('click', () => toggleMenu('cat'));
     elements.burgers.po?.addEventListener('click', () => toggleMenu('po'));
