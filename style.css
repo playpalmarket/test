@@ -108,7 +108,7 @@ body.dark-mode #app-header{ background:rgba(31,41,55,.7); }
 /* ---- Main container ---- */
 .wrap{ max-width:1200px; margin:0 auto; padding:calc(60px + var(--sp-5)) var(--sp-3) var(--sp-6) }
 
-/* Matikan sticky head-block lama */
+/* Matikan sticky head-block lama jika masih ada di HTML lama */
 .head-block{ display:none }
 
 /* ---- Controls Row ---- */
@@ -156,7 +156,7 @@ body.dark-mode #app-header{ background:rgba(31,41,55,.7); }
 .list-item .title{ font-weight:800 }
 .list-item .price{ font-weight:900; color:var(--brand-accent-text) }
 
-/* Pre-Order cards lebih bersih */
+/* Pre-Order cards */
 .card-grid{ display:grid; grid-template-columns:1fr; gap:var(--sp-3) }
 .card{
   background:var(--surface-primary); border:1px solid var(--separator); border-radius:var(--radius-lg);
@@ -189,7 +189,7 @@ body.dark-mode #app-header{ background:rgba(31,41,55,.7); }
   font-weight:800; cursor:pointer; color:var(--text-primary)
 }
 
-/* Modal pembayaran (tetap) */
+/* Modal pembayaran */
 .payment-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.35); z-index:1200 }
 .payment-modal.visible{ display:flex }
 .payment-modal__panel{
