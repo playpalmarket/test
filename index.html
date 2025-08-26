@@ -14,25 +14,22 @@
   <script src="script.js" defer></script>
 </head>
 <body>
-  <noscript>
-    <div class="noscript-warning">Website ini membutuhkan JavaScript untuk berfungsi sepenuhnya. Aktifkan JavaScript di browser Anda.</div>
-  </noscript>
+  <noscript><div class="noscript-warning">Website ini membutuhkan JavaScript agar berfungsi penuh.</div></noscript>
 
   <main class="wrap">
     <header class="reveal-on-scroll" data-rail>
-      <img src="logo.png" alt="PlayPal.ID" class="logo" />
+      <img src="logo.jpeg" alt="PlayPal.ID" class="logo" />
       <h1>PlayPal.ID</h1>
       <p>Destinasi utama para pecinta game, film &amp; musik</p>
     </header>
 
-    <!-- Toolbar utama -->
-    <section class="toolbar reveal-on-scroll" data-rail aria-label="Toolbar Utama">
+    <section class="toolbar reveal-on-scroll" data-rail aria-label="Toolbar">
       <button id="theme-toggle-btn" class="icon-btn" type="button" aria-label="Ubah Tema">
         <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4V2m0 20v-2m8-8h2M2 12h2m12.95 6.95l1.41 1.41M5.64 5.64L4.22 4.22m0 15.56l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
       </button>
 
-      <div class="spacer" style="flex:1"></div>
+      <div style="flex:1"></div>
 
       <div class="menu-host">
         <button id="burgerCat" class="burger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menuCat">
@@ -65,7 +62,8 @@
           <input id="search" class="search-input" type="search" inputmode="search" autocomplete="off" placeholder="Cari item…" aria-label="Cari item" />
         </div>
 
-        <div id="custom-select-wrapper" class="custom-select-wrapper" aria-label="Pilih Game">
+        <!-- custom select yang dipakai script.js -->
+        <div id="custom-select-wrapper" class="custom-select-wrapper">
           <button id="custom-select-btn" class="custom-select-btn" type="button" aria-expanded="false" aria-haspopup="listbox">
             <span id="custom-select-value">Memuat…</span>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.25 9.75L12 13.5l3.75-3.75" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -121,7 +119,7 @@
           <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         </button>
 
-        <div class="spacer" style="flex:1"></div>
+        <div style="flex:1"></div>
 
         <label for="accountSelect" class="visually-hidden">Pilih Game</label>
         <select id="accountSelect" class="select-native" aria-label="Pilih Game"></select>
@@ -206,12 +204,9 @@
     </div>
   </div>
 
-  <!-- Tombol tema khusus halaman PO (ID dipakai JS) -->
+  <!-- tombol tema khusus halaman PO (dipakai JS, disembunyikan) -->
   <button id="theme-toggle-btn-po" hidden></button>
 
-  <!-- util: elemen untuk kelas aksesibilitas -->
-  <style>
-    .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,1px,1px);white-space:nowrap;border:0}
-  </style>
+  <style>.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,1px,1px);white-space:nowrap;border:0}</style>
 </body>
 </html>
