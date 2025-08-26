@@ -283,15 +283,15 @@ body.dark-mode .cat-head.head-block {
   transform: translateY(0) scale(0.95);
 }
 
-#theme-toggle-btn,
-#theme-toggle-btn-po,
-#theme-toggle-btn-acc {
+#themeToggleBtn,
+#themeToggleBtnPo,
+#themeToggleBtnAcc {
   overflow: hidden;
 }
 
-#theme-toggle-btn .icon,
-#theme-toggle-btn-po .icon,
-#theme-toggle-btn-acc .icon {
+#themeToggleBtn .icon,
+#themeToggleBtnPo .icon,
+#themeToggleBtnAcc .icon {
   position: absolute;
   top: 50%;
   left: 50%;
