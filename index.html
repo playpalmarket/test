@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
-  <!-- menu v2 harus di-load sebelum script.js agar navigasi tersedia -->
+  <!-- urutan penting: menu.js lalu script.js -->
   <script src="menu.js" defer></script>
   <script src="script.js" defer></script>
 </head>
@@ -23,19 +23,16 @@
     </div>
   </noscript>
 
-  <!-- ============== HEADER GLOBAL (fixed) ============== -->
+  <!-- HEADER GLOBAL -->
   <header id="app-header" role="banner">
     <div class="header-content">
       <img src="logo.png" alt="PlayPal.ID Logo" class="logo-header" />
       <span class="header-title" id="headerTitle">Katalog</span>
-
       <div class="header-actions">
         <button class="icon-btn" id="theme-toggle-btn" aria-label="Ganti tema" type="button">
-          <!-- ikon disembunyikan/ditukar via CSS token yang sudah ada -->
           <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
           <svg class="icon icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
         </button>
-
         <button class="icon-btn burger" id="master-burger" aria-label="Menu" aria-expanded="false" type="button">
           <span></span><span></span><span></span>
         </button>
@@ -43,23 +40,19 @@
     </div>
   </header>
 
-  <!-- ============== SIDEBAR (muncul dari kiri, di bawah header) ============== -->
+  <!-- SIDEBAR -->
   <nav id="sidebar-menu" aria-label="Navigasi utama">
-    <div class="sidebar-content" id="sidebarContent">
-      <!-- item menu dirender oleh menu.js -->
-    </div>
+    <div class="sidebar-content" id="sidebarContent"></div>
     <div class="sidebar-footer">
       <button id="komunitas-btn" class="sidebar-action-btn" type="button">Komunitas</button>
     </div>
   </nav>
 
-  <!-- ============== KONTEN ============== -->
+  <!-- KONTEN -->
   <main class="wrap" id="appMain">
-    <!-- Header hero lama dihapus sesuai brief (bersih & fokus) -->
 
-    <!-- ====== KATALOG ====== -->
+    <!-- KATALOG -->
     <section id="viewCatalog" class="view-section active" aria-label="Katalog">
-      <!-- kontrol dari .head-block dipindah ke sini -->
       <div class="controls-row">
         <div class="custom-select-wrapper" id="custom-select-wrapper">
           <button class="custom-select-btn" id="custom-select-btn" aria-haspopup="listbox" aria-expanded="false">
@@ -80,12 +73,12 @@
       <section id="error" class="err" style="display:none"></section>
     </section>
 
-    <!-- ====== PRE-ORDER ====== -->
+    <!-- PRE-ORDER -->
     <section id="viewPreorder" class="view-section" aria-label="Pre-Order">
       <div class="controls-row">
-        <select class="select-native" id="poSheet" aria-label="Pilih kategori pesanan">
-          <option value="0">Starlight Member</option>
-          <option value="1">Pesanan Umum</option>
+        <select class="select-native" id="poSheet" aria-label="Pilih dataset">
+          <option value="Sheet1">Starlight Member</option>
+          <option value="Sheet2">Pesanan Umum</option>
         </select>
 
         <div class="search-wrap">
@@ -110,7 +103,7 @@
       </nav>
     </section>
 
-    <!-- ====== AKUN GAME ====== -->
+    <!-- AKUN GAME -->
     <section id="viewAccounts" class="view-section" aria-label="Akun Game">
       <div class="controls-row">
         <select class="select-native" id="accountSelect" aria-label="Pilih Akun Game">
@@ -118,7 +111,6 @@
         </select>
       </div>
 
-      <!-- Kartu akun (ID & struktur dipertahankan dari versi lama) -->
       <div id="accountDisplay" class="account-display-card" style="display:none">
         <div class="carousel-container">
           <div class="carousel-track" id="carouselTrack"></div>
@@ -149,7 +141,7 @@
     </section>
   </main>
 
-  <!-- ====== TEMPLATE & MODAL (dipertahankan ID-nya agar script.js bekerja) ====== -->
+  <!-- TEMPLATE & MODAL -->
   <template id="itemTmpl">
     <a class="list-item">
       <span class="title">Item</span>
