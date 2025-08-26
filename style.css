@@ -198,30 +198,33 @@ body.dark-mode .cat-head.head-block {
   background: rgba(48, 57, 82, 0.75);
 }
 
+/* === KODE MENU LAMA DIGANTI DENGAN INI === */
 .menu {
-  position: absolute;
-  top: calc(var(--control-h) + var(--sp-fib-3));
-  right: 0;
-  z-index: 100;
+  position: fixed; /* Diubah dari absolute menjadi fixed */
+  top: 0;
+  left: 0; /* Menu akan muncul dari kiri */
+  height: 100%; /* Tinggi penuh layar */
+  width: 280px; /* Lebar menu, sesuaikan jika perlu */
+  z-index: 1000; /* Pastikan di atas konten lain */
   display: flex;
   flex-direction: column;
-  min-width: 210px;
-  overflow: clip;
   background: var(--surface-primary);
-  border: 1px solid var(--separator);
-  border-radius: var(--radius-fib-medium);
   box-shadow: var(--shadow-sm);
+  padding: var(--sp-fib-7) var(--sp-fib-4); /* Beri padding internal */
+  
+  /* Efek geser (slide) */
   opacity: 0;
+  transform: translateX(-100%); /* Sembunyikan ke kiri */
+  transition: transform 0.4s ease, opacity 0.3s ease; /* Transisi halus untuk geser & pudar */
   pointer-events: none;
-  transform: translateY(calc(-1 * var(--sp-fib-3))) scale(0.98);
-  transition: opacity var(--duration-fast) var(--ease-natural), transform var(--duration-fast) var(--ease-natural);
 }
 
 .menu.open {
   opacity: 1;
+  transform: translateX(0); /* Munculkan ke posisi semula */
   pointer-events: auto;
-  transform: translateY(0) scale(1);
 }
+/* === AKHIR DARI KODE PENGGANTI === */
 
 .menu-btn {
   padding: var(--sp-fib-4) var(--sp-fib-5);
@@ -1152,4 +1155,23 @@ body.dark-mode .skeleton::after {
   font-weight: 700;
   padding: var(--sp-fib-3) var(--sp-fib-5);
   border-radius: var(--radius-fib-small);
+}
+
+/* === KODE CSS BARU UNTUK OVERLAY MENU === */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Latar belakang gelap transparan */
+  z-index: 999; /* Tepat di bawah menu */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.menu-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
 }
