@@ -112,7 +112,7 @@ p { font-size: var(--font-size-body); color: var(--text-secondary); line-height:
 
 /* ================== LAYOUT & SPACING ================== */
 .wrap { max-width: 1200px; margin: 0 auto; padding: var(--sp-fib-7) var(--sp-fib-5); }
-[data-rail] { padding: 0; margin: 0; width: 100%; } /* No horizontal padding on rail elements */
+[data-rail] { padding: 0; margin: 0; width: 100%; }
 header { text-align: center; margin-bottom: var(--sp-fib-7); }
 .logo { height: var(--sp-fib-7); width: auto; }
 header h1 { margin: var(--sp-fib-4) 0 0; }
@@ -291,49 +291,137 @@ body.dark-mode .select-native {
 #viewPreorder .pagination-btn:hover:not(:disabled) { transform: translateY(-3px); background: var(--surface-secondary); box-shadow: var(--shadow-sm); }
 #viewPreorder .pagination-btn:disabled { opacity: .4; cursor: not-allowed; }
 
-
 /* ================== AKUN GAME VIEW (UPDATED) ================== */
-.account-display-card {
+.all-accounts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-fib-5);
   margin-top: var(--sp-fib-5);
+}
+
+.summary-card {
   background: var(--surface-primary);
   border: 1px solid var(--separator);
-  border-radius: var(--radius-fib-large);
+  border-radius: var(--radius-fib-medium);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform var(--duration-fast), box-shadow var(--duration-fast);
-}
-.account-display-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 21px rgba(48, 57, 82, 0.12);
+  transition: box-shadow var(--duration-fast) var(--ease-natural);
 }
 
-.carousel-container {
+.summary-card-header {
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+  overflow: hidden; /* Pastikan image-nya terpotong sesuai radius */
+  border-radius: var(--radius-fib-medium) var(--radius-fib-medium) 0 0;
+}
+.summary-card:hover .summary-card-header {
+  background: var(--surface-secondary);
+}
+
+.summary-card.sold {
+  opacity: 0.6;
+}
+
+.summary-card-image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--sp-fib-3);
+  background-color: var(--surface-secondary);
+}
+
+.summary-card-status {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  padding: var(--sp-fib-2) var(--sp-fib-4);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.summary-card-body {
+  padding: var(--sp-fib-4);
+}
+
+.summary-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 var(--sp-fib-2) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-card-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--brand-blue);
+  margin: 0;
+}
+
+.summary-card-details {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.5s var(--ease-natural), opacity 0.5s var(--ease-natural), padding 0.5s;
+  padding: 0 var(--sp-fib-4);
+}
+
+.summary-card.expanded .summary-card-details {
+  max-height: 2000px; /* Nilai besar agar cukup untuk konten */
+  opacity: 1;
+  padding: 0 var(--sp-fib-4) var(--sp-fib-4) var(--sp-fib-4);
+  border-top: 1px solid var(--separator);
+}
+
+.account-display-card-content .account-description {
+  white-space: pre-wrap;
+  color: var(--text-secondary); /* Sesuaikan warna agar mudah dibaca */
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.account-display-card-content .account-details {
+    padding: 0;
+}
+.account-display-card-content .account-description-container {
+    padding-top: var(--sp-fib-5);
+    border-top: 1px solid var(--separator);
+    margin-top: var(--sp-fib-5);
+    max-height: none;
+    opacity: 1;
+}
+
+.account-display-card-content .carousel-container {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: var(--radius-fib-large) var(--radius-fib-large) 0 0;
+  border-radius: var(--radius-fib-medium);
   -webkit-user-select: none; user-select: none;
   cursor: grab;
+  margin-bottom: var(--sp-fib-5);
 }
-.carousel-container:active { cursor: grabbing; }
+.account-display-card-content .carousel-container:active { cursor: grabbing; }
 
-.carousel-track {
+.account-display-card-content .carousel-track {
   display: flex;
   transition: transform var(--duration-natural) var(--ease-natural);
 }
-.carousel-slide {
+.account-display-card-content .carousel-slide {
   flex: 0 0 100%;
   min-width: 100%;
 }
-.carousel-slide img {
+.account-display-card-content .carousel-slide img {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   background-color: var(--surface-secondary);
 }
-.carousel-btn {
+.account-display-card-content .carousel-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -352,79 +440,22 @@ body.dark-mode .select-native {
   opacity: 0;
   padding: 0;
 }
-.carousel-btn svg {
+.account-display-card-content .carousel-btn svg {
   width: 24px;
   height: 24px;
 }
-.carousel-container:hover .carousel-btn { opacity: 1; }
-.carousel-btn.prev { left: var(--sp-fib-4); }
-.carousel-btn.next { right: var(--sp-fib-4); }
-.carousel-btn:hover { background-color: rgba(0,0,0,0.6); }
-.carousel-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.account-display-card-content .carousel-container:hover .carousel-btn { opacity: 1; }
+.account-display-card-content .carousel-btn.prev { left: var(--sp-fib-4); }
+.account-display-card-content .carousel-btn.next { right: var(--sp-fib-4); }
+.account-display-card-content .carousel-btn:hover { background-color: rgba(0,0,0,0.6); }
+.account-display-card-content .carousel-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
-.account-details {
-  padding: var(--sp-fib-5);
-}
-.account-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--sp-fib-4);
-}
-.account-price {
-  font-size: var(--font-size-h2);
-  margin: 0;
-  font-weight: 800;
-  letter-spacing: -.02em;
-  color: var(--brand-blue);
-}
-.account-status-badge {
-  flex-shrink: 0;
-  display: inline-block;
-  padding: var(--sp-fib-2) var(--sp-fib-4);
-  border-radius: 999px;
-  font-size: var(--font-size-caption);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  border: 1px solid transparent;
-}
-.account-status-badge.available {
-  color: #166534; /* Green-800 */
-  background-color: #DCFCE7; /* Green-100 */
-  border-color: #86EFAC; /* Green-300 */
-}
-.account-status-badge.sold {
-  color: var(--text-secondary);
-  background-color: var(--surface-secondary);
-  border-color: var(--separator);
-}
-.account-description-container {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height var(--duration-natural) var(--ease-natural), opacity var(--duration-fast), margin-top var(--duration-natural), padding-top var(--duration-natural);
-  margin-top: 0;
-}
-.account-display-card.expanded .account-description-container {
-  max-height: 2000px; /* Large value */
-  opacity: 1;
-  margin-top: var(--sp-fib-5);
-  padding-top: var(--sp-fib-5);
-  border-top: 1px solid var(--separator);
-}
-
-.account-description-container p {
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.account-actions {
+.account-display-card-content .account-actions {
   display: flex;
   gap: var(--sp-fib-4);
   margin-top: var(--sp-fib-5);
 }
-.action-btn {
+.account-display-card-content .action-btn {
   flex-grow: 1;
   padding: var(--sp-fib-4);
   font-size: 15px;
@@ -434,18 +465,17 @@ body.dark-mode .select-native {
   cursor: pointer;
   transition: transform var(--duration-fast), opacity var(--duration-fast);
 }
-.action-btn:hover {
+.account-display-card-content .action-btn:hover {
   transform: scale(1.03);
 }
-.action-btn.buy {
+.account-display-card-content .action-btn.buy {
   background-color: var(--brand-blue);
   color: #fff;
 }
-.action-btn.offer {
+.account-display-card-content .action-btn.offer {
   background-color: var(--surface-secondary);
   color: var(--text-primary);
 }
-
 
 /* ================== UTILITY & STATES ================== */
 .empty { border: 1px dashed var(--separator); border-radius: var(--radius-fib-large); padding: var(--sp-fib-7); text-align: center; color: var(--text-secondary); font-size: var(--font-size-body); grid-column: 1/-1; }
@@ -584,72 +614,4 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 }
 .wa-button:hover {
   transform: scale(1.02);
-}
-
-/* ================== AKUN GAME - TAMPILAN GALERI ================== */
-.all-accounts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--sp-fib-5);
-  margin-top: var(--sp-fib-5);
-}
-
-.summary-card {
-  background: var(--surface-primary);
-  border: 1px solid var(--separator);
-  border-radius: var(--radius-fib-medium);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-natural), box-shadow var(--duration-natural) var(--ease-natural);
-}
-
-.summary-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 21px rgba(48, 57, 82, 0.12);
-}
-
-.summary-card.sold {
-  opacity: 0.6;
-}
-
-.summary-card-image {
-  height: 160px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: var(--sp-fib-3);
-  background-color: var(--surface-secondary); /* Warna placeholder */
-}
-
-.summary-card-status {
-  background: rgba(0,0,0,0.5);
-  color: white;
-  padding: var(--sp-fib-2) var(--sp-fib-4);
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.summary-card-body {
-  padding: var(--sp-fib-4);
-}
-
-.summary-card-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 var(--sp-fib-2) 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.summary-card-price {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--brand-blue);
-  margin: 0;
 }
