@@ -488,7 +488,7 @@ body.dark-mode .select-native {
 }
 
 #countInfo[data-rail] {
-  margin-top: var(--sp-fib-3);
+  margin-top: var(--sp-fib-4);
   font-size: 14px;
   font-weight: 700;
   text-align: right;
