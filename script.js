@@ -15,24 +15,23 @@
       { id: 'bank_to_dana', name: 'Bank ke Dana', feeType: 'fixed', value: 500 },
       { id: 'qris', name: 'Qris', feeType: 'percentage', value: 0.01 },
     ],
-    menuItems: [
-      { label: 'Katalog', mode: 'katalog' },
-      { label: 'Lacak Pre‑Order', mode: 'preorder' },
-      { label: 'Akun Game', mode: 'accounts' },
-      { divider: true },
-      { label: 'Donasi (Saweria)', href: 'https://saweria.co/playpal' },
-      { divider: true },
-      { label: 'Tutup', mode: 'close' },
-    ],
   };
 
-  let catalogData = [];
-  let catalogCategories = [];
-  let activeCategory = '';
-  let searchQuery = '';
+  let allCatalogData = [];
+  let homeData = [];
+  let layananData = [];
+  let layananCategories = [];
+  
   let currentSelectedItem = null;
 
   const state = {
+    layanan: {
+      activeCategory: '',
+      searchQuery: ''
+    },
+    home: {
+      searchQuery: ''
+    },
     preorder: {
       initialized: false,
       allData: [],
@@ -53,37 +52,43 @@
   }
 
   const elements = {
-    viewCatalog: getElement('viewCatalog'),
+    sidebar: {
+      nav: getElement('sidebarNav'),
+      overlay: getElement('sidebarOverlay'),
+      burger: getElement('burgerBtn'),
+      links: document.querySelectorAll('.sidebar-nav .nav-item'),
+    },
+    themeToggle: getElement('themeToggleBtn'),
+    
+    viewHome: getElement('viewHome'),
+    viewLayanan: getElement('viewLayanan'),
     viewPreorder: getElement('viewPreorder'),
     viewAccounts: getElement('viewAccounts'),
-    listContainer: getElement('listContainer'),
-    searchInput: getElement('searchInput'),
-    countInfo: getElement('countInfo'),
-    errorContainer: getElement('errorContainer'),
+    viewPerpustakaan: getElement('viewPerpustakaan'),
+    viewFilm: getElement('viewFilm'),
+    
+    home: {
+      listContainer: getElement('homeListContainer'),
+      searchInput: getElement('homeSearchInput'),
+      countInfo: getElement('homeCountInfo'),
+      errorContainer: getElement('homeErrorContainer'),
+    },
+    layanan: {
+      listContainer: getElement('layananListContainer'),
+      searchInput: getElement('layananSearchInput'),
+      countInfo: getElement('layananCountInfo'),
+      errorContainer: getElement('layananErrorContainer'),
+      customSelect: {
+        wrapper: getElement('layananCustomSelectWrapper'),
+        btn: getElement('layananCustomSelectBtn'),
+        value: getElement('layananCustomSelectValue'),
+        options: getElement('layananCustomSelectOptions'),
+      },
+    },
     itemTemplate: getElement('itemTemplate'),
     skeletonItemTemplate: getElement('skeletonItemTemplate'),
     skeletonCardTemplate: getElement('skeletonCardTemplate'),
-    customSelect: {
-      wrapper: getElement('customSelectWrapper'),
-      btn: getElement('customSelectBtn'),
-      value: getElement('customSelectValue'),
-      options: getElement('customSelectOptions'),
-    },
-    burgers: {
-      cat: getElement('burgerCat'),
-      po: getElement('burgerPo'),
-      acc: getElement('burgerAcc'),
-    },
-    menus: {
-      cat: getElement('menuCat'),
-      po: getElement('menuPo'),
-      acc: getElement('menuAcc'),
-    },
-    themeToggles: {
-      cat: getElement('themeToggleBtn'),
-      po: getElement('themeToggleBtnPo'),
-      acc: getElement('themeToggleBtnAcc'),
-    },
+    
     paymentModal: {
       modal: getElement('paymentModal'),
       closeBtn: getElement('closeModalBtn'),
@@ -123,9 +128,7 @@
 
   function formatToIdr(value) {
     return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0,
+      style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
     }).format(value);
   }
 
@@ -146,106 +149,56 @@
     container.appendChild(fragment);
   }
 
-  function initScrollAnimations() {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    document.querySelectorAll('.reveal-on-scroll').forEach((el) => observer.observe(el));
-    document.querySelectorAll('header.reveal-on-scroll').forEach((el) => observer.observe(el));
-  }
-
-  function applyTheme(theme) {
-    document.body.classList.toggle('dark-mode', theme === 'dark');
-  }
-
+  function applyTheme(theme) { document.body.classList.toggle('dark-mode', theme === 'dark'); }
   function initTheme() {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
     applyTheme(currentTheme);
   }
-
   function toggleTheme() {
     const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
     localStorage.setItem('theme', newTheme);
     applyTheme(newTheme);
   }
 
-  function closeAllMenus() {
-    Object.values(elements.burgers).forEach((b) => b?.classList.remove('active'));
-    Object.values(elements.menus).forEach((m) => m?.classList.remove('open'));
-  }
-
-  function renderMenu(container) {
-    container.innerHTML = '';
-    config.menuItems.forEach((item) => {
-      if (item.divider) {
-        const divider = document.createElement('div');
-        divider.className = 'menu-divider';
-        container.appendChild(divider);
-        return;
-      }
-
-      const btn = document.createElement('button');
-      btn.className = 'menu-btn';
-      btn.textContent = item.label;
-
-      if (item.href) {
-        btn.addEventListener('click', () => window.open(item.href, '_blank', 'noopener'));
-      } else if (item.mode === 'close') {
-        btn.addEventListener('click', closeAllMenus);
-      } else {
-        btn.addEventListener('click', () => setMode(item.mode));
-      }
-      container.appendChild(btn);
-    });
-  }
-
-  function toggleMenu(menuType) {
-    const btn = elements.burgers[menuType];
-    const menu = elements.menus[menuType];
-    const isOpen = menu?.classList.contains('open');
-    closeAllMenus();
-    if (!isOpen) {
-      btn?.classList.add('active');
-      menu?.classList.add('open');
-    }
+  function toggleSidebar(forceOpen) {
+    const isOpen = typeof forceOpen === 'boolean' ? forceOpen : !document.body.classList.contains('sidebar-open');
+    document.body.classList.toggle('sidebar-open', isOpen);
+    elements.sidebar.burger.classList.toggle('active', isOpen);
   }
 
   function setMode(nextMode) {
-    const currentActive = document.querySelector('.view-section.active');
+    if (nextMode === 'donasi') {
+        window.open('https://saweria.co/playpal', '_blank', 'noopener');
+        return;
+    }
+
     const viewMap = {
-      katalog: elements.viewCatalog,
+      home: elements.viewHome,
+      layanan: elements.viewLayanan,
       preorder: elements.viewPreorder,
       accounts: elements.viewAccounts,
+      perpustakaan: elements.viewPerpustakaan,
+      film: elements.viewFilm,
     };
     const nextView = viewMap[nextMode];
+    if (!nextView) return;
 
-    if (!nextView || currentActive === nextView) {
-      closeAllMenus();
-      return;
-    }
-
-    currentActive?.classList.remove('active');
+    document.querySelector('.view-section.active')?.classList.remove('active');
     nextView.classList.add('active');
-    closeAllMenus();
+    
+    elements.sidebar.links.forEach(link => {
+        link.classList.toggle('active', link.dataset.mode === nextMode);
+    });
+
+    if (window.innerWidth < 769) {
+      toggleSidebar(false);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (nextMode === 'preorder' && !state.preorder.initialized) {
-      initializePreorder();
-    }
-    if (nextMode === 'accounts' && !state.accounts.initialized) {
-      initializeAccounts();
-    }
+    if (nextMode === 'preorder' && !state.preorder.initialized) initializePreorder();
+    if (nextMode === 'accounts' && !state.accounts.initialized) initializeAccounts();
   }
 
   function parseGvizPairs(jsonText) {
@@ -253,14 +206,10 @@
     if (!match) throw new Error('Invalid GViz response.');
 
     const obj = JSON.parse(match[0]);
-    const table = obj.table || {};
-    const rows = table.rows || [];
-    const cols = table.cols || [];
+    const { rows = [], cols = [] } = obj.table || {};
 
     const pairs = Array.from({ length: Math.floor(cols.length / 2) }, (_, i) => ({
-      iTitle: i * 2,
-      iPrice: i * 2 + 1,
-      label: cols[i * 2]?.label || '',
+      iTitle: i * 2, iPrice: i * 2 + 1, label: cols[i * 2]?.label || '',
     })).filter((p) => p.label && cols[p.iPrice]);
 
     const out = [];
@@ -274,8 +223,7 @@
           out.push({
             catKey: p.label,
             catLabel: String(p.label || '').trim().replace(/\s+/g, ' '),
-            title,
-            price,
+            title, price,
           });
         }
       }
@@ -283,26 +231,26 @@
     return out;
   }
 
-  function toggleCustomSelect(forceOpen) {
-    const { wrapper, btn } = elements.customSelect;
+  function toggleLayananCustomSelect(forceOpen) {
+    const { wrapper, btn } = elements.layanan.customSelect;
     const isOpen = typeof forceOpen === 'boolean' ? forceOpen : !wrapper.classList.contains('open');
     wrapper.classList.toggle('open', isOpen);
     btn.setAttribute('aria-expanded', isOpen);
   }
 
-  function buildCategorySelect() {
-    const { options, value } = elements.customSelect;
+  function buildLayananCategorySelect() {
+    const { options, value } = elements.layanan.customSelect;
     const categoryMap = new Map();
-    catalogData.forEach((item) => {
+    layananData.forEach((item) => {
       if (!categoryMap.has(item.catKey)) {
         categoryMap.set(item.catKey, item.catLabel);
       }
     });
 
-    catalogCategories = [...categoryMap].map(([key, label]) => ({ key, label }));
+    layananCategories = [...categoryMap].map(([key, label]) => ({ key, label }));
     options.innerHTML = '';
 
-    catalogCategories.forEach((cat, index) => {
+    layananCategories.forEach((cat, index) => {
       const el = document.createElement('div');
       el.className = 'custom-select-option';
       el.textContent = cat.label;
@@ -311,37 +259,29 @@
       if (index === 0) el.classList.add('selected');
 
       el.addEventListener('click', () => {
-        activeCategory = cat.key;
+        state.layanan.activeCategory = cat.key;
         value.textContent = cat.label;
-        document.querySelector('.custom-select-option.selected')?.classList.remove('selected');
+        document.querySelector('#layananCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
         el.classList.add('selected');
-        toggleCustomSelect(false);
-        renderCatalogList();
+        toggleLayananCustomSelect(false);
+        renderLayananList();
       });
       options.appendChild(el);
     });
 
-    if (catalogCategories.length > 0) {
-      activeCategory = catalogCategories[0].key;
-      value.textContent = catalogCategories[0].label;
+    if (layananCategories.length > 0) {
+      state.layanan.activeCategory = layananCategories[0].key;
+      value.textContent = layananCategories[0].label;
     } else {
       value.textContent = 'Data tidak tersedia';
     }
   }
 
-  function renderCatalogList() {
-    const items = catalogData.filter(
-      (x) =>
-        x.catKey === activeCategory &&
-        (searchQuery === '' ||
-          x.title.toLowerCase().includes(searchQuery) ||
-          String(x.price).includes(searchQuery))
-    );
-
-    elements.listContainer.innerHTML = '';
+  function renderList(container, countInfoEl, items, emptyText) {
+    container.innerHTML = '';
     if (items.length === 0) {
-      elements.listContainer.innerHTML = `<div class="empty">Tidak ada hasil ditemukan.</div>`;
-      elements.countInfo.textContent = '';
+      container.innerHTML = `<div class="empty">${emptyText}</div>`;
+      countInfoEl.textContent = '';
       return;
     }
 
@@ -354,38 +294,68 @@
       buttonEl.addEventListener('click', () => openPaymentModal(item));
       fragment.appendChild(buttonEl);
     }
-    elements.listContainer.appendChild(fragment);
-    elements.countInfo.textContent = `${items.length} item ditemukan`;
+    container.appendChild(fragment);
+    countInfoEl.textContent = `${items.length} item ditemukan`;
+  }
+
+  function renderHomeList() {
+    const query = state.home.searchQuery;
+    const items = homeData.filter(
+      (x) => query === '' || x.title.toLowerCase().includes(query) || String(x.price).includes(query)
+    );
+    renderList(elements.home.listContainer, elements.home.countInfo, items, 'Tidak ada hasil ditemukan.');
+  }
+
+  function renderLayananList() {
+    const { activeCategory, searchQuery } = state.layanan;
+    const items = layananData.filter(
+      (x) =>
+        x.catKey === activeCategory &&
+        (searchQuery === '' || x.title.toLowerCase().includes(searchQuery) || String(x.price).includes(searchQuery))
+    );
+    renderList(elements.layanan.listContainer, elements.layanan.countInfo, items, 'Tidak ada hasil ditemukan.');
   }
 
   async function loadCatalog() {
     try {
-      elements.errorContainer.style.display = 'none';
-      showSkeleton(elements.listContainer, elements.skeletonItemTemplate, 9);
+      [elements.home.errorContainer, elements.layanan.errorContainer].forEach(el => el.style.display = 'none');
+      showSkeleton(elements.home.listContainer, elements.skeletonItemTemplate, 6);
+      showSkeleton(elements.layanan.listContainer, elements.skeletonItemTemplate, 6);
+      
       const res = await fetch(getSheetUrl(config.sheets.katalog.name), { cache: 'no-store' });
       if (!res.ok) throw new Error(`Network error: ${res.statusText}`);
 
       const text = await res.text();
-      catalogData = parseGvizPairs(text);
-      if (catalogData.length === 0) throw new Error('Data is empty or format is incorrect.');
+      allCatalogData = parseGvizPairs(text);
+      if (allCatalogData.length === 0) throw new Error('Data is empty or format is incorrect.');
 
-      buildCategorySelect();
-      renderCatalogList();
+      const allCategories = [...new Map(allCatalogData.map(item => [item.catKey, item])).values()];
+      const homeCatKey = allCategories.length > 0 ? allCategories[0].catKey : null;
+
+      if (homeCatKey) {
+          homeData = allCatalogData.filter(item => item.catKey === homeCatKey);
+          layananData = allCatalogData.filter(item => item.catKey !== homeCatKey);
+      } else {
+          layananData = allCatalogData;
+      }
+      
+      buildLayananCategorySelect();
+      renderHomeList();
+      renderLayananList();
+
     } catch (err) {
       console.error('Failed to load catalog:', err);
-      elements.listContainer.innerHTML = '';
-      elements.errorContainer.style.display = 'block';
-      elements.errorContainer.textContent = 'Oops, terjadi kesalahan. Silakan coba lagi nanti.';
+      [elements.home, elements.layanan].forEach(view => {
+        view.listContainer.innerHTML = '';
+        view.errorContainer.style.display = 'block';
+        view.errorContainer.textContent = 'Oops, terjadi kesalahan. Silakan coba lagi nanti.';
+      });
     }
   }
 
   function calculateFee(price, option) {
-    if (option.feeType === 'fixed') {
-      return option.value;
-    }
-    if (option.feeType === 'percentage') {
-      return Math.ceil(price * option.value);
-    }
+    if (option.feeType === 'fixed') return option.value;
+    if (option.feeType === 'percentage') return Math.ceil(price * option.value);
     return 0;
   }
 
@@ -404,13 +374,8 @@
   function updateWaLink(option, fee, total) {
     const { catLabel, title, price } = currentSelectedItem;
     const text = [
-      config.waGreeting,
-      `› Tipe: ${catLabel}`,
-      `› Item: ${title}`,
-      `› Pembayaran: ${option.name}`,
-      `› Harga: ${formatToIdr(price)}`,
-      `› Fee: ${formatToIdr(fee)}`,
-      `› Total: ${formatToIdr(total)}`,
+      config.waGreeting, `› Tipe: ${catLabel}`, `› Item: ${title}`, `› Pembayaran: ${option.name}`,
+      `› Harga: ${formatToIdr(price)}`, `› Fee: ${formatToIdr(fee)}`, `› Total: ${formatToIdr(total)}`,
     ].join('\n');
     elements.paymentModal.waBtn.href = `https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`;
   }
@@ -423,23 +388,17 @@
     optionsContainer.innerHTML = '';
 
     config.paymentOptions.forEach((option, index) => {
-      const isChecked = index === 0;
       const fee = calculateFee(item.price, option);
-      const optionHtml = `
+      optionsContainer.insertAdjacentHTML('beforeend', `
         <div class="payment-option">
-          <input type="radio" id="${option.id}" name="payment" value="${option.id}" ${isChecked ? 'checked' : ''}>
+          <input type="radio" id="${option.id}" name="payment" value="${option.id}" ${index === 0 ? 'checked' : ''}>
           <label for="${option.id}">
-            ${option.name} 
-            <span style="float: right;">+ ${formatToIdr(fee)}</span>
+            ${option.name} <span style="float: right;">+ ${formatToIdr(fee)}</span>
           </label>
-        </div>`;
-      optionsContainer.insertAdjacentHTML('beforeend', optionHtml);
+        </div>`);
     });
 
-    optionsContainer
-      .querySelectorAll('input[name="payment"]')
-      .forEach((input) => input.addEventListener('change', updatePriceDetails));
-
+    optionsContainer.querySelectorAll('input[name="payment"]').forEach((input) => input.addEventListener('change', updatePriceDetails));
     updatePriceDetails();
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('visible'), 10);
@@ -448,10 +407,7 @@
   function closePaymentModal() {
     const { modal } = elements.paymentModal;
     modal.classList.remove('visible');
-    setTimeout(() => {
-      modal.style.display = 'none';
-      currentSelectedItem = null;
-    }, 200);
+    setTimeout(() => { modal.style.display = 'none'; currentSelectedItem = null; }, 200);
   }
 
   function normalizeStatus(rawStatus) {
@@ -496,9 +452,7 @@
     const { perPage } = state.preorder;
     const { listContainer, total } = elements.preorder;
 
-    total.textContent = `${totalItems} total pesanan${
-      filtered.length !== totalItems ? `, ${filtered.length} ditemukan` : ''
-    }`;
+    total.textContent = `${totalItems} total pesanan${filtered.length !== totalItems ? `, ${filtered.length} ditemukan` : ''}`;
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     state.preorder.currentPage = Math.min(Math.max(1, state.preorder.currentPage), totalPages);
@@ -520,10 +474,7 @@
         const status = normalizeStatus(statusRaw);
         const estDeliveryText = estPengiriman ? `Estimasi Pengiriman: ${estPengiriman} 20:00 WIB` : '';
         const details = [{ label: 'TGL ORDER', value: tglOrder }, { label: 'BULAN', value: bulan }];
-        const detailsHtml = details
-          .filter((d) => d.value && String(d.value).trim() !== '')
-          .map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`)
-          .join('');
+        const detailsHtml = details.filter((d) => d.value && String(d.value).trim() !== '').map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');
         
         card.className = `card ${detailsHtml ? 'clickable' : ''}`;
         card.innerHTML = `
@@ -537,19 +488,14 @@
           ${estDeliveryText ? `<div class="card-date">${estDeliveryText}</div>` : ''}
           ${detailsHtml ? `<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>` : ''}`;
         
-        if (detailsHtml) {
-          card.addEventListener('click', () => card.classList.toggle('expanded'));
-        }
+        if (detailsHtml) card.addEventListener('click', () => card.classList.toggle('expanded'));
       } else {
         const [orderNum, product, statusRaw] = item;
         const status = normalizeStatus(statusRaw);
         card.className = 'card';
         card.innerHTML = `
           <div class="card-header">
-            <div>
-              <div class="card-name">${orderNum || 'Tanpa Nomor'}</div>
-              <div class="card-product">${product || 'N/A'}</div>
-            </div>
+            <div><div class="card-name">${orderNum || 'Tanpa Nomor'}</div><div class="card-product">${product || 'N/A'}</div></div>
             <div class="status-badge ${status}">${(statusRaw || 'Pending').toUpperCase()}</div>
           </div>`;
       }
@@ -597,12 +543,7 @@
 
   function initializePreorder() {
     if (state.preorder.initialized) return;
-
-    const rebound = () => {
-      state.preorder.currentPage = 1;
-      renderPreorderCards();
-    };
-
+    const rebound = () => { state.preorder.currentPage = 1; renderPreorderCards(); };
     const { searchInput, statusSelect, sheetSelect, prevBtn, nextBtn } = elements.preorder;
     searchInput.addEventListener('input', rebound);
     statusSelect.addEventListener('change', rebound);
@@ -610,82 +551,34 @@
       const sheet = e.target.value === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
       fetchPreorderData(sheet);
     });
-
-    prevBtn.addEventListener('click', () => {
-      if (state.preorder.currentPage > 1) {
-        state.preorder.currentPage--;
-        renderPreorderCards();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-
-    nextBtn.addEventListener('click', () => {
-      state.preorder.currentPage++;
-      renderPreorderCards();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
+    prevBtn.addEventListener('click', () => { if (state.preorder.currentPage > 1) { state.preorder.currentPage--; renderPreorderCards(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+    nextBtn.addEventListener('click', () => { state.preorder.currentPage++; renderPreorderCards(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     const initialSheet = sheetSelect.value === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
     fetchPreorderData(initialSheet);
     state.preorder.initialized = true;
   }
-
+  
   function robustCsvParser(text) {
     const normalizedText = text.trim().replace(/\r\n/g, '\n');
-    const rows = [];
-    let currentRow = [];
-    let currentField = '';
-    let inQuotedField = false;
-
+    const rows = []; let currentRow = []; let currentField = ''; let inQuotedField = false;
     for (let i = 0; i < normalizedText.length; i++) {
       const char = normalizedText[i];
       if (inQuotedField) {
-        if (char === '"') {
-          if (i + 1 < normalizedText.length && normalizedText[i + 1] === '"') {
-            currentField += '"';
-            i++;
-          } else {
-            inQuotedField = false;
-          }
-        } else {
-          currentField += char;
-        }
+        if (char === '"') { if (i + 1 < normalizedText.length && normalizedText[i + 1] === '"') { currentField += '"'; i++; } else { inQuotedField = false; } } else { currentField += char; }
       } else {
-        if (char === '"') {
-          inQuotedField = true;
-        } else if (char === ',') {
-          currentRow.push(currentField);
-          currentField = '';
-        } else if (char === '\n') {
-          currentRow.push(currentField);
-          rows.push(currentRow);
-          currentRow = [];
-          currentField = '';
-        } else {
-          currentField += char;
-        }
+        if (char === '"') { inQuotedField = true; } else if (char === ',') { currentRow.push(currentField); currentField = ''; } else if (char === '\n') { currentRow.push(currentField); rows.push(currentRow); currentRow = []; currentField = ''; } else { currentField += char; }
       }
     }
-    currentRow.push(currentField);
-    rows.push(currentRow);
+    currentRow.push(currentField); rows.push(currentRow);
     return rows;
   }
 
   async function parseAccountsSheet(text) {
-    const rows = robustCsvParser(text);
-    rows.shift();
-    const accounts = [];
-    for (const row of rows) {
-      if (!row || row.length < 5 || !row[0]) continue;
-      accounts.push({
-        title: row[0] || 'Tanpa Judul',
-        price: Number(row[1]) || 0,
-        status: row[2] || 'Tersedia',
-        description: row[3] || 'Tidak ada deskripsi.',
-        images: (row[4] || '').split(',').map((url) => url.trim()).filter(Boolean),
-      });
-    }
-    return accounts;
+    const rows = robustCsvParser(text); rows.shift();
+    return rows.filter(row => row && row.length >= 5 && row[0]).map(row => ({
+      title: row[0] || 'Tanpa Judul', price: Number(row[1]) || 0, status: row[2] || 'Tersedia',
+      description: row[3] || 'Tidak ada deskripsi.', images: (row[4] || '').split(',').map((url) => url.trim()).filter(Boolean),
+    }));
   }
 
   function populateAccountSelect() {
@@ -693,15 +586,11 @@
     select.innerHTML = '<option value="">Pilih Akun</option>';
     if (state.accounts.data.length === 0) {
       select.innerHTML = '<option value="">Tidak ada akun</option>';
-      empty.textContent = 'Tidak ada akun yang tersedia saat ini.';
-      empty.style.display = 'block';
-      return;
+      empty.textContent = 'Tidak ada akun yang tersedia saat ini.'; empty.style.display = 'block'; return;
     }
     state.accounts.data.forEach((acc, index) => {
       const option = document.createElement('option');
-      option.value = index;
-      option.textContent = acc.title;
-      select.appendChild(option);
+      option.value = index; option.textContent = acc.title; select.appendChild(option);
     });
   }
 
@@ -710,11 +599,7 @@
     const account = state.accounts.data[index];
     state.accounts.currentAccount = account;
 
-    if (!account) {
-      display.style.display = 'none';
-      empty.style.display = 'block';
-      return;
-    }
+    if (!account) { display.style.display = 'none'; empty.style.display = 'block'; return; }
 
     display.classList.remove('expanded');
     price.textContent = formatToIdr(account.price);
@@ -727,91 +612,39 @@
     track.innerHTML = '';
     if (account.images && account.images.length > 0) {
       account.images.forEach((src) => {
-        const slide = document.createElement('div');
-        slide.className = 'carousel-slide';
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Gambar untuk ${account.title}`;
-        img.loading = 'lazy';
-        slide.appendChild(img);
-        track.appendChild(slide);
+        track.insertAdjacentHTML('beforeend', `<div class="carousel-slide"><img src="${src}" alt="Gambar untuk ${account.title}" loading="lazy"></div>`);
       });
     } else {
-      const slide = document.createElement('div');
-      slide.className = 'carousel-slide';
-      const placeholder = document.createElement('div');
-      placeholder.style.cssText = `
-        display:flex; 
-        align-items:center; 
-        justify-content:center; 
-        height:100%; 
-        aspect-ratio:16/9; 
-        background-color: var(--surface-secondary); 
-        color: var(--text-tertiary);`;
-      placeholder.textContent = 'Gambar tidak tersedia';
-      slide.appendChild(placeholder);
-      track.appendChild(slide);
+      track.insertAdjacentHTML('beforeend', `<div class="carousel-slide"><div style="display:flex;align-items:center;justify-content:center;height:100%;aspect-ratio:16/9;background-color:var(--surface-secondary);color:var(--text-tertiary);">Gambar tidak tersedia</div></div>`);
     }
 
     state.accounts.currentIndex = 0;
     updateCarousel();
-    empty.style.display = 'none';
-    display.style.display = 'block';
+    empty.style.display = 'none'; display.style.display = 'block';
   }
 
   function updateCarousel() {
-    const { select } = elements.accounts;
-    if (select.value === '') return;
-    const account = state.accounts.data[select.value];
-    if (!account) return;
-
+    const { select } = elements.accounts; if (select.value === '') return;
+    const account = state.accounts.data[select.value]; if (!account) return;
     const { track, prevBtn, nextBtn } = elements.accounts.carousel;
     const totalSlides = account.images.length || 1;
     track.style.transform = `translateX(-${state.accounts.currentIndex * 100}%)`;
-    prevBtn.disabled = totalSlides <= 1;
-    nextBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex >= totalSlides - 1;
+    prevBtn.disabled = totalSlides <= 1; nextBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex >= totalSlides - 1;
   }
 
   function initializeCarousel() {
     const { prevBtn, nextBtn, track } = elements.accounts.carousel;
-    prevBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (state.accounts.currentIndex > 0) {
-        state.accounts.currentIndex--;
-        updateCarousel();
-      }
-    });
-
-    nextBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const account = state.accounts.currentAccount;
-      if (!account) return;
-      const totalSlides = account.images.length;
-      if (state.accounts.currentIndex < totalSlides - 1) {
-        state.accounts.currentIndex++;
-        updateCarousel();
-      }
-    });
-
+    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentIndex > 0) { state.accounts.currentIndex--; updateCarousel(); } });
+    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); const account = state.accounts.currentAccount; if (!account) return; if (state.accounts.currentIndex < account.images.length - 1) { state.accounts.currentIndex++; updateCarousel(); } });
     let touchStartX = 0;
-    track.addEventListener('touchstart', (e) => {
-      e.stopPropagation();
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    track.addEventListener('touchend', (e) => {
-      e.stopPropagation();
-      const touchEndX = e.changedTouches[0].screenX;
-      if (touchEndX < touchStartX - 50) nextBtn.click();
-      if (touchEndX > touchStartX + 50) prevBtn.click();
-    }, { passive: true });
+    track.addEventListener('touchstart', (e) => { e.stopPropagation(); touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    track.addEventListener('touchend', (e) => { e.stopPropagation(); const touchEndX = e.changedTouches[0].screenX; if (touchEndX < touchStartX - 50) nextBtn.click(); if (touchEndX > touchStartX + 50) prevBtn.click(); }, { passive: true });
   }
 
   async function initializeAccounts() {
     if (state.accounts.initialized) return;
     const { select, error, empty, display, buyBtn, offerBtn } = elements.accounts;
     error.style.display = 'none';
-
     try {
       const res = await fetch(getSheetUrl(config.sheets.accounts.name, 'csv'), { cache: 'no-store' });
       if (!res.ok) throw new Error(`Network error: ${res.statusText}`);
@@ -820,103 +653,57 @@
       populateAccountSelect();
     } catch (err) {
       console.error('Fetch Accounts failed:', err);
-      error.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
-      error.style.display = 'block';
-      empty.style.display = 'none';
-      select.innerHTML = '<option value="">Gagal memuat</option>';
+      error.textContent = 'Gagal memuat data akun. Coba lagi nanti.'; error.style.display = 'block';
+      empty.style.display = 'none'; select.innerHTML = '<option value="">Gagal memuat</option>';
     }
-
     select.addEventListener('change', (e) => {
-      if (e.target.value !== '') {
-        renderAccount(parseInt(e.target.value, 10));
-      } else {
-        display.style.display = 'none';
-        empty.style.display = 'block';
-        state.accounts.currentAccount = null;
-      }
+      if (e.target.value !== '') { renderAccount(parseInt(e.target.value, 10)); }
+      else { display.style.display = 'none'; empty.style.display = 'block'; state.accounts.currentAccount = null; }
     });
-
-    display.addEventListener('click', (e) => {
-      if (e.target.closest('.action-btn, .carousel-btn')) return;
-      display.classList.toggle('expanded');
-    });
-
-    buyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (state.accounts.currentAccount) {
-        openPaymentModal({
-          title: state.accounts.currentAccount.title,
-          price: state.accounts.currentAccount.price,
-          catLabel: 'Akun Game',
-        });
-      }
-    });
-
-    offerBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (state.accounts.currentAccount) {
-        const text = `Halo, saya tertarik untuk menawar Akun Game: ${state.accounts.currentAccount.title}`;
-        window.open(`https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-      }
-    });
-
+    display.addEventListener('click', (e) => { if (!e.target.closest('.action-btn, .carousel-btn')) display.classList.toggle('expanded'); });
+    buyBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentAccount) { openPaymentModal({ title: state.accounts.currentAccount.title, price: state.accounts.currentAccount.price, catLabel: 'Akun Game' }); } });
+    offerBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentAccount) { const text = `Halo, saya tertarik untuk menawar Akun Game: ${state.accounts.currentAccount.title}`; window.open(`https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener'); } });
     initializeCarousel();
     state.accounts.initialized = true;
   }
   
   function initializeApp() {
-    document.addEventListener('contextmenu', (event) => event.preventDefault());
-    document.addEventListener('copy', (event) => event.preventDefault());
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('copy', (e) => e.preventDefault());
     document.addEventListener('gesturestart', (e) => e.preventDefault());
-    document.addEventListener('touchstart', (event) => {
-      if (event.touches.length > 1) event.preventDefault();
-    }, { passive: false });
-
+    document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
     let lastTouchEnd = 0;
-    document.addEventListener('touchend', (event) => {
-      const now = new Date().getTime();
-      if (now - lastTouchEnd <= 300) event.preventDefault();
-      lastTouchEnd = now;
-    }, false);
+    document.addEventListener('touchend', (e) => { const now = new Date().getTime(); if (now - lastTouchEnd <= 300) e.preventDefault(); lastTouchEnd = now; }, false);
 
-    elements.burgers.cat?.addEventListener('click', () => toggleMenu('cat'));
-    elements.burgers.po?.addEventListener('click', () => toggleMenu('po'));
-    elements.burgers.acc?.addEventListener('click', () => toggleMenu('acc'));
-    Object.values(elements.themeToggles).forEach((btn) => btn?.addEventListener('click', toggleTheme));
-
-    document.addEventListener('click', (e) => {
-      const isOutsideMenu = ![...Object.values(elements.menus), ...Object.values(elements.burgers)]
-        .some((el) => el?.contains(e.target));
-      if (isOutsideMenu) closeAllMenus();
-    });
-    
-    elements.customSelect.btn.addEventListener('click', () => toggleCustomSelect());
-    document.addEventListener('click', (e) => {
-      if (!elements.customSelect.wrapper.contains(e.target)) {
-        toggleCustomSelect(false);
+    elements.themeToggle?.addEventListener('click', toggleTheme);
+    elements.sidebar.burger?.addEventListener('click', () => toggleSidebar());
+    elements.sidebar.overlay?.addEventListener('click', () => toggleSidebar(false));
+    elements.sidebar.links.forEach(link => {
+      if(link.dataset.mode) {
+        link.addEventListener('click', (e) => { e.preventDefault(); setMode(link.dataset.mode); });
       }
     });
+
+    elements.layanan.customSelect.btn.addEventListener('click', () => toggleLayananCustomSelect());
+    document.addEventListener('click', (e) => {
+      if (!elements.layanan.customSelect.wrapper.contains(e.target)) toggleLayananCustomSelect(false);
+    });
     
-    let debounceTimer;
-    elements.searchInput.addEventListener('input', (e) => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        searchQuery = e.target.value.trim().toLowerCase();
-        renderCatalogList();
-      }, 200);
+    let homeDebounce, layananDebounce;
+    elements.home.searchInput.addEventListener('input', (e) => {
+      clearTimeout(homeDebounce);
+      homeDebounce = setTimeout(() => { state.home.searchQuery = e.target.value.trim().toLowerCase(); renderHomeList(); }, 200);
+    });
+    elements.layanan.searchInput.addEventListener('input', (e) => {
+      clearTimeout(layananDebounce);
+      layananDebounce = setTimeout(() => { state.layanan.searchQuery = e.target.value.trim().toLowerCase(); renderLayananList(); }, 200);
     });
     
     elements.paymentModal.closeBtn.addEventListener('click', closePaymentModal);
-    elements.paymentModal.modal.addEventListener('click', (e) => {
-      if (e.target === elements.paymentModal.modal) closePaymentModal();
-    });
+    elements.paymentModal.modal.addEventListener('click', (e) => { if (e.target === elements.paymentModal.modal) closePaymentModal(); });
 
-    renderMenu(elements.menus.cat);
-    renderMenu(elements.menus.po);
-    renderMenu(elements.menus.acc);
     initTheme();
     loadCatalog();
-    initScrollAnimations();
   }
 
   document.addEventListener('DOMContentLoaded', initializeApp);
