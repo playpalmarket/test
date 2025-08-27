@@ -42,8 +42,8 @@
     accounts: {
       initialized: false,
       data: [],
-      currentIndex: 0,
       currentAccount: null,
+      modalCarouselIndex: 0,
     },
   };
 
@@ -59,13 +59,12 @@
       links: document.querySelectorAll('.sidebar-nav .nav-item'),
     },
     themeToggle: getElement('themeToggleBtn'),
+    pageTitles: document.querySelectorAll('.page-title'),
     
     viewHome: getElement('viewHome'),
     viewLayanan: getElement('viewLayanan'),
     viewPreorder: getElement('viewPreorder'),
     viewAccounts: getElement('viewAccounts'),
-    viewPerpustakaan: getElement('viewPerpustakaan'),
-    viewFilm: getElement('viewFilm'),
     
     home: {
       listContainer: getElement('homeListContainer'),
@@ -102,37 +101,28 @@
     preorder: {
       searchInput: getElement('preorderSearchInput'),
       statusSelect: getElement('preorderStatusSelect'),
+      sheetSelect: getElement('preorderSheetSelect'),
       listContainer: getElement('preorderListContainer'),
       prevBtn: getElement('preorderPrevBtn'),
       nextBtn: getElement('preorderNextBtn'),
-      pageInfo: getElement('preorderPageInfo'),
       total: getElement('preorderTotal'),
-      customSelect: {
-        wrapper: getElement('preorderCustomSelectWrapper'),
-        btn: getElement('preorderCustomSelectBtn'),
-        value: getElement('preorderCustomSelectValue'),
-        options: getElement('preorderCustomSelectOptions'),
-      },
     },
     accounts: {
-      display: getElement('accountDisplay'),
-      empty: getElement('accountEmpty'),
+      gridContainer: getElement('accountGridContainer'),
+      cardTemplate: getElement('accountCardTemplate'),
       error: getElement('accountError'),
-      carousel: {
-        track: getElement('carouselTrack'),
-        prevBtn: getElement('carouselPrevBtn'),
-        nextBtn: getElement('carouselNextBtn'),
-      },
-      price: getElement('accountPrice'),
-      status: getElement('accountStatus'),
-      description: getElement('accountDescription'),
+      modal: getElement('accountDetailModal'),
+      closeModalBtn: getElement('closeAccountModalBtn'),
+      modalTitle: getElement('accountModalTitle'),
+      modalPrice: getElement('accountModalPrice'),
+      modalStatus: getElement('accountModalStatus'),
+      modalDescription: getElement('accountModalDescription'),
       buyBtn: getElement('buyAccountBtn'),
       offerBtn: getElement('offerAccountBtn'),
-      customSelect: {
-        wrapper: getElement('accountCustomSelectWrapper'),
-        btn: getElement('accountCustomSelectBtn'),
-        value: getElement('accountCustomSelectValue'),
-        options: getElement('accountCustomSelectOptions'),
+      carousel: {
+        track: getElement('accountModalCarouselTrack'),
+        prevBtn: getElement('accountModalCarouselPrevBtn'),
+        nextBtn: getElement('accountModalCarouselNextBtn'),
       },
     },
   };
@@ -190,8 +180,6 @@
       layanan: elements.viewLayanan,
       preorder: elements.viewPreorder,
       accounts: elements.viewAccounts,
-      perpustakaan: elements.viewPerpustakaan,
-      film: elements.viewFilm,
     };
     const nextView = viewMap[nextMode];
     if (!nextView) return;
@@ -201,6 +189,10 @@
     
     elements.sidebar.links.forEach(link => {
         link.classList.toggle('active', link.dataset.mode === nextMode);
+    });
+
+    elements.pageTitles.forEach(title => {
+        title.classList.toggle('active', title.dataset.mode === nextMode);
     });
 
     if (window.innerWidth < 769) {
@@ -242,8 +234,8 @@
     return out;
   }
 
-  function toggleCustomSelect(wrapper, forceOpen) {
-    const btn = wrapper.querySelector('.custom-select-btn');
+  function toggleCustomSelect(forceOpen) {
+    const { wrapper, btn } = elements.layanan.customSelect;
     const isOpen = typeof forceOpen === 'boolean' ? forceOpen : !wrapper.classList.contains('open');
     wrapper.classList.toggle('open', isOpen);
     btn.setAttribute('aria-expanded', isOpen);
@@ -272,9 +264,9 @@
       el.addEventListener('click', () => {
         state.layanan.activeCategory = cat.key;
         value.textContent = cat.label;
-        document.querySelector('#layananCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
+        options.querySelector('.custom-select-option.selected')?.classList.remove('selected');
         el.classList.add('selected');
-        toggleCustomSelect(elements.layanan.customSelect.wrapper, false);
+        toggleCustomSelect(false);
         renderLayananList();
       });
       options.appendChild(el);
@@ -291,15 +283,7 @@
   function renderList(container, countInfoEl, items, emptyText) {
     container.innerHTML = '';
     if (items.length === 0) {
-      container.innerHTML = `
-        <div class="empty">
-          <div class="empty-content">
-            <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-            <p>${emptyText}</p>
-          </div>
-        </div>`;
+      container.innerHTML = `<div class="empty">${emptyText}</div>`;
       countInfoEl.textContent = '';
       return;
     }
@@ -463,11 +447,6 @@
   function updatePreorderPagination(currentPage, totalPages) {
     elements.preorder.prevBtn.disabled = currentPage <= 1;
     elements.preorder.nextBtn.disabled = currentPage >= totalPages;
-    if (totalPages > 0) {
-        elements.preorder.pageInfo.textContent = `Hal ${currentPage} dari ${totalPages}`;
-    } else {
-        elements.preorder.pageInfo.textContent = '';
-    }
   }
 
   function renderPreorderCards() {
@@ -485,7 +464,7 @@
     listContainer.innerHTML = '';
 
     if (pageData.length === 0) {
-      listContainer.innerHTML = `<div class="empty"><div class="empty-content"><svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg><p>Tidak Ada Hasil Ditemukan</p></div></div>`;
+      listContainer.innerHTML = `<div class="empty">Tidak Ada Hasil Ditemukan</div>`;
       updatePreorderPagination(0, 0);
       return;
     }
@@ -500,11 +479,6 @@
         const details = [{ label: 'TGL ORDER', value: tglOrder }, { label: 'BULAN', value: bulan }];
         const detailsHtml = details.filter((d) => d.value && String(d.value).trim() !== '').map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');
         
-        const expandIndicatorHtml = detailsHtml ? `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="expand-indicator">
-          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-        </svg>` : '';
-
         card.className = `card ${detailsHtml ? 'clickable' : ''}`;
         card.innerHTML = `
           <div class="card-header">
@@ -512,10 +486,7 @@
               <div class="card-name">${name || 'Tanpa Nama'}</div>
               <div class="card-product">${product || 'N/A'}</div>
             </div>
-            <div class="status-badge-wrapper">
-                <div class="status-badge ${status}">${(statusRaw || 'Pending').toUpperCase()}</div>
-                ${expandIndicatorHtml}
-            </div>
+            <div class="status-badge ${status}">${(statusRaw || 'Pending').toUpperCase()}</div>
           </div>
           ${estDeliveryText ? `<div class="card-date">${estDeliveryText}</div>` : ''}
           ${detailsHtml ? `<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>` : ''}`;
@@ -576,29 +547,16 @@
   function initializePreorder() {
     if (state.preorder.initialized) return;
     const rebound = () => { state.preorder.currentPage = 1; renderPreorderCards(); };
-    const { searchInput, statusSelect, customSelect, prevBtn, nextBtn } = elements.preorder;
+    const { searchInput, statusSelect, sheetSelect, prevBtn, nextBtn } = elements.preorder;
     searchInput.addEventListener('input', rebound);
     statusSelect.addEventListener('change', rebound);
-    
-    customSelect.options.querySelectorAll('.custom-select-option').forEach(option => {
-        option.addEventListener('click', (e) => {
-            const selectedValue = e.target.dataset.value;
-            const selectedText = e.target.textContent;
-            
-            customSelect.value.textContent = selectedText;
-            document.querySelector('#preorderCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
-            e.target.classList.add('selected');
-            
-            const sheet = selectedValue === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
-            fetchPreorderData(sheet);
-            toggleCustomSelect(customSelect.wrapper, false);
-        });
+    sheetSelect.addEventListener('change', (e) => {
+      const sheet = e.target.value === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
+      fetchPreorderData(sheet);
     });
-    customSelect.btn.addEventListener('click', () => toggleCustomSelect(customSelect.wrapper));
-
     prevBtn.addEventListener('click', () => { if (state.preorder.currentPage > 1) { state.preorder.currentPage--; renderPreorderCards(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
     nextBtn.addEventListener('click', () => { state.preorder.currentPage++; renderPreorderCards(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    const initialSheet = config.sheets.preorder.name1;
+    const initialSheet = sheetSelect.value === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
     fetchPreorderData(initialSheet);
     state.preorder.initialized = true;
   }
@@ -626,151 +584,55 @@
     }));
   }
 
-  function populateAccountSelect() {
-    const { customSelect, empty } = elements.accounts;
-    const { options, value } = customSelect;
-    options.innerHTML = '';
-    
-    if (state.accounts.data.length === 0) {
-      value.textContent = 'Tidak ada akun';
-      empty.style.display = 'block';
-      return;
-    }
-
-    value.textContent = 'Pilih Akun';
-
-    state.accounts.data.forEach((acc, index) => {
-      const el = document.createElement('div');
-      el.className = 'custom-select-option';
-      el.textContent = acc.title;
-      el.dataset.value = index;
-      el.setAttribute('role', 'option');
-
-      el.addEventListener('click', () => {
-        value.textContent = acc.title;
-        document.querySelector('#accountCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
-        el.classList.add('selected');
-        toggleCustomSelect(customSelect.wrapper, false);
-        renderAccount(index);
-      });
-      options.appendChild(el);
-    });
-  }
-
-  function renderAccount(index) {
-    const { display, empty, price, description, status: statusEl } = elements.accounts;
-    const account = state.accounts.data[index];
-    state.accounts.currentAccount = account;
-
-    if (!account) { display.style.display = 'none'; empty.style.display = 'block'; return; }
-
-    display.classList.remove('expanded');
-    price.textContent = formatToIdr(account.price);
-    description.textContent = account.description;
-    statusEl.textContent = account.status;
-    statusEl.className = 'account-status-badge';
-    statusEl.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
-
-    const { track } = elements.accounts.carousel;
-    track.innerHTML = '';
-    if (account.images && account.images.length > 0) {
-      account.images.forEach((src) => {
-        track.insertAdjacentHTML('beforeend', `<div class="carousel-slide"><img src="${src}" alt="Gambar untuk ${account.title}" loading="lazy"></div>`);
-      });
-    } else {
-      track.insertAdjacentHTML('beforeend', `<div class="carousel-slide"><div style="display:flex;align-items:center;justify-content:center;height:100%;aspect-ratio:16/9;background-color:var(--surface-secondary);color:var(--text-tertiary);">Gambar tidak tersedia</div></div>`);
-    }
-
-    state.accounts.currentIndex = 0;
-    updateCarousel();
-    empty.style.display = 'none'; display.style.display = 'block';
-  }
-
-  function updateCarousel() {
-    const account = state.accounts.currentAccount; 
-    if (!account) return;
-    const { track, prevBtn, nextBtn } = elements.accounts.carousel;
-    const totalSlides = account.images.length || 1;
-    track.style.transform = `translateX(-${state.accounts.currentIndex * 100}%)`;
-    prevBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex === 0; 
-    nextBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex >= totalSlides - 1;
-  }
-
-  function initializeCarousel() {
-    const { prevBtn, nextBtn, track } = elements.accounts.carousel;
-    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentIndex > 0) { state.accounts.currentIndex--; updateCarousel(); } });
-    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); const account = state.accounts.currentAccount; if (!account) return; if (state.accounts.currentIndex < account.images.length - 1) { state.accounts.currentIndex++; updateCarousel(); } });
-    let touchStartX = 0;
-    track.addEventListener('touchstart', (e) => { e.stopPropagation(); touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-    track.addEventListener('touchend', (e) => { e.stopPropagation(); const touchEndX = e.changedTouches[0].screenX; if (touchEndX < touchStartX - 50) nextBtn.click(); if (touchEndX > touchStartX + 50) prevBtn.click(); }, { passive: true });
-  }
-
-  async function initializeAccounts() {
-    if (state.accounts.initialized) return;
-    const { customSelect, error, empty, display, buyBtn, offerBtn } = elements.accounts;
-    error.style.display = 'none';
-    try {
-      const res = await fetch(getSheetUrl(config.sheets.accounts.name, 'csv'), { cache: 'no-store' });
-      if (!res.ok) throw new Error(`Network error: ${res.statusText}`);
-      const text = await res.text();
-      state.accounts.data = await parseAccountsSheet(text);
-      populateAccountSelect();
-    } catch (err) {
-      console.error('Fetch Accounts failed:', err);
-      error.textContent = 'Gagal memuat data akun. Coba lagi nanti.'; error.style.display = 'block';
-      empty.style.display = 'none'; 
-      customSelect.value.textContent = 'Gagal memuat';
-    }
-    
-    customSelect.btn.addEventListener('click', () => toggleCustomSelect(customSelect.wrapper));
-
-    display.addEventListener('click', (e) => { if (!e.target.closest('.action-btn, .carousel-btn')) display.classList.toggle('expanded'); });
-    buyBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentAccount) { openPaymentModal({ title: state.accounts.currentAccount.title, price: state.accounts.currentAccount.price, catLabel: 'Akun Game' }); } });
-    offerBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentAccount) { const text = `Halo, saya tertarik untuk menawar Akun Game: ${state.accounts.currentAccount.title}`; window.open(`https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener'); } });
-    initializeCarousel();
-    state.accounts.initialized = true;
-  }
-  
-  function initializeApp() {
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-    document.addEventListener('copy', (e) => e.preventDefault());
-    document.addEventListener('gesturestart', (e) => e.preventDefault());
-    document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (e) => { const now = new Date().getTime(); if (now - lastTouchEnd <= 300) e.preventDefault(); lastTouchEnd = now; }, false);
-
-    elements.themeToggle?.addEventListener('click', toggleTheme);
-    elements.sidebar.burger?.addEventListener('click', () => toggleSidebar());
-    elements.sidebar.overlay?.addEventListener('click', () => toggleSidebar(false));
-    elements.sidebar.links.forEach(link => {
-      if(link.dataset.mode) {
-        link.addEventListener('click', (e) => { e.preventDefault(); setMode(link.dataset.mode); });
+  function renderAccountGrid() {
+      const { gridContainer, cardTemplate } = elements.accounts;
+      if (state.accounts.data.length === 0) {
+          gridContainer.innerHTML = `<div class="empty">Tidak ada akun yang tersedia saat ini.</div>`;
+          return;
       }
-    });
 
-    elements.layanan.customSelect.btn.addEventListener('click', () => toggleCustomSelect(elements.layanan.customSelect.wrapper));
-    document.addEventListener('click', (e) => {
-      if (!elements.layanan.customSelect.wrapper.contains(e.target)) toggleCustomSelect(elements.layanan.customSelect.wrapper, false);
-      if (elements.preorder.customSelect.wrapper && !elements.preorder.customSelect.wrapper.contains(e.target)) toggleCustomSelect(elements.preorder.customSelect.wrapper, false);
-      if (elements.accounts.customSelect.wrapper && !elements.accounts.customSelect.wrapper.contains(e.target)) toggleCustomSelect(elements.accounts.customSelect.wrapper, false);
-    });
-    
-    let homeDebounce, layananDebounce;
-    elements.home.searchInput.addEventListener('input', (e) => {
-      clearTimeout(homeDebounce);
-      homeDebounce = setTimeout(() => { state.home.searchQuery = e.target.value.trim().toLowerCase(); renderHomeList(); }, 200);
-    });
-    elements.layanan.searchInput.addEventListener('input', (e) => {
-      clearTimeout(layananDebounce);
-      layananDebounce = setTimeout(() => { state.layanan.searchQuery = e.target.value.trim().toLowerCase(); renderLayananList(); }, 200);
-    });
-    
-    elements.paymentModal.closeBtn.addEventListener('click', closePaymentModal);
-    elements.paymentModal.modal.addEventListener('click', (e) => { if (e.target === elements.paymentModal.modal) closePaymentModal(); });
-
-    initTheme();
-    loadCatalog();
+      const fragment = document.createDocumentFragment();
+      state.accounts.data.forEach(account => {
+          const clone = cardTemplate.content.cloneNode(true);
+          const card = clone.querySelector('.account-card');
+          const image = clone.querySelector('.account-card-image');
+          
+          clone.querySelector('.account-card-title').textContent = account.title;
+          clone.querySelector('.account-card-price').textContent = formatToIdr(account.price);
+          clone.querySelector('.account-card-status').textContent = account.status;
+          
+          image.src = account.images[0] || 'placeholder.png'; // Use a placeholder if no image
+          image.alt = `Gambar untuk ${account.title}`;
+          
+          card.addEventListener('click', () => openAccountModal(account));
+          fragment.appendChild(clone);
+      });
+      gridContainer.innerHTML = '';
+      gridContainer.appendChild(fragment);
   }
 
-  document.addEventListener('DOMContentLoaded', initializeApp);
-})();
+  function openAccountModal(account) {
+    state.accounts.currentAccount = account;
+    state.accounts.modalCarouselIndex = 0;
+    
+    const { modal, modalTitle, modalPrice, modalStatus, modalDescription, buyBtn, offerBtn } = elements.accounts;
+    modalTitle.textContent = account.title;
+    modalPrice.textContent = formatToIdr(account.price);
+    modalStatus.textContent = account.status;
+    modalStatus.className = 'account-status-badge';
+    modalStatus.classList.add(account.status.toLowerCase() === 'tersedia' ? 'available' : 'sold');
+    modalDescription.textContent = account.description;
+
+    buyBtn.onclick = (e) => {
+        e.stopPropagation();
+        openPaymentModal({ title: account.title, price: account.price, catLabel: 'Akun Game' });
+    };
+    offerBtn.onclick = (e) => {
+        e.stopPropagation();
+        const text = `Halo, saya tertarik untuk menawar Akun Game: ${account.title}`;
+        window.open(`https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    };
+
+    updateAccountModalCarousel();
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.
