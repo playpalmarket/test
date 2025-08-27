@@ -102,14 +102,19 @@
     preorder: {
       searchInput: getElement('preorderSearchInput'),
       statusSelect: getElement('preorderStatusSelect'),
-      sheetSelect: getElement('preorderSheetSelect'),
       listContainer: getElement('preorderListContainer'),
       prevBtn: getElement('preorderPrevBtn'),
       nextBtn: getElement('preorderNextBtn'),
+      pageInfo: getElement('preorderPageInfo'),
       total: getElement('preorderTotal'),
+      customSelect: {
+        wrapper: getElement('preorderCustomSelectWrapper'),
+        btn: getElement('preorderCustomSelectBtn'),
+        value: getElement('preorderCustomSelectValue'),
+        options: getElement('preorderCustomSelectOptions'),
+      },
     },
     accounts: {
-      select: getElement('accountSelect'),
       display: getElement('accountDisplay'),
       empty: getElement('accountEmpty'),
       error: getElement('accountError'),
@@ -123,6 +128,12 @@
       description: getElement('accountDescription'),
       buyBtn: getElement('buyAccountBtn'),
       offerBtn: getElement('offerAccountBtn'),
+      customSelect: {
+        wrapper: getElement('accountCustomSelectWrapper'),
+        btn: getElement('accountCustomSelectBtn'),
+        value: getElement('accountCustomSelectValue'),
+        options: getElement('accountCustomSelectOptions'),
+      },
     },
   };
 
@@ -231,8 +242,8 @@
     return out;
   }
 
-  function toggleLayananCustomSelect(forceOpen) {
-    const { wrapper, btn } = elements.layanan.customSelect;
+  function toggleCustomSelect(wrapper, forceOpen) {
+    const btn = wrapper.querySelector('.custom-select-btn');
     const isOpen = typeof forceOpen === 'boolean' ? forceOpen : !wrapper.classList.contains('open');
     wrapper.classList.toggle('open', isOpen);
     btn.setAttribute('aria-expanded', isOpen);
@@ -263,7 +274,7 @@
         value.textContent = cat.label;
         document.querySelector('#layananCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
         el.classList.add('selected');
-        toggleLayananCustomSelect(false);
+        toggleCustomSelect(elements.layanan.customSelect.wrapper, false);
         renderLayananList();
       });
       options.appendChild(el);
@@ -280,7 +291,15 @@
   function renderList(container, countInfoEl, items, emptyText) {
     container.innerHTML = '';
     if (items.length === 0) {
-      container.innerHTML = `<div class="empty">${emptyText}</div>`;
+      container.innerHTML = `
+        <div class="empty">
+          <div class="empty-content">
+            <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <p>${emptyText}</p>
+          </div>
+        </div>`;
       countInfoEl.textContent = '';
       return;
     }
@@ -444,6 +463,11 @@
   function updatePreorderPagination(currentPage, totalPages) {
     elements.preorder.prevBtn.disabled = currentPage <= 1;
     elements.preorder.nextBtn.disabled = currentPage >= totalPages;
+    if (totalPages > 0) {
+        elements.preorder.pageInfo.textContent = `Hal ${currentPage} dari ${totalPages}`;
+    } else {
+        elements.preorder.pageInfo.textContent = '';
+    }
   }
 
   function renderPreorderCards() {
@@ -461,7 +485,7 @@
     listContainer.innerHTML = '';
 
     if (pageData.length === 0) {
-      listContainer.innerHTML = `<div class="empty">Tidak Ada Hasil Ditemukan</div>`;
+      listContainer.innerHTML = `<div class="empty"><div class="empty-content"><svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg><p>Tidak Ada Hasil Ditemukan</p></div></div>`;
       updatePreorderPagination(0, 0);
       return;
     }
@@ -476,6 +500,11 @@
         const details = [{ label: 'TGL ORDER', value: tglOrder }, { label: 'BULAN', value: bulan }];
         const detailsHtml = details.filter((d) => d.value && String(d.value).trim() !== '').map(d => `<div class="detail-item"><div class="detail-label">${d.label}</div><div class="detail-value">${d.value}</div></div>`).join('');
         
+        const expandIndicatorHtml = detailsHtml ? `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="expand-indicator">
+          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+        </svg>` : '';
+
         card.className = `card ${detailsHtml ? 'clickable' : ''}`;
         card.innerHTML = `
           <div class="card-header">
@@ -483,7 +512,10 @@
               <div class="card-name">${name || 'Tanpa Nama'}</div>
               <div class="card-product">${product || 'N/A'}</div>
             </div>
-            <div class="status-badge ${status}">${(statusRaw || 'Pending').toUpperCase()}</div>
+            <div class="status-badge-wrapper">
+                <div class="status-badge ${status}">${(statusRaw || 'Pending').toUpperCase()}</div>
+                ${expandIndicatorHtml}
+            </div>
           </div>
           ${estDeliveryText ? `<div class="card-date">${estDeliveryText}</div>` : ''}
           ${detailsHtml ? `<div class="card-details"><div class="details-grid">${detailsHtml}</div></div>` : ''}`;
@@ -544,16 +576,29 @@
   function initializePreorder() {
     if (state.preorder.initialized) return;
     const rebound = () => { state.preorder.currentPage = 1; renderPreorderCards(); };
-    const { searchInput, statusSelect, sheetSelect, prevBtn, nextBtn } = elements.preorder;
+    const { searchInput, statusSelect, customSelect, prevBtn, nextBtn } = elements.preorder;
     searchInput.addEventListener('input', rebound);
     statusSelect.addEventListener('change', rebound);
-    sheetSelect.addEventListener('change', (e) => {
-      const sheet = e.target.value === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
-      fetchPreorderData(sheet);
+    
+    customSelect.options.querySelectorAll('.custom-select-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const selectedValue = e.target.dataset.value;
+            const selectedText = e.target.textContent;
+            
+            customSelect.value.textContent = selectedText;
+            document.querySelector('#preorderCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
+            e.target.classList.add('selected');
+            
+            const sheet = selectedValue === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
+            fetchPreorderData(sheet);
+            toggleCustomSelect(customSelect.wrapper, false);
+        });
     });
+    customSelect.btn.addEventListener('click', () => toggleCustomSelect(customSelect.wrapper));
+
     prevBtn.addEventListener('click', () => { if (state.preorder.currentPage > 1) { state.preorder.currentPage--; renderPreorderCards(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
     nextBtn.addEventListener('click', () => { state.preorder.currentPage++; renderPreorderCards(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    const initialSheet = sheetSelect.value === '0' ? config.sheets.preorder.name1 : config.sheets.preorder.name2;
+    const initialSheet = config.sheets.preorder.name1;
     fetchPreorderData(initialSheet);
     state.preorder.initialized = true;
   }
@@ -582,15 +627,33 @@
   }
 
   function populateAccountSelect() {
-    const { select, empty } = elements.accounts;
-    select.innerHTML = '<option value="">Pilih Akun</option>';
+    const { customSelect, empty } = elements.accounts;
+    const { options, value } = customSelect;
+    options.innerHTML = '';
+    
     if (state.accounts.data.length === 0) {
-      select.innerHTML = '<option value="">Tidak ada akun</option>';
-      empty.textContent = 'Tidak ada akun yang tersedia saat ini.'; empty.style.display = 'block'; return;
+      value.textContent = 'Tidak ada akun';
+      empty.style.display = 'block';
+      return;
     }
+
+    value.textContent = 'Pilih Akun';
+
     state.accounts.data.forEach((acc, index) => {
-      const option = document.createElement('option');
-      option.value = index; option.textContent = acc.title; select.appendChild(option);
+      const el = document.createElement('div');
+      el.className = 'custom-select-option';
+      el.textContent = acc.title;
+      el.dataset.value = index;
+      el.setAttribute('role', 'option');
+
+      el.addEventListener('click', () => {
+        value.textContent = acc.title;
+        document.querySelector('#accountCustomSelectOptions .custom-select-option.selected')?.classList.remove('selected');
+        el.classList.add('selected');
+        toggleCustomSelect(customSelect.wrapper, false);
+        renderAccount(index);
+      });
+      options.appendChild(el);
     });
   }
 
@@ -624,12 +687,13 @@
   }
 
   function updateCarousel() {
-    const { select } = elements.accounts; if (select.value === '') return;
-    const account = state.accounts.data[select.value]; if (!account) return;
+    const account = state.accounts.currentAccount; 
+    if (!account) return;
     const { track, prevBtn, nextBtn } = elements.accounts.carousel;
     const totalSlides = account.images.length || 1;
     track.style.transform = `translateX(-${state.accounts.currentIndex * 100}%)`;
-    prevBtn.disabled = totalSlides <= 1; nextBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex >= totalSlides - 1;
+    prevBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex === 0; 
+    nextBtn.disabled = totalSlides <= 1 || state.accounts.currentIndex >= totalSlides - 1;
   }
 
   function initializeCarousel() {
@@ -643,7 +707,7 @@
 
   async function initializeAccounts() {
     if (state.accounts.initialized) return;
-    const { select, error, empty, display, buyBtn, offerBtn } = elements.accounts;
+    const { customSelect, error, empty, display, buyBtn, offerBtn } = elements.accounts;
     error.style.display = 'none';
     try {
       const res = await fetch(getSheetUrl(config.sheets.accounts.name, 'csv'), { cache: 'no-store' });
@@ -654,12 +718,12 @@
     } catch (err) {
       console.error('Fetch Accounts failed:', err);
       error.textContent = 'Gagal memuat data akun. Coba lagi nanti.'; error.style.display = 'block';
-      empty.style.display = 'none'; select.innerHTML = '<option value="">Gagal memuat</option>';
+      empty.style.display = 'none'; 
+      customSelect.value.textContent = 'Gagal memuat';
     }
-    select.addEventListener('change', (e) => {
-      if (e.target.value !== '') { renderAccount(parseInt(e.target.value, 10)); }
-      else { display.style.display = 'none'; empty.style.display = 'block'; state.accounts.currentAccount = null; }
-    });
+    
+    customSelect.btn.addEventListener('click', () => toggleCustomSelect(customSelect.wrapper));
+
     display.addEventListener('click', (e) => { if (!e.target.closest('.action-btn, .carousel-btn')) display.classList.toggle('expanded'); });
     buyBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentAccount) { openPaymentModal({ title: state.accounts.currentAccount.title, price: state.accounts.currentAccount.price, catLabel: 'Akun Game' }); } });
     offerBtn.addEventListener('click', (e) => { e.stopPropagation(); if (state.accounts.currentAccount) { const text = `Halo, saya tertarik untuk menawar Akun Game: ${state.accounts.currentAccount.title}`; window.open(`https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener'); } });
@@ -684,9 +748,11 @@
       }
     });
 
-    elements.layanan.customSelect.btn.addEventListener('click', () => toggleLayananCustomSelect());
+    elements.layanan.customSelect.btn.addEventListener('click', () => toggleCustomSelect(elements.layanan.customSelect.wrapper));
     document.addEventListener('click', (e) => {
-      if (!elements.layanan.customSelect.wrapper.contains(e.target)) toggleLayananCustomSelect(false);
+      if (!elements.layanan.customSelect.wrapper.contains(e.target)) toggleCustomSelect(elements.layanan.customSelect.wrapper, false);
+      if (elements.preorder.customSelect.wrapper && !elements.preorder.customSelect.wrapper.contains(e.target)) toggleCustomSelect(elements.preorder.customSelect.wrapper, false);
+      if (elements.accounts.customSelect.wrapper && !elements.accounts.customSelect.wrapper.contains(e.target)) toggleCustomSelect(elements.accounts.customSelect.wrapper, false);
     });
     
     let homeDebounce, layananDebounce;
