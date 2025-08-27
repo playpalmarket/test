@@ -142,9 +142,15 @@ body.sidebar-open .sidebar {
   transition: opacity var(--duration-natural) var(--ease-natural);
 }
 body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
+
 .page-container {
   transition: transform var(--duration-natural) var(--ease-natural);
+  /* --- BARIS KRUSIAL YANG DITAMBAHKAN --- */
+  position: relative;
+  z-index: 1;
+  /* ------------------------------------ */
 }
+
 @media (min-width: 769px) {
   .page-container { margin-left: var(--sidebar-width); }
   .sidebar { transform: translateX(0); }
