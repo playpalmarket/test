@@ -96,7 +96,9 @@ p { font-size: var(--font-size-body); line-height: 1.5; color: var(--text-second
   display: flex;
   flex-direction: column;
 }
-.sidebar.open { transform: translateX(0); }
+body.sidebar-open .sidebar { 
+  transform: translateX(0); 
+}
 .sidebar-header {
   display: flex;
   align-items: center;
@@ -347,7 +349,7 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 #accountModalDisplay { margin: 0; border: none; box-shadow: none; cursor: default; }
 #accountModalDisplay:hover { transform: none; box-shadow: none; }
 .account-details { padding: 0; padding-top: var(--sp-fib-5); }
-.account-status-badge { flex-shrink: 0; display: inline-block; padding: var(--sp-fib-2) var(--sp-fib-4); border: 1px solid transparent; border-radius: 999px; font-size: var(--font-size-caption); font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+.account-status-badge { flex-shrink: 0; display: inline-block; padding: var(--sp-fib-2) var(--sp-fib-4); border: 1px solid transparent; border-radius: 9999px; font-size: var(--font-size-caption); font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
 .account-status-badge.available { background-color: #DCFCE7; border-color: #86EFAC; color: #166534; }
 .account-status-badge.sold { background-color: var(--surface-secondary); border-color: var(--separator); color: var(--text-secondary); }
 .account-description-container { max-height: 2000px; opacity: 1; margin-top: var(--sp-fib-4); padding-top: var(--sp-fib-4); border-top: 1px solid var(--separator); }
@@ -358,6 +360,16 @@ body.dark-mode .skeleton::after { background-image: linear-gradient(90deg, trans
 .action-btn.buy { background-color: var(--brand-blue); color: #fff; }
 .action-btn.offer { background-color: var(--surface-secondary); color: var(--text-primary); }
 .carousel-container { border-radius: var(--radius-fib-medium); }
+.carousel-track { display: flex; transition: transform var(--duration-natural) var(--ease-natural); }
+.carousel-slide { flex: 0 0 100%; min-width: 100%; }
+.carousel-slide img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background-color: var(--surface-secondary); }
+.carousel-btn { position: absolute; top: 50%; z-index: 2; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: none; border-radius: 50%; background-color: rgba(0, 0, 0, 0.35); color: white; opacity: 0; cursor: pointer; transform: translateY(-50%); transition: background-color var(--duration-fast), opacity var(--duration-fast); }
+.carousel-btn svg { width: 24px; height: 24px; }
+.carousel-container:hover .carousel-btn { opacity: 1; }
+.carousel-btn.prev { left: var(--sp-fib-4); }
+.carousel-btn.next { right: var(--sp-fib-4); }
+.carousel-btn:hover { background-color: rgba(0, 0, 0, 0.6); }
+.carousel-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
 @media (max-width: 768px) {
   .wrap {
