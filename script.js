@@ -635,4 +635,133 @@
 
     updateAccountModalCarousel();
     modal.style.display = 'flex';
-    setTimeout(() => modal.classList.
+    setTimeout(() => modal.classList.add('visible'), 10);
+  }
+
+  function closeAccountModal() {
+      const { modal } = elements.accounts;
+      modal.classList.remove('visible');
+      setTimeout(() => {
+          modal.style.display = 'none';
+          state.accounts.currentAccount = null;
+      }, 200);
+  }
+
+  function updateAccountModalCarousel() {
+      const account = state.accounts.currentAccount;
+      if (!account) return;
+
+      const { track, prevBtn, nextBtn } = elements.accounts.carousel;
+      track.innerHTML = '';
+
+      if (account.images && account.images.length > 0) {
+          account.images.forEach(src => {
+              track.insertAdjacentHTML('beforeend', `<div class="carousel-slide"><img src="${src}" alt="Gambar untuk ${account.title}" loading="lazy"></div>`);
+          });
+      } else {
+          track.insertAdjacentHTML('beforeend', `<div class="carousel-slide"><div style="display:flex;align-items:center;justify-content:center;height:100%;aspect-ratio:16/9;background-color:var(--surface-secondary);color:var(--text-tertiary);">Gambar tidak tersedia</div></div>`);
+      }
+      
+      const totalSlides = account.images.length || 1;
+      track.style.transform = `translateX(-${state.accounts.modalCarouselIndex * 100}%)`;
+      prevBtn.disabled = totalSlides <= 1 || state.accounts.modalCarouselIndex === 0;
+      nextBtn.disabled = totalSlides <= 1 || state.accounts.modalCarouselIndex >= totalSlides - 1;
+  }
+
+  function initializeCarousel() {
+      const { prevBtn, nextBtn } = elements.accounts.carousel;
+      prevBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (state.accounts.modalCarouselIndex > 0) {
+              state.accounts.modalCarouselIndex--;
+              updateAccountModalCarousel();
+          }
+      });
+      nextBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const account = state.accounts.currentAccount;
+          if (account && state.accounts.modalCarouselIndex < account.images.length - 1) {
+              state.accounts.modalCarouselIndex++;
+              updateAccountModalCarousel();
+          }
+      });
+  }
+
+  async function initializeAccounts() {
+    if (state.accounts.initialized) return;
+    const { gridContainer, error, closeModalBtn, modal } = elements.accounts;
+    error.style.display = 'none';
+    showSkeleton(gridContainer, elements.skeletonCardTemplate, 4);
+
+    try {
+      const res = await fetch(getSheetUrl(config.sheets.accounts.name, 'csv'), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Network error: ${res.statusText}`);
+      const text = await res.text();
+      state.accounts.data = await parseAccountsSheet(text);
+      renderAccountGrid();
+    } catch (err) {
+      console.error('Fetch Accounts failed:', err);
+      gridContainer.innerHTML = '';
+      error.textContent = 'Gagal memuat data akun. Coba lagi nanti.';
+      error.style.display = 'block';
+    }
+    
+    closeModalBtn.addEventListener('click', closeAccountModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeAccountModal();
+    });
+    initializeCarousel();
+    state.accounts.initialized = true;
+  }
+  
+  function initializeApp() {
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('copy', (e) => e.preventDefault());
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => { const now = new Date().getTime(); if (now - lastTouchEnd <= 300) e.preventDefault(); lastTouchEnd = now; }, false);
+
+    elements.themeToggle?.addEventListener('click', toggleTheme);
+    elements.sidebar.burger?.addEventListener('click', () => toggleSidebar());
+    elements.sidebar.overlay?.addEventListener('click', () => toggleSidebar(false));
+    elements.sidebar.links.forEach(link => {
+      if(link.dataset.mode) {
+        link.addEventListener('click', (e) => { e.preventDefault(); setMode(link.dataset.mode); });
+      }
+    });
+
+    elements.layanan.customSelect.btn.addEventListener('click', () => toggleCustomSelect());
+    document.addEventListener('click', (e) => {
+      if (!elements.layanan.customSelect.wrapper.contains(e.target)) toggleCustomSelect(false);
+    });
+    
+    let homeDebounce, layananDebounce;
+    elements.home.searchInput.addEventListener('input', (e) => {
+      clearTimeout(homeDebounce);
+      elements.home.listContainer.classList.add('filtering');
+      homeDebounce = setTimeout(() => {
+        state.home.searchQuery = e.target.value.trim().toLowerCase();
+        renderHomeList();
+        elements.home.listContainer.classList.remove('filtering');
+      }, 300);
+    });
+    elements.layanan.searchInput.addEventListener('input', (e) => {
+      clearTimeout(layananDebounce);
+      elements.layanan.listContainer.classList.add('filtering');
+      layananDebounce = setTimeout(() => {
+        state.layanan.searchQuery = e.target.value.trim().toLowerCase();
+        renderLayananList();
+        elements.layanan.listContainer.classList.remove('filtering');
+      }, 300);
+    });
+    
+    elements.paymentModal.closeBtn.addEventListener('click', closePaymentModal);
+    elements.paymentModal.modal.addEventListener('click', (e) => { if (e.target === elements.paymentModal.modal) closePaymentModal(); });
+
+    initTheme();
+    loadCatalog();
+  }
+
+  document.addEventListener('DOMContentLoaded', initializeApp);
+})();
