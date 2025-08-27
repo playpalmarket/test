@@ -17,9 +17,21 @@
     ],
   };
 
+  let allCatalogData = [];
+  let homeData = [];
+  let layananData = [];
+  let layananCategories = [];
+  
   let currentSelectedItem = null;
 
   const state = {
+    layanan: {
+      activeCategory: '',
+      searchQuery: ''
+    },
+    home: {
+      searchQuery: ''
+    },
     preorder: {
       initialized: false,
       allData: [],
@@ -215,6 +227,45 @@
     btn.setAttribute('aria-expanded', isOpen);
   }
 
+  function buildLayananCategorySelect() {
+    const { options, value } = elements.layanan.customSelect;
+    const categoryMap = new Map();
+    layananData.forEach((item) => {
+      if (!categoryMap.has(item.catKey)) {
+        categoryMap.set(item.catKey, item.catLabel);
+      }
+    });
+
+    layananCategories = [...categoryMap].map(([key, label]) => ({ key, label }));
+    options.innerHTML = '';
+
+    layananCategories.forEach((cat, index) => {
+      const el = document.createElement('div');
+      el.className = 'custom-select-option';
+      el.textContent = cat.label;
+      el.dataset.value = cat.key;
+      el.setAttribute('role', 'option');
+      if (index === 0) el.classList.add('selected');
+
+      el.addEventListener('click', () => {
+        state.layanan.activeCategory = cat.key;
+        value.textContent = cat.label;
+        options.querySelector('.custom-select-option.selected')?.classList.remove('selected');
+        el.classList.add('selected');
+        toggleCustomSelect(false);
+        renderLayananList();
+      });
+      options.appendChild(el);
+    });
+
+    if (layananCategories.length > 0) {
+      state.layanan.activeCategory = layananCategories[0].key;
+      value.textContent = layananCategories[0].label;
+    } else {
+      value.textContent = 'Data tidak tersedia';
+    }
+  }
+
   function renderList(container, countInfoEl, items, emptyText) {
     container.innerHTML = '';
     if (items.length === 0) {
@@ -222,6 +273,7 @@
       countInfoEl.textContent = '';
       return;
     }
+
     const fragment = document.createDocumentFragment();
     for (const item of items) {
       const clone = elements.itemTemplate.content.cloneNode(true);
@@ -235,60 +287,58 @@
     countInfoEl.textContent = `${items.length} item ditemukan`;
   }
 
+  function renderHomeList() {
+    const query = state.home.searchQuery;
+    const items = homeData.filter(
+      (x) => query === '' || x.title.toLowerCase().includes(query) || String(x.price).includes(query)
+    );
+    renderList(elements.home.listContainer, elements.home.countInfo, items, 'Tidak ada hasil ditemukan.');
+  }
+
+  function renderLayananList() {
+    const { activeCategory, searchQuery } = state.layanan;
+    const items = layananData.filter(
+      (x) =>
+        x.catKey === activeCategory &&
+        (searchQuery === '' || x.title.toLowerCase().includes(searchQuery) || String(x.price).includes(searchQuery))
+    );
+    renderList(elements.layanan.listContainer, elements.layanan.countInfo, items, 'Tidak ada hasil ditemukan.');
+  }
+
   async function loadCatalog() {
     try {
+      [elements.home.errorContainer, elements.layanan.errorContainer].forEach(el => el.style.display = 'none');
       showSkeleton(elements.home.listContainer, elements.skeletonItemTemplate, 6);
       showSkeleton(elements.layanan.listContainer, elements.skeletonItemTemplate, 6);
       
       const res = await fetch(getSheetUrl(config.sheets.katalog.name), { cache: 'no-store' });
       if (!res.ok) throw new Error(`Network error: ${res.statusText}`);
+
       const text = await res.text();
-      const allCatalogData = parseGvizPairs(text);
+      allCatalogData = parseGvizPairs(text);
       if (allCatalogData.length === 0) throw new Error('Data is empty or format is incorrect.');
 
       const allCategories = [...new Map(allCatalogData.map(item => [item.catKey, item])).values()];
       const homeCatKey = allCategories.length > 0 ? allCategories[0].catKey : null;
 
-      const homeData = allCatalogData.filter(item => item.catKey === homeCatKey);
-      const layananData = allCatalogData.filter(item => item.catKey !== homeCatKey);
-      
-      const { options, value } = elements.layanan.customSelect;
-      const categoryMap = new Map();
-      layananData.forEach((item) => {
-        if (!categoryMap.has(item.catKey)) {
-          categoryMap.set(item.catKey, item.catLabel);
-        }
-      });
-      const layananCategories = [...categoryMap].map(([key, label]) => ({ key, label }));
-      options.innerHTML = '';
-      layananCategories.forEach((cat, index) => {
-        const el = document.createElement('div');
-        el.className = 'custom-select-option';
-        el.textContent = cat.label;
-        el.dataset.value = cat.key;
-        el.setAttribute('role', 'option');
-        if (index === 0) el.classList.add('selected');
-        el.addEventListener('click', () => {
-          value.textContent = cat.label;
-          options.querySelector('.custom-select-option.selected')?.classList.remove('selected');
-          el.classList.add('selected');
-          toggleCustomSelect(false);
-          renderLayananList(layananData.filter(x => x.catKey === cat.key));
-        });
-        options.appendChild(el);
-      });
-
-      if (layananCategories.length > 0) {
-        value.textContent = layananCategories[0].label;
+      if (homeCatKey) {
+          homeData = allCatalogData.filter(item => item.catKey === homeCatKey);
+          layananData = allCatalogData.filter(item => item.catKey !== homeCatKey);
       } else {
-        value.textContent = 'Data tidak tersedia';
+          layananData = allCatalogData;
       }
       
-      renderList(elements.home.listContainer, elements.home.countInfo, homeData, 'Tidak ada hasil ditemukan.');
-      renderLayananList(layananData.filter(x => x.catKey === layananCategories[0]?.key));
+      buildLayananCategorySelect();
+      renderHomeList();
+      renderLayananList();
 
     } catch (err) {
       console.error('Failed to load catalog:', err);
+      [elements.home, elements.layanan].forEach(view => {
+        view.listContainer.innerHTML = '';
+        view.errorContainer.style.display = 'block';
+        view.errorContainer.textContent = 'Oops, terjadi kesalahan. Silakan coba lagi nanti.';
+      });
     }
   }
 
@@ -332,6 +382,12 @@
     setTimeout(() => modal.classList.add('visible'), 10);
   }
 
+  function closePaymentModal() {
+    const { modal } = elements.paymentModal;
+    modal.classList.remove('visible');
+    setTimeout(() => { modal.style.display = 'none'; currentSelectedItem = null; }, 200);
+  }
+  
   function robustCsvParser(text) {
     const normalizedText = text.trim().replace(/\r\n/g, '\n');
     const rows = []; let currentRow = []; let currentField = ''; let inQuotedField = false;
@@ -357,6 +413,7 @@
 
   function renderAccountGrid() {
       const { gridContainer, cardTemplate } = elements.accounts;
+      gridContainer.innerHTML = '';
       if (state.accounts.data.length === 0) {
           gridContainer.innerHTML = `<div class="empty">Tidak ada akun yang tersedia saat ini.</div>`;
           return;
@@ -382,7 +439,6 @@
           card.addEventListener('click', () => openAccountModal(account));
           fragment.appendChild(clone);
       });
-      gridContainer.innerHTML = '';
       gridContainer.appendChild(fragment);
   }
 
@@ -446,8 +502,8 @@
   async function initializeAccounts() {
     if (state.accounts.initialized) return;
     state.accounts.initialized = true;
-    const { gridContainer, error } = elements.accounts;
     
+    const { gridContainer, error } = elements.accounts;
     showSkeleton(gridContainer, elements.skeletonCardTemplate, 4); 
     error.style.display = 'none';
 
@@ -482,16 +538,11 @@
       }
     });
 
-    elements.paymentModal.closeBtn.addEventListener('click', () => {
-        const { modal } = elements.paymentModal;
-        modal.classList.remove('visible');
-        setTimeout(() => { modal.style.display = 'none'; currentSelectedItem = null; }, 200);
-    });
+    elements.paymentModal.closeBtn.addEventListener('click', closePaymentModal);
+    elements.paymentModal.modal.addEventListener('click', (e) => { if (e.target === elements.paymentModal.modal) closePaymentModal(); });
 
     elements.accounts.closeModalBtn.addEventListener('click', closeAccountModal);
-    elements.accounts.modal.addEventListener('click', (e) => {
-        if (e.target === elements.accounts.modal) closeAccountModal();
-    });
+    elements.accounts.modal.addEventListener('click', (e) => { if (e.target === elements.accounts.modal) closeAccountModal(); });
     
     const { prevBtn, nextBtn } = elements.accounts.carousel;
     prevBtn.addEventListener('click', (e) => {
@@ -509,6 +560,34 @@
             updateAccountModalCarousel();
         }
     });
+    
+    elements.layanan.customSelect.btn.addEventListener('click', () => toggleCustomSelect());
+    document.addEventListener('click', (e) => {
+      if (!elements.layanan.customSelect.wrapper.contains(e.target)) {
+        toggleCustomSelect(false);
+      }
+    });
+    
+    let homeDebounce, layananDebounce;
+    elements.home.searchInput.addEventListener('input', (e) => {
+      clearTimeout(homeDebounce);
+      elements.home.listContainer.classList.add('filtering');
+      homeDebounce = setTimeout(() => {
+        state.home.searchQuery = e.target.value.trim().toLowerCase();
+        renderHomeList();
+        elements.home.listContainer.classList.remove('filtering');
+      }, 300);
+    });
+    elements.layanan.searchInput.addEventListener('input', (e) => {
+      clearTimeout(layananDebounce);
+      elements.layanan.listContainer.classList.add('filtering');
+      layananDebounce = setTimeout(() => {
+        state.layanan.searchQuery = e.target.value.trim().toLowerCase();
+        renderLayananList();
+        elements.layanan.listContainer.classList.remove('filtering');
+      }, 300);
+    });
+
 
     // --- INITIALIZATION ---
     const savedTheme = localStorage.getItem('theme');
