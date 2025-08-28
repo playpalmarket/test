@@ -1,15 +1,21 @@
-// menu.js
+/**
+ * @file menu.js
+ * @description Modular menu system for PlayPal.ID
+ * @version 2.0.0 (fusion patch: ripple + clean)
+ */
 (function (global) {
+  'use strict';
+
   // Menu: Film gratis + Donasi (Saweria)
   const MENU_ITEMS = [
     { id:'toKatalog',  label:'Katalog',         type:'route', value:'katalog' },
-    { id:'toPreorder', label:'Lacak Pre‑Order', type:'route', value:'preorder' },
+    { id:'toPreorder', label:'Lacak Pre-Order', type:'route', value:'preorder' },
     { id:'toAccounts', label:'Akun Game',       type:'route', value:'accounts' },
     { divider:true },
-    { id:'film',    label:'Tonton Film (Gratis)',  type:'route', value:'film' },
-    { id:'donasi',  label:'Donasi (Saweria)',      type:'link',  href:'https://saweria.co/playpal' },
-    { id:'ebook',   label:'E‑book',        type:'link', href:'#' },
-    { id:'assets',  label:'Asset Editing', type:'link', href:'#' }
+    { id:'film',    label:'Tonton Film (Gratis)', type:'route', value:'film' },
+    { id:'donasi',  label:'Donasi (Saweria)',    type:'link',  href:'https://saweria.co/playpal' },
+    { id:'ebook',   label:'E-book',              type:'link',  href:'#' },
+    { id:'assets',  label:'Asset Editing',       type:'link',  href:'#' }
   ];
 
   function renderMenu(container, items, onRoute, closeAll) {
@@ -23,9 +29,10 @@
         return;
       }
       const btn = document.createElement('button');
-      btn.className = 'menu-btn';
+      btn.className = 'menu-btn ripple';   // tambahkan ripple class
       btn.type = 'button';
       btn.textContent = item.label;
+
       if (item.type === 'route') {
         btn.addEventListener('click', () => { onRoute?.(item.value); closeAll(); });
       } else {
@@ -47,10 +54,9 @@
     };
 
     [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
-    burgerCat ?.addEventListener('click', () => toggle(burgerCat, menuCat),  { passive:true });
-    burgerPO  ?.addEventListener('click', () => toggle(burgerPO , menuPO ),  { passive:true });
-    burgerAcc ?.addEventListener('click', () => toggle(burgerAcc, menuAcc),  { passive:true });
-
+    burgerCat?.addEventListener('click', () => toggle(burgerCat, menuCat), { passive:true });
+    burgerPO ?.addEventListener('click', () => toggle(burgerPO , menuPO ), { passive:true });
+    burgerAcc?.addEventListener('click', () => toggle(burgerAcc, menuAcc), { passive:true });
 
     document.addEventListener('click', (e) => {
       const inside =
@@ -71,8 +77,8 @@
         MENU_ITEMS.push(item);
         [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
       },
-      insertAt(i,item){
-        MENU_ITEMS.splice(i,0,item);
+      insertAt(i, item){
+        MENU_ITEMS.splice(i, 0, item);
         [menuCat, menuPO, menuAcc].forEach(m => renderMenu(m, MENU_ITEMS, onRoute, closeAll));
       }
     };
