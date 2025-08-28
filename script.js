@@ -141,10 +141,46 @@
   /**
    * Main application entry point. Sets up global event listeners and loads initial data.
    */
-  function initializeApp() {
+  
+
+  // === Dynamic Palette (Material You-ish) ===
+  function applyDynamicPalette(imgEl) {
+
+    // apply dynamic palette from logo if present
+    const brandImg = document.getElementById('brandImage');
+    if (brandImg) {
+      if (brandImg.complete) applyDynamicPalette(brandImg);
+      else brandImg.onload = () => applyDynamicPalette(brandImg);
+    }
+
+    // add ripple class to interactive elements
+    document.querySelectorAll('.nav-item, .list-item, .pagination-btn, .btn, button').forEach(el => {
+      el.classList.add('ripple');
+    });
+    try {
+      const c = document.createElement('canvas');
+      const ctx = c.getContext('2d');
+      if (!imgEl || !ctx) return;
+      const w = imgEl.naturalWidth || 0;
+      const h = imgEl.naturalHeight || 0;
+      if (!w || !h) return;
+      c.width = w; c.height = h;
+      ctx.drawImage(imgEl, 0, 0, w, h);
+      const { data } = ctx.getImageData(0, 0, w, h);
+      let r=0,g=0,b=0,count=data.length/4;
+      for (let i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; }
+      r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
+      const root = document.documentElement.style;
+      root.setProperty('--brand-blue-rgb', `${r}, ${g}, ${b}`);
+      root.setProperty('--brand-blue', `rgb(${r}, ${g}, ${b})`);
+      const luminance = r*0.299 + g*0.587 + b*0.114;
+      root.setProperty('--on-brand', luminance>160 ? '#101213' : '#ffffff');
+    } catch(e) { console.error('applyDynamicPalette failed', e); }
+  }
+function initializeApp() {
     // --- Safe browsing event prevention ---
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('copy', e => e.preventDefault());
+    // removed: document.addEventListener('contextmenu', e => e.preventDefault());
+    // removed: document.addEventListener('copy', e => e.preventDefault());
     
     // --- UI Interaction Listeners ---
     elements.themeToggle?.addEventListener('click', toggleTheme);
@@ -220,7 +256,7 @@
   async function loadCatalog() { try { [elements.home.errorContainer, elements.layanan.errorContainer].forEach(el => el.style.display = 'none'); showSkeleton(elements.home.listContainer, elements.skeletonItemTemplate, 6); showSkeleton(elements.layanan.listContainer, elements.skeletonItemTemplate, 6); const res = await fetch(getSheetUrl(config.sheets.katalog.name)); if (!res.ok) throw new Error(`Network error: ${res.statusText}`); const text = await res.text(); allCatalogData = parseGvizPairs(text); if (allCatalogData.length === 0) throw new Error('Data is empty or format is incorrect.'); buildLayananCategorySelect(allCatalogData); renderHomeList(); renderLayananList(); } catch (err) { console.error('Failed to load catalog:', err); [elements.home, elements.layanan].forEach(view => { view.listContainer.innerHTML = ''; view.errorContainer.style.display = 'block'; view.errorContainer.textContent = 'Oops, terjadi kesalahan. Silakan coba lagi nanti.'; }); } }
   function calculateFee(price, option) { if (option.feeType === 'fixed') return option.value; if (option.feeType === 'percentage') return Math.ceil(price * option.value); return 0; }
   function updatePriceDetails() { const selectedOptionId = document.querySelector('input[name="payment"]:checked')?.value; if (!selectedOptionId) return; const selectedOption = config.paymentOptions.find(opt => opt.id === selectedOptionId); if (!currentSelectedItem || !selectedOption) return; const price = currentSelectedItem.price; const fee = calculateFee(price, selectedOption); const total = price + fee; elements.paymentModal.fee.textContent = formatToIdr(fee); elements.paymentModal.total.textContent = formatToIdr(total); updateWaLink(selectedOption, fee, total); }
-  function updateWaLink(option, fee, total) { const { catLabel = "Produk", title, price } = currentSelectedItem; const text = [ config.waGreeting, `› Tipe: ${catLabel}`, `› Item: ${title}`, `› Pembayaran: ${option.name}`, `› Harga: ${formatToIdr(price)}`, `› Fee: ${formatToIdr(fee)}`, `› Total: ${formatToIdr(total)}`, ].join('\n'); elements.paymentModal.waBtn.href = `https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`; }
+  function updateWaLink(option, fee, total) { const { catLabel = "Produk", title, price } = currentSelectedItem; const text = [ config.waGreeting, `âº Tipe: ${catLabel}`, `âº Item: ${title}`, `âº Pembayaran: ${option.name}`, `âº Harga: ${formatToIdr(price)}`, `âº Fee: ${formatToIdr(fee)}`, `âº Total: ${formatToIdr(total)}`, ].join('\n'); elements.paymentModal.waBtn.href = `https://wa.me/${config.waNumber}?text=${encodeURIComponent(text)}`; }
   function openPaymentModal(item) { currentSelectedItem = item; const { modal, itemName, itemPrice, optionsContainer } = elements.paymentModal; itemName.textContent = item.title; itemPrice.textContent = formatToIdr(item.price); optionsContainer.innerHTML = ''; config.paymentOptions.forEach((option, index) => { const fee = calculateFee(item.price, option); optionsContainer.insertAdjacentHTML('beforeend', ` <div class="payment-option"> <input type="radio" id="${option.id}" name="payment" value="${option.id}" ${index === 0 ? 'checked' : ''}> <label for="${option.id}"> ${option.name} <span style="float: right;">+ ${formatToIdr(fee)}</span> </label> </div>`); }); optionsContainer.querySelectorAll('input[name="payment"]').forEach(input => input.addEventListener('change', updatePriceDetails)); updatePriceDetails(); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('visible'), 10); }
   function closePaymentModal() { const { modal } = elements.paymentModal; modal.classList.remove('visible'); setTimeout(() => { modal.style.display = 'none'; currentSelectedItem = null; }, 200); }
   function normalizeStatus(rawStatus) { const s = String(rawStatus || '').trim().toLowerCase(); if (['success', 'selesai', 'berhasil', 'done'].includes(s)) return 'success'; if (['progress', 'proses', 'diproses', 'processing'].includes(s)) return 'progress'; if (['failed', 'gagal', 'dibatalkan', 'cancel', 'error'].includes(s)) return 'failed'; return 'pending'; }
